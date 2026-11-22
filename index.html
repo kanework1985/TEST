@@ -1309,7 +1309,7 @@
     document.addEventListener('touchmove', (e) => {
       const target = e.target;
       const scrollable = target && target.closest('.overflow-y-auto');
-      if (!scrollable && e.cancelable) {
+      if (!scrollable && e.cancelable && e.touches && e.touches.length > 1) {
         e.preventDefault();
       }
     }, { passive: false });
@@ -1321,6 +1321,233 @@
         return e.returnValue;
       }
     });
+
+    /* ==========================================================================
+       5. 撥號鍵盤狀態與安全計算機偽裝邏輯（修復手機按鍵無反應）
+       ========================================================================== */
+    let dialedString = '';
+
+    const dtmfMap = {
+      '1': 697, '2': 770, '3': 852,
+      '4': 941, '5': 1046, '6': 1174,
+      '7': 1318, '8': 1396, '9': 1567,
+      '0': 587
+    };
+
+    function refreshDialUI() {
+      const inputEl = document.getElementById('dialDisplayInput');
+      const hintEl = document.getElementById('dialStatusHint');
+      const delBtn = document.getElementById('dialDeleteBtn');
+
+      if (inputEl) inputEl.value = dialedString;
+
+      if (delBtn) {
+        if (dialedString.length > 0) {
+          delBtn.classList.remove('opacity-30', 'pointer-events-none');
+          delBtn.classList.add('opacity-100');
+        } else {
+          delBtn.classList.add('opacity-30', 'pointer-events-none');
+          delBtn.classList.remove('opacity-100');
+        }
+      }
+
+      if (hintEl) {
+        if (dialedString.length === 0) {
+          hintEl.textContent = 'ECDH P-256 + DTLS-SRTP 端到端加密待機中';
+        } else if (dialedString === '888888') {
+          hintEl.textContent = '已選取：E2EE 加密視訊迴路測試台 (888888)';
+        } else if (dialedString === '000000') {
+          hintEl.textContent = '已選取：量子抗性密語驗證專線 (000000)';
+        } else if (dialedString.length < 6) {
+          hintEl.textContent = `請繼續輸入 (${dialedString.length}/6 碼)`;
+        } else {
+          hintEl.textContent = `準備加密連線至：#${dialedString}`;
+        }
+      }
+    }
+
+    function appendDialDigit(digit) {
+      if (!/^[0-9]$/.test(digit)) return;
+      if (dialedString.length >= 6) {
+        dialedString = digit;
+      } else {
+        dialedString += digit;
+      }
+      sfx.playTone(dtmfMap[digit] || 770, 0.08, 'sine', 0.09);
+      refreshDialUI();
+    }
+
+    function deleteDialDigit() {
+      if (dialedString.length === 0) return;
+      dialedString = dialedString.slice(0, -1);
+      sfx.playTone(420, 0.06, 'triangle', 0.06);
+      refreshDialUI();
+    }
+
+    function fillTestLine() {
+      dialedString = '888888';
+      sfx.playTone(880, 0.09, 'sine', 0.09);
+      refreshDialUI();
+      showCipherToast('🛰️', '已填入加密測試專線 888888');
+    }
+
+    async function pasteToDialer() {
+      sfx.playTone(980, 0.08, 'sine', 0.08);
+      try {
+        if (navigator.clipboard && navigator.clipboard.readText) {
+          const text = await navigator.clipboard.readText();
+          const digits = (text || '').replace(/\D/g, '').slice(0, 6);
+          if (digits) {
+            dialedString = digits;
+            refreshDialUI();
+            showCipherToast('📋', `已貼上識別碼：${digits}`);
+            return;
+          }
+        }
+      } catch (e) {}
+      showCipherToast('⚠️', '剪貼簿無可用數字或未授權讀取');
+    }
+
+    function quickDial(num, mode) {
+      dialedString = String(num).replace(/\D/g, '').slice(0, 6);
+      refreshDialUI();
+      initiateEncryptedCall(mode);
+    }
+
+    // 綁定撥號鍵盤所有數字按鈕點擊事件
+    document.querySelectorAll('.cipher-key[data-digit]').forEach(btn => {
+      const digit = btn.getAttribute('data-digit');
+      if (/^[0-9]$/.test(digit)) {
+        btn.addEventListener('click', (e) => {
+          e.preventDefault();
+          appendDialDigit(digit);
+        });
+      }
+    });
+
+    // 計算機防窺偽裝畫面控制
+    let calcCurrent = '0';
+    let calcPrev = null;
+    let calcOp = null;
+    let calcResetNext = false;
+
+    function activateStealthScreen() {
+      document.getElementById('stealthCalculatorOverlay').classList.remove('hidden');
+    }
+
+    function deactivateStealthScreen() {
+      document.getElementById('stealthCalculatorOverlay').classList.add('hidden');
+    }
+
+    function calcInput(val) {
+      const disp = document.getElementById('calcDisplayText');
+      const hist = document.getElementById('calcHistoryText');
+      if (val === 'C') {
+        calcCurrent = '0';
+        calcPrev = null;
+        calcOp = null;
+        calcResetNext = false;
+        hist.textContent = '0';
+      } else if (val === '+/-') {
+        calcCurrent = String(parseFloat(calcCurrent) * -1);
+      } else if (val === '%') {
+        calcCurrent = String(parseFloat(calcCurrent) / 100);
+      } else if (['+', '-', '*', '/'].includes(val)) {
+        calcPrev = parseFloat(calcCurrent);
+        calcOp = val;
+        calcResetNext = true;
+        hist.textContent = `${calcPrev} ${val}`;
+      } else if (val === '=') {
+        if (calcCurrent === '1337') {
+          deactivateStealthScreen();
+          return;
+        }
+        if (calcOp && calcPrev !== null) {
+          const cur = parseFloat(calcCurrent);
+          let res = cur;
+          if (calcOp === '+') res = calcPrev + cur;
+          if (calcOp === '-') res = calcPrev - cur;
+          if (calcOp === '*') res = calcPrev * cur;
+          if (calcOp === '/') res = cur !== 0 ? calcPrev / cur : 0;
+          hist.textContent = `${calcPrev} ${calcOp} ${cur} =`;
+          calcCurrent = String(Number(res.toFixed(8)));
+          calcOp = null;
+          calcPrev = null;
+          calcResetNext = true;
+        }
+      } else {
+        if (calcResetNext) {
+          calcCurrent = val === '.' ? '0.' : val;
+          calcResetNext = false;
+        } else if (val === '.') {
+          if (!calcCurrent.includes('.')) calcCurrent += '.';
+        } else {
+          calcCurrent = calcCurrent === '0' ? val : calcCurrent + val;
+        }
+      }
+      disp.textContent = calcCurrent;
+    }
+
+    // 補齊數據通道與 SAS 指紋更新函式
+    function setupEncryptedDataChannel(conn, isIncoming) {
+      if (!conn) return;
+      activeDataConn = conn;
+      conn.on('open', async () => {
+        if (!cryptoEngine.localPublicJwk) await cryptoEngine.generateEphemeralKeys();
+        conn.send({ type: 'ECDH_PUB', jwk: cryptoEngine.localPublicJwk });
+      });
+      conn.on('data', async (msg) => {
+        if (!msg || !msg.type) return;
+        if (msg.type === 'ECDH_PUB' && msg.jwk) {
+          const pass = document.getElementById('sharedPassphraseInput').value || '';
+          const sas = await cryptoEngine.deriveSessionSecrets(msg.jwk, pass);
+          updateSasDisplay(sas.sasCode, sas.sasEmojis);
+          sfx.playHandshakeChime();
+          if (currentCallSession) markCallEncryptedConnected();
+        } else if (msg.type === 'AES_MSG' && msg.payload) {
+          const plain = await cryptoEngine.decryptText(msg.payload);
+          if (plain) appendEphemeralBubble('對方', plain, false);
+        } else if (msg.type === 'UPGRADE_VIDEO') {
+          upgradeToEncryptedVideo(true);
+        } else if (msg.type === 'WIPE_HANGUP') {
+          showCipherToast('📴', '對方已結束加密通話');
+          terminateAndWipeCall(true);
+        }
+      });
+    }
+
+    function updateSasDisplay(sasCode, sasEmojis) {
+      const emojiEl = document.getElementById('audioSasEmoji');
+      const hexEl = document.getElementById('audioSasHex');
+      const miniEl = document.getElementById('videoSasMini');
+      const auditEl = document.getElementById('auditSasFull');
+      if (emojiEl) emojiEl.textContent = sasEmojis;
+      if (hexEl) hexEl.textContent = sasCode;
+      if (miniEl) miniEl.textContent = `${sasEmojis} ${sasCode}`;
+      if (auditEl) auditEl.textContent = `${sasEmojis}  ${sasCode}`;
+    }
+
+    function markCallEncryptedConnected() {
+      const dot = document.getElementById('audioCallDot');
+      const wave = document.getElementById('audioWaveBox');
+      const island = document.getElementById('islandLabel');
+      if (dot) dot.className = 'w-2 h-2 rounded-full bg-emerald-400';
+      if (wave) wave.classList.remove('opacity-30');
+      if (island) island.textContent = 'E2EE 已加密連線';
+
+      if (!timerInterval) {
+        timerInterval = setInterval(() => {
+          callDurationSec++;
+          const mm = String(Math.floor(callDurationSec / 60)).padStart(2, '0');
+          const ss = String(callDurationSec % 60).padStart(2, '0');
+          const fmt = `${mm}:${ss}`;
+          const aTimer = document.getElementById('audioCallTimerText');
+          const vTimer = document.getElementById('videoTimerText');
+          if (aTimer) aTimer.textContent = `E2EE 加密通話中 · ${fmt}`;
+          if (vTimer) vTimer.textContent = fmt;
+        }, 1000);
+      }
+    }
 
     function copyTextSafe(text) {
       const ta = document.createElement('textarea');
