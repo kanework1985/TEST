@@ -461,7 +461,7 @@
               <span id="audioSasHex" class="text-xs font-mono-tech font-bold text-amber-300">--------</span>
             </div>
 
-            <!-- 音訊輸出狀態與一鍵擴大音量 -->
+            <!-- 音訊輸出狀態與手動切換擴音 -->
             <div class="mt-2 flex items-center gap-2">
               <span id="audioTrackStatusPill" class="text-[10px] px-2.5 py-0.5 rounded-full bg-white/5 text-slate-300 border border-white/10">
                 🎙️ 準備音訊通道...
@@ -469,9 +469,9 @@
               <button
                 id="btnBoostSpeaker"
                 onclick="unlockAndTestAudioOutput(true)"
-                class="text-[10px] px-2.5 py-0.5 rounded-full bg-emerald-500/20 hover:bg-emerald-500/35 text-emerald-300 border border-emerald-400/30 transition"
+                class="text-[10px] px-2.5 py-0.5 rounded-full bg-white/10 hover:bg-white/20 text-slate-200 border border-white/15 transition"
               >
-                📢 擴大音量 (1.5x)
+                🔈 聽筒音量 (1.0x)
               </button>
             </div>
           </div>
@@ -1112,7 +1112,7 @@
         });
 
         peerObj.on('connection', (conn) => {
-          setupEncryptedDataChannel(conn, true);
+          setupEncryptedDataChannel(conn);
         });
 
         peerObj.on('call', (call) => {
@@ -1586,7 +1586,7 @@
     }
 
     /* ==========================================================================
-       7. 加密通話建立、ECDH 握手、雙向音訊播放與閱後即焚密訊
+       7. 加密通話建立、ECDH 握手、雙向音訊播放與閱後即焚密訊（預設關閉擴音）
        ========================================================================== */
     let currentCallSession = null;
     let secondaryVideoCall = null;
@@ -1594,7 +1594,7 @@
     let timerInterval = null;
     let simulatedAnswerTimer = null;
     let isMuted = false;
-    let isSpeakerphoneOn = false;
+    let isSpeakerphoneOn = false; // 預設關閉擴音，使用一般聽筒輸出
     let isCamHidden = false;
     let isBlurMaskOn = false;
     let pipCorner = 0;
@@ -1602,7 +1602,7 @@
     let videoLoopId = null;
     let remoteAudioCtx = null;
     let remoteMonitorInterval = null;
-    let currentSpeakerGain = 1.6;
+    let currentSpeakerGain = 1.0;
     let demoLoopInterval = null;
 
     function updateSpeakerphoneUI() {
@@ -1624,7 +1624,11 @@
           btnVid.classList.add('bg-emerald-500', 'text-white', 'shadow-lg', 'shadow-emerald-500/30');
           btnVid.textContent = '📢';
         }
-        if (btnBoost) btnBoost.textContent = '📢 擴音放大 (3.2x)';
+        if (btnBoost) {
+          btnBoost.classList.remove('bg-white/10', 'text-slate-200', 'border-white/15');
+          btnBoost.classList.add('bg-emerald-500/20', 'text-emerald-300', 'border-emerald-400/30');
+          btnBoost.textContent = '📢 擴音放大中';
+        }
       } else {
         if (btnAudio) {
           btnAudio.classList.add('bg-white/10', 'text-white', 'border-white/10');
@@ -1637,7 +1641,11 @@
           btnVid.classList.remove('bg-emerald-500', 'text-white', 'shadow-lg', 'shadow-emerald-500/30');
           btnVid.textContent = '🔈';
         }
-        if (btnBoost) btnBoost.textContent = currentSpeakerGain >= 2.4 ? '📢 超大音量 (2.5x)' : '📢 擴大音量 (1.5x)';
+        if (btnBoost) {
+          btnBoost.classList.add('bg-white/10', 'text-slate-200', 'border-white/15');
+          btnBoost.classList.remove('bg-emerald-500/20', 'text-emerald-300', 'border-emerald-400/30');
+          btnBoost.textContent = '🔈 聽筒音量 (1.0x)';
+        }
       }
     }
 
@@ -1649,8 +1657,8 @@
           const devices = await navigator.mediaDevices.enumerateDevices();
           const outputs = devices.filter(d => d.kind === 'audiooutput');
           if (outputs.length > 0) {
-            const speakerDev = outputs.find(d => /speaker|擴音|揚聲器|default/i.test(d.label)) || outputs[0];
-            const earpieceDev = outputs.find(d => /earpiece|聽筒|receiver/i.test(d.label)) || outputs[0];
+            const speakerDev = outputs.find(d => /speaker|擴音|揚聲器/i.test(d.label)) || outputs[0];
+            const earpieceDev = outputs.find(d => /earpiece|聽筒|receiver|default/i.test(d.label)) || outputs[0];
             const targetDev = enableSpeaker ? speakerDev : earpieceDev;
             if (targetDev && targetDev.deviceId) {
               await remoteAudio.setSinkId(targetDev.deviceId);
@@ -1682,6 +1690,7 @@
       sfx.ensure();
       if (toggleBoost) {
         isSpeakerphoneOn = !isSpeakerphoneOn;
+        routeAudioToSpeakerHardware(isSpeakerphoneOn);
         updateSpeakerphoneUI();
       }
 
@@ -1692,13 +1701,13 @@
         if (remoteAudio.srcObject) {
           remoteAudio.play().then(() => {
             const statusPill = document.getElementById('audioTrackStatusPill');
-            if (statusPill) statusPill.textContent = '🔊 雙向語音已開啟';
+            if (statusPill) statusPill.textContent = isSpeakerphoneOn ? '📢 擴音語音已開啟' : '🔊 聽筒語音已開啟';
           }).catch(() => {});
         }
       }
       if (toggleBoost) {
         sfx.playHandshakeChime();
-        showCipherToast('📢', isSpeakerphoneOn ? '已開啟擴音輸出並測試喇叭音效' : '已測試聽筒喇叭音效');
+        showCipherToast(isSpeakerphoneOn ? '📢' : '🔈', isSpeakerphoneOn ? '已開啟擴音輸出並測試喇叭音效' : '已切回聽筒輸出並測試音效');
       }
     }
 
@@ -1713,18 +1722,18 @@
       stopDemoAudioLoop();
       sfx.ensure();
       const statusPill = document.getElementById('audioTrackStatusPill');
-      if (statusPill) statusPill.textContent = '🎧 演示模式：雙向音訊與回音測試中';
+      if (statusPill) statusPill.textContent = '🎧 演示模式：預設聽筒輸出（可按擴音）';
 
       const playDemoVoiceTone = () => {
         if (!currentCallSession || currentCallSession.targetInfo.number !== '888888') return;
-        const vol = isSpeakerphoneOn ? 0.24 : 0.13;
+        const vol = isSpeakerphoneOn ? 0.24 : 0.11;
         sfx.playTone(523.25, 0.16, 'sine', vol);
         setTimeout(() => sfx.playTone(659.25, 0.16, 'sine', vol), 170);
         setTimeout(() => sfx.playTone(783.99, 0.24, 'sine', vol), 340);
 
         const rBar = document.getElementById('remoteLevelBar');
         if (rBar) {
-          rBar.style.width = isSpeakerphoneOn ? '88%' : '56%';
+          rBar.style.width = isSpeakerphoneOn ? '88%' : '52%';
           setTimeout(() => { if (rBar) rBar.style.width = '18%'; }, 450);
           setTimeout(() => { if (rBar) rBar.style.width = '0%'; }, 900);
         }
@@ -1737,7 +1746,7 @@
         try {
           const echoSrc = sfx.ctx.createMediaStreamSource(localMediaStream);
           const echoGain = sfx.ctx.createGain();
-          echoGain.gain.setValueAtTime(0.45, sfx.ctx.currentTime);
+          echoGain.gain.setValueAtTime(0.35, sfx.ctx.currentTime);
           echoSrc.connect(echoGain);
           echoGain.connect(sfx.ctx.destination);
         } catch (e) {}
@@ -1800,6 +1809,10 @@
     }
 
     async function initiateEncryptedCall(mode) {
+      // 強制預設關閉擴音，使用一般聽筒輸出
+      isSpeakerphoneOn = false;
+      await routeAudioToSpeakerHardware(false);
+      updateSpeakerphoneUI();
       unlockAndTestAudioOutput(false);
       requestCallScreenLock();
 
@@ -1823,9 +1836,7 @@
       currentCallSession = { targetInfo, mode, connected: false, isRealP2P: false };
       callDurationSec = 0;
       isMuted = false;
-      isSpeakerphoneOn = false;
       isCamHidden = false;
-      updateSpeakerphoneUI();
 
       if (!cryptoEngine.ecdhKeyPair) {
         await cryptoEngine.generateEphemeralKeys();
@@ -1855,7 +1866,7 @@
           sfx.playHandshakeChime();
           markCallEncryptedConnected();
           startDemoAudioExperience();
-          showCipherToast('🎧', '音訊演示專線已接通！請講話或點擊擴音測試');
+          showCipherToast('🎧', '音訊演示專線已接通（預設聽筒模式）');
         }, 1200);
         return;
       }
@@ -1925,6 +1936,10 @@
 
     async function acceptIncomingCall() {
       if (!pendingIncomingCall) return;
+      // 接聽時同樣強制預設關閉擴音，使用聽筒模式
+      isSpeakerphoneOn = false;
+      await routeAudioToSpeakerHardware(false);
+      updateSpeakerphoneUI();
       unlockAndTestAudioOutput(false);
       requestCallScreenLock();
       sfx.stopRing();
@@ -1945,6 +1960,8 @@
       currentCallSession = { targetInfo, mode, connected: true, isRealP2P: true };
       activeMediaCall = call;
       callDurationSec = 0;
+      isMuted = false;
+      isCamHidden = false;
 
       const stream = await captureLocalStream(mode === 'video');
 
@@ -1982,6 +1999,7 @@
       document.getElementById('audioPeerIdLabel').textContent = `號碼：${targetInfo.number}`;
       document.getElementById('audioCallTimerText').textContent = '正在連線...';
       document.getElementById('audioCallDot').className = 'w-2 h-2 rounded-full bg-amber-400 animate-pulse';
+      updateSpeakerphoneUI();
     }
 
     function bindPeerConnectionTrackListeners(call) {
@@ -2127,6 +2145,7 @@
       timerInterval = null;
       currentCallSession = null;
       isSpeakerphoneOn = false;
+      await routeAudioToSpeakerHardware(false);
       updateSpeakerphoneUI();
 
       if (!fromRemote && activeDataConn && activeDataConn.open) {
@@ -2247,11 +2266,12 @@
           remoteAudio.srcObject = audioOnlyStream;
           remoteAudio.muted = false;
           remoteAudio.volume = 1.0;
+          routeAudioToSpeakerHardware(isSpeakerphoneOn);
           const tryPlay = () => {
             remoteAudio.play().then(() => {
-              if (statusPill) statusPill.textContent = '🔊 雙向語音已接通（有音訊輸出）';
+              if (statusPill) statusPill.textContent = isSpeakerphoneOn ? '📢 擴音語音已接通' : '🔊 聽筒語音已接通';
             }).catch(() => {
-              if (statusPill) statusPill.textContent = '⚠️ 請點擊右方「📢 擴大音量」啟用聲音';
+              if (statusPill) statusPill.textContent = '⚠️ 請點擊右方按鈕啟用聲音';
             });
           };
           tryPlay();
@@ -2306,6 +2326,7 @@
       document.getElementById('audioCallOverlay').classList.add('hidden');
       document.getElementById('videoCallOverlay').classList.remove('hidden');
       document.getElementById('videoPeerTitle').textContent = targetInfo.name;
+      updateSpeakerphoneUI();
 
       startVideoLoop(targetInfo);
 
@@ -2473,6 +2494,7 @@
       loadOrCreatePersistentNumber();
       await cryptoEngine.generateEphemeralKeys();
       updateSecurityModalContent();
+      updateSpeakerphoneUI();
       initSecurePeerNode();
 
       const params = new URLSearchParams(window.location.search);
