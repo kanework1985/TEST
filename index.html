@@ -327,220 +327,16 @@
             </div>
 
             <!-- 固定高度狀態提示列 -->
-            <div class="h-6 mt-1 flex items-center justify-center">
+            <div class="h-6 mt-1 flex items-center justify-center gap-2">
               <span id="dialStatusHint" class="text-xs text-emerald-400/90 truncate">
                 E2EE 端到端加密通話就緒
               </span>
-            </div>
-          </div>
-
-          <!-- 數字鍵盤與撥號按鈕 -->
-          <div class="dialer-right flex flex-col justify-center my-auto">
-            <div class="grid grid-cols-3 gap-x-3.5 gap-y-3 px-2">
-              <button class="cipher-key" data-digit="1">
-                <span class="text-3xl font-normal text-white leading-none">1</span>
-              </button>
-              <button class="cipher-key" data-digit="2">
-                <span class="text-3xl font-normal text-white leading-none">2</span>
-              </button>
-              <button class="cipher-key" data-digit="3">
-                <span class="text-3xl font-normal text-white leading-none">3</span>
-              </button>
-              <button class="cipher-key" data-digit="4">
-                <span class="text-3xl font-normal text-white leading-none">4</span>
-              </button>
-              <button class="cipher-key" data-digit="5">
-                <span class="text-3xl font-normal text-white leading-none">5</span>
-              </button>
-              <button class="cipher-key" data-digit="6">
-                <span class="text-3xl font-normal text-white leading-none">6</span>
-              </button>
-              <button class="cipher-key" data-digit="7">
-                <span class="text-3xl font-normal text-white leading-none">7</span>
-              </button>
-              <button class="cipher-key" data-digit="8">
-                <span class="text-3xl font-normal text-white leading-none">8</span>
-              </button>
-              <button class="cipher-key" data-digit="9">
-                <span class="text-3xl font-normal text-white leading-none">9</span>
-              </button>
-              <div class="pointer-events-none"></div>
-              <button class="cipher-key" data-digit="0">
-                <span class="text-3xl font-normal text-white leading-none">0</span>
-              </button>
-              <div class="pointer-events-none"></div>
-            </div>
-
-            <!-- 底部撥號操作列 -->
-            <div class="grid grid-cols-3 items-center px-3 mt-4">
-              <!-- 視訊通話 -->
-              <div class="flex justify-center">
-                <button
-                  onclick="initiateEncryptedCall('video')"
-                  title="視訊通話"
-                  class="w-13 h-13 p-3.5 rounded-full bg-cyan-500/20 hover:bg-cyan-500/35 border border-cyan-400/35 text-cyan-300 flex items-center justify-center active:scale-90 transition"
-                >
-                  <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                  </svg>
-                </button>
-              </div>
-
-              <!-- 語音通話 -->
-              <div class="flex justify-center">
-                <button
-                  onclick="initiateEncryptedCall('audio')"
-                  title="語音通話"
-                  class="w-16 h-16 rounded-full bg-gradient-to-b from-emerald-400 to-emerald-600 hover:from-emerald-300 hover:to-emerald-500 text-white shadow-lg shadow-emerald-600/35 flex items-center justify-center active:scale-90 transition"
-                >
-                  <svg class="w-7 h-7 fill-current" viewBox="0 0 24 24">
-                    <path d="M6.62 10.79a15.053 15.053 0 006.59 6.59l2.2-2.2a1 1 0 011.01-.24c1.12.37 2.33.57 3.58.57a1 1 0 011 1V20a1 1 0 01-1 1C10.61 21 3 13.39 3 4a1 1 0 011-1h3.5a1 1 0 011 1c0 1.25.2 2.46.57 3.58a1 1 0 01-.25 1.01l-2.2 2.2z"/>
-                  </svg>
-                </button>
-              </div>
-
-              <!-- 退格刪除 -->
-              <div class="flex justify-center">
-                <button
-                  id="dialDeleteBtn"
-                  onclick="deleteDialDigit()"
-                  title="刪除"
-                  class="w-13 h-13 p-3.5 rounded-full text-slate-400 hover:text-white flex items-center justify-center active:scale-90 transition opacity-30 pointer-events-none"
-                >
-                  <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2M3 12l6.414 6.414a2 2 0 001.414.586H19a2 2 0 002-2V7a2 2 0 00-2-2h-8.172a2 2 0 00-1.414.586L3 12z" />
-                  </svg>
-                </button>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <!-- ==================== 覆蓋層 1：來電響鈴通知 (Incoming Encrypted Call) ==================== -->
-        <section id="incomingCallModal" class="hidden absolute inset-0 z-45 bg-slate-950/95 backdrop-blur-xl flex flex-col justify-between px-6 py-10">
-          <div class="flex flex-col items-center text-center mt-6">
-            <div class="w-22 h-22 p-5 rounded-full bg-emerald-500/20 border-2 border-emerald-400/50 flex items-center justify-center text-4xl shadow-2xl animate-pulse">
-              🔐
-            </div>
-            <span id="incomingCallTypeTag" class="mt-4 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 text-xs font-semibold">
-              E2EE 端到端加密來電
-            </span>
-            <h2 id="incomingCallerTitle" class="text-2xl font-bold text-white mt-3">加密保密終端</h2>
-            <p id="incomingCallerIdText" class="text-base font-mono-tech text-emerald-300 mt-1">------</p>
-            <p class="text-[11px] text-slate-400 mt-2">接聽後將自動執行 ECDH P-256 臨時金鑰交握</p>
-          </div>
-
-          <div class="flex items-center justify-around px-4 mb-4">
-            <div class="flex flex-col items-center gap-2">
               <button
-                onclick="rejectIncomingCall()"
-                class="w-16 h-16 rounded-full bg-gradient-to-b from-rose-500 to-red-600 text-white shadow-lg shadow-rose-600/40 flex items-center justify-center active:scale-90 transition"
+                onclick="quickDial('888888', 'audio')"
+                title="撥打 888888 演示與音訊測試專線"
+                class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/15 hover:bg-emerald-500/30 border border-emerald-400/30 text-emerald-300 transition shrink-0"
               >
-                <svg class="w-8 h-8 fill-current rotate-[135deg]" viewBox="0 0 24 24">
-                  <path d="M6.62 10.79a15.053 15.053 0 006.59 6.59l2.2-2.2a1 1 0 011.01-.24c1.12.37 2.33.57 3.58.57a1 1 0 011 1V20a1 1 0 01-1 1C10.61 21 3 13.39 3 4a1 1 0 011-1h3.5a1 1 0 011 1c0 1.25.2 2.46.57 3.58a1 1 0 01-.25 1.01l-2.2 2.2z"/>
-                </svg>
-              </button>
-              <span class="text-xs text-slate-300">拒接</span>
-            </div>
-
-            <div class="flex flex-col items-center gap-2">
-              <button
-                onclick="acceptIncomingCall()"
-                class="w-16 h-16 rounded-full bg-gradient-to-b from-emerald-400 to-emerald-600 text-white shadow-lg shadow-emerald-600/40 flex items-center justify-center active:scale-90 transition animate-pulse"
-              >
-                <svg class="w-8 h-8 fill-current" viewBox="0 0 24 24">
-                  <path d="M6.62 10.79a15.053 15.053 0 006.59 6.59l2.2-2.2a1 1 0 011.01-.24c1.12.37 2.33.57 3.58.57a1 1 0 011 1V20a1 1 0 01-1 1C10.61 21 3 13.39 3 4a1 1 0 011-1h3.5a1 1 0 011 1c0 1.25.2 2.46.57 3.58a1 1 0 01-.25 1.01l-2.2 2.2z"/>
-                </svg>
-              </button>
-              <span class="text-xs text-emerald-300 font-semibold">加密接聽</span>
-            </div>
-          </div>
-        </section>
-
-        <!-- ==================== 覆蓋層 2：端到端加密語音通話介面 (Audio Call Overlay) ==================== -->
-        <section id="audioCallOverlay" class="hidden absolute inset-0 z-40 bg-gradient-to-b from-slate-950 via-[#071217] to-slate-950 flex flex-col justify-between px-5 pt-6 pb-8">
-          <div class="flex flex-col items-center text-center">
-            <div class="w-20 h-20 rounded-full bg-emerald-500/15 border border-emerald-400/40 flex items-center justify-center text-4xl shadow-xl">
-              🛡️
-            </div>
-
-            <h2 id="audioPeerTitle" class="text-xl font-bold text-white mt-3">加密語音通話</h2>
-            <p id="audioPeerIdLabel" class="text-sm font-mono-tech text-emerald-300 mt-0.5">------</p>
-
-            <!-- 固定高度狀態計時器 -->
-            <div class="mt-3 h-8 px-4 rounded-full bg-emerald-500/15 border border-emerald-400/30 flex items-center gap-2">
-              <span id="audioCallDot" class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
-              <span id="audioCallTimerText" class="text-xs font-mono-tech font-semibold text-emerald-200">正在呼叫...</span>
-            </div>
-
-            <!-- 即時麥克風收音與遠端音訊狀態列 -->
-            <div class="mt-3 flex flex-col items-center gap-2">
-              <div class="flex items-center gap-2">
-                <span id="audioTrackStatusPill" class="text-[11px] px-3 py-1 rounded-full bg-sky-500/15 border border-sky-400/30 text-sky-300">
-                  🎙️ 準備麥克風中...
-                </span>
-                <button onclick="unlockAndTestAudioOutput(true)" id="btnBoostSpeaker" class="text-[11px] px-3 py-1 rounded-full bg-emerald-500/20 hover:bg-emerald-500/35 border border-emerald-400/30 text-emerald-300 active:scale-95 transition">
-                  📢 擴大音量 (1.5x)
-                </button>
-              </div>
-              <!-- 雙向即時音量監測條（我方麥克風 + 對方來話聲音） -->
-              <div class="w-52 space-y-1.5 bg-white/[0.03] border border-white/10 rounded-xl px-3 py-2">
-                <div class="flex items-center justify-between text-[10px] text-slate-400">
-                  <span>🎙️ 我方發話</span>
-                  <div class="w-28 h-1.5 bg-white/10 rounded-full overflow-hidden">
-                    <div id="micLevelBar" class="h-full w-0 bg-emerald-400 transition-all duration-75"></div>
-                  </div>
-                </div>
-                <div class="flex items-center justify-between text-[10px] text-slate-400">
-                  <span>🔊 對方聲音</span>
-                  <div class="w-28 h-1.5 bg-white/10 rounded-full overflow-hidden">
-                    <div id="remoteLevelBar" class="h-full w-0 bg-cyan-400 transition-all duration-75"></div>
-                  </div>
-                </div>
-              </div>
-              <!-- 螢幕恆亮防休眠與防滑動鎖定狀態 -->
-              <div id="wakeLockStatusTag" class="text-[10px] text-amber-300/90 flex items-center gap-1">
-                <span>🔒 通話螢幕恆亮與防滑動已啟動</span>
-              </div>
-            </div>
-
-            <!-- 安全驗證碼 SAS -->
-            <div class="mt-4 w-full max-w-[280px] bg-white/[0.04] border border-emerald-500/25 rounded-2xl px-3.5 py-2.5">
-              <div class="text-[10px] text-slate-400">安全驗證指紋 (E2EE)</div>
-              <div class="mt-1 flex items-center justify-center gap-2">
-                <span id="audioSasEmoji" class="text-base tracking-widest">🔐🛡️🔑⚡</span>
-                <span id="audioSasHex" class="text-xs font-mono-tech font-bold text-emerald-300">交握中...</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- 控制列與掛斷 -->
-          <div class="space-y-4">
-            <div class="grid grid-cols-4 gap-2 px-1">
-              <button onclick="toggleMuteAudio()" id="btnMuteAudio" class="py-3 rounded-2xl bg-white/10 hover:bg-white/20 text-xs text-white flex flex-col items-center gap-1 transition">
-                <span>🎙️</span>
-                <span>靜音</span>
-              </button>
-              <button onclick="toggleSpeakerphone()" id="btnSpeakerAudio" class="py-3 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/10 text-xs text-white flex flex-col items-center gap-1 transition">
-                <span id="speakerAudioIcon">🔈</span>
-                <span id="speakerAudioLabel">擴音</span>
-              </button>
-              <button onclick="upgradeToEncryptedVideo()" class="py-3 rounded-2xl bg-cyan-500/20 hover:bg-cyan-500/35 border border-cyan-400/30 text-xs text-cyan-300 flex flex-col items-center gap-1 transition">
-                <span>📹</span>
-                <span>切換視訊</span>
-              </button>
-              <button onclick="activateStealthScreen()" class="py-3 rounded-2xl bg-amber-500/20 hover:bg-amber-500/35 border border-amber-400/30 text-xs text-amber-300 flex flex-col items-center gap-1 transition">
-                <span>👁️‍🗨️</span>
-                <span>防窺模式</span>
-              </button>
-            </div>
-
-            <div class="flex justify-center">
-              <button
-                onclick="terminateAndWipeCall()"
-                class="px-8 py-3.5 rounded-full bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-500 hover:to-red-500 text-white text-sm font-bold shadow-lg shadow-rose-600/40 flex items-center gap-2 active:scale-95 transition"
-              >
-                <span>掛斷通話</span>
+                🎧 音訊演示
               </button>
             </div>
           </div>
@@ -596,29 +392,25 @@
           </div>
 
           <div class="grid grid-cols-4 gap-2.5 pb-2">
-          <!-- 底部視訊安全控制列 -->
-          <div class="relative z-20 px-4 pb-5">
-            <div class="bg-slate-950/85 backdrop-blur-xl border border-emerald-500/25 rounded-3xl px-2.5 py-2.5 flex items-center justify-around shadow-2xl">
-              <button onclick="toggleMuteAudio()" id="btnVidMute" title="靜音" class="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center active:scale-90 transition">
-                🎙️
-              </button>
-              <button onclick="toggleSpeakerphone()" id="btnVidSpeaker" title="開啟/關閉擴音" class="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center active:scale-90 transition">
-                🔈
-              </button>
-              <button onclick="toggleVideoVisibility()" id="btnVidHide" title="遮蔽/開啟鏡頭" class="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center active:scale-90 transition">
-                📷
-              </button>
-              <button onclick="togglePrivacyBlurMask()" id="btnVidBlur" title="隱私背景模糊面具" class="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-cyan-300 flex items-center justify-center active:scale-90 transition">
-                🎭
-              </button>
-              <button onclick="downgradeToEncryptedAudio()" title="切回純語音模式" class="px-3 h-10 rounded-full bg-sky-500/25 hover:bg-sky-500/40 border border-sky-400/40 text-sky-200 text-xs font-semibold flex items-center gap-1 active:scale-90 transition">
-                <span>📞</span>
-                <span>語音</span>
-              </button>
-              <button onclick="terminateAndWipeCall()" title="掛斷通話" class="w-11 h-11 rounded-full bg-gradient-to-b from-rose-500 to-red-600 text-white shadow-lg shadow-rose-600/40 flex items-center justify-center active:scale-90 transition">
-                🔥
-              </button>
-            </div>
+            <button onclick="calcInput('C')" class="h-13 rounded-2xl bg-slate-700/80 text-rose-300 font-semibold">C</button>
+            <button onclick="calcInput('+/-')" class="h-13 rounded-2xl bg-slate-700/80 text-slate-200 font-semibold">+/-</button>
+            <button onclick="calcInput('%')" class="h-13 rounded-2xl bg-slate-700/80 text-slate-200 font-semibold">%</button>
+            <button onclick="calcInput('/')" class="h-13 rounded-2xl bg-amber-500/80 text-white font-semibold">÷</button>
+            <button onclick="calcInput('7')" class="h-13 rounded-2xl bg-slate-800 text-white font-semibold">7</button>
+            <button onclick="calcInput('8')" class="h-13 rounded-2xl bg-slate-800 text-white font-semibold">8</button>
+            <button onclick="calcInput('9')" class="h-13 rounded-2xl bg-slate-800 text-white font-semibold">9</button>
+            <button onclick="calcInput('*')" class="h-13 rounded-2xl bg-amber-500/80 text-white font-semibold">×</button>
+            <button onclick="calcInput('4')" class="h-13 rounded-2xl bg-slate-800 text-white font-semibold">4</button>
+            <button onclick="calcInput('5')" class="h-13 rounded-2xl bg-slate-800 text-white font-semibold">5</button>
+            <button onclick="calcInput('6')" class="h-13 rounded-2xl bg-slate-800 text-white font-semibold">6</button>
+            <button onclick="calcInput('-')" class="h-13 rounded-2xl bg-amber-500/80 text-white font-semibold">−</button>
+            <button onclick="calcInput('1')" class="h-13 rounded-2xl bg-slate-800 text-white font-semibold">1</button>
+            <button onclick="calcInput('2')" class="h-13 rounded-2xl bg-slate-800 text-white font-semibold">2</button>
+            <button onclick="calcInput('3')" class="h-13 rounded-2xl bg-slate-800 text-white font-semibold">3</button>
+            <button onclick="calcInput('+')" class="h-13 rounded-2xl bg-amber-500/80 text-white font-semibold">+</button>
+            <button onclick="calcInput('0')" class="col-span-2 h-13 rounded-2xl bg-slate-800 text-white font-semibold">0</button>
+            <button onclick="calcInput('.')" class="h-13 rounded-2xl bg-slate-800 text-white font-semibold">.</button>
+            <button onclick="calcInput('=')" class="h-13 rounded-2xl bg-emerald-600 text-white font-semibold">=</button>
           </div>
         </section>
 
@@ -1585,6 +1377,8 @@
     let remoteCompressorNode = null;
     let remoteMonitorInterval = null;
     let currentSpeakerGain = 1.6;
+    let demoLoopInterval = null;
+    let demoOscNode = null;
 
     function updateSpeakerphoneUI() {
       const btnAudio = document.getElementById('btnSpeakerAudio');
@@ -1645,14 +1439,6 @@
       isSpeakerphoneOn = !isSpeakerphoneOn;
       sfx.ensure();
 
-      const targetGain = isSpeakerphoneOn ? 3.2 : currentSpeakerGain;
-      if (remoteAudioCtx && remoteAudioCtx.state === 'suspended') {
-        await remoteAudioCtx.resume().catch(() => {});
-      }
-      if (remoteGainNode && remoteAudioCtx) {
-        remoteGainNode.gain.setTargetAtTime(targetGain, remoteAudioCtx.currentTime, 0.04);
-      }
-
       const remoteAudio = document.getElementById('remoteAudioEl');
       if (remoteAudio) {
         remoteAudio.muted = false;
@@ -1664,23 +1450,14 @@
 
       await routeAudioToSpeakerHardware(isSpeakerphoneOn);
       updateSpeakerphoneUI();
-      showCipherToast(isSpeakerphoneOn ? '📢' : '🔈', isSpeakerphoneOn ? '已開啟免持擴音模式（人聲強化 3.2x）' : '已切回一般聽筒模式');
+      showCipherToast(isSpeakerphoneOn ? '📢' : '🔈', isSpeakerphoneOn ? '已開啟免持擴音模式' : '已切回一般聽筒模式');
     }
 
     function unlockAndTestAudioOutput(toggleBoost = false) {
       sfx.ensure();
       if (toggleBoost) {
-        isSpeakerphoneOn = false;
-        currentSpeakerGain = currentSpeakerGain >= 2.4 ? 1.5 : 2.5;
+        isSpeakerphoneOn = !isSpeakerphoneOn;
         updateSpeakerphoneUI();
-      }
-
-      const effectiveGain = isSpeakerphoneOn ? 3.2 : currentSpeakerGain;
-      if (remoteAudioCtx && remoteAudioCtx.state === 'suspended') {
-        remoteAudioCtx.resume().catch(() => {});
-      }
-      if (remoteGainNode && remoteAudioCtx) {
-        remoteGainNode.gain.setValueAtTime(effectiveGain, remoteAudioCtx.currentTime);
       }
 
       const remoteAudio = document.getElementById('remoteAudioEl');
@@ -1696,11 +1473,61 @@
       }
       if (toggleBoost) {
         sfx.playHandshakeChime();
-        showCipherToast('📢', `聽筒輸出增益已調整為 ${currentSpeakerGain}x`);
+        showCipherToast('📢', isSpeakerphoneOn ? '已開啟擴音輸出並測試喇叭音效' : '已測試聽筒喇叭音效');
+      }
+    }
+
+    function stopDemoAudioLoop() {
+      if (demoLoopInterval) {
+        clearInterval(demoLoopInterval);
+        demoLoopInterval = null;
+      }
+      if (demoOscNode) {
+        try { demoOscNode.stop(); demoOscNode.disconnect(); } catch (e) {}
+        demoOscNode = null;
+      }
+    }
+
+    function startDemoAudioExperience() {
+      stopDemoAudioLoop();
+      sfx.ensure();
+      const statusPill = document.getElementById('audioTrackStatusPill');
+      if (statusPill) statusPill.textContent = '🎧 演示模式：雙向音訊與回音測試中';
+
+      // 1. 立即播放清晰的測試語音和弦提示音，確保演示有真實聲音輸出
+      const playDemoVoiceTone = () => {
+        if (!currentCallSession || currentCallSession.targetInfo.number !== '888888') return;
+        const vol = isSpeakerphoneOn ? 0.24 : 0.13;
+        sfx.playTone(523.25, 0.16, 'sine', vol);
+        setTimeout(() => sfx.playTone(659.25, 0.16, 'sine', vol), 170);
+        setTimeout(() => sfx.playTone(783.99, 0.24, 'sine', vol), 340);
+
+        // 讓對方音量條同步跳動展示音訊波形
+        const rBar = document.getElementById('remoteLevelBar');
+        if (rBar) {
+          rBar.style.width = isSpeakerphoneOn ? '88%' : '56%';
+          setTimeout(() => { if (rBar) rBar.style.width = '18%'; }, 450);
+          setTimeout(() => { if (rBar) rBar.style.width = '0%'; }, 900);
+        }
+      };
+
+      playDemoVoiceTone();
+      demoLoopInterval = setInterval(playDemoVoiceTone, 3200);
+
+      // 2. 若本機有麥克風，同時建立低延遲本機回音監聽（讓使用者講話時能直接聽到自己的聲音測試）
+      if (localMediaStream && localMediaStream.getAudioTracks().length > 0 && sfx.ctx) {
+        try {
+          const echoSrc = sfx.ctx.createMediaStreamSource(localMediaStream);
+          const echoGain = sfx.ctx.createGain();
+          echoGain.gain.setValueAtTime(0.45, sfx.ctx.currentTime);
+          echoSrc.connect(echoGain);
+          echoGain.connect(sfx.ctx.destination);
+        } catch (e) {}
       }
     }
 
     function stopRemoteAudioBridge() {
+      stopDemoAudioLoop();
       if (remoteMonitorInterval) {
         clearInterval(remoteMonitorInterval);
         remoteMonitorInterval = null;
@@ -1772,7 +1599,7 @@
 
       const targetInfo = {
         number: dialedString,
-        name: `對方號碼 #${dialedString}`,
+        name: dialedString === '888888' ? '🎧 音訊演示與回音測試台' : `對方號碼 #${dialedString}`,
         avatar: '🔐',
         themeColor: '#10b981'
       };
@@ -1798,6 +1625,21 @@
         openAudioOverlay(targetInfo);
       } else {
         openVideoOverlay(targetInfo);
+      }
+
+      // 若撥打 888888 演示專線，1.2 秒後自動接通並啟動真實雙向音訊與回音演示
+      if (dialedString === '888888') {
+        clearTimeout(simulatedAnswerTimer);
+        simulatedAnswerTimer = setTimeout(() => {
+          if (!currentCallSession) return;
+          currentCallSession.connected = true;
+          updateSasDisplay('DEMO-8888', '🎧🔊🛡️✨');
+          sfx.playHandshakeChime();
+          markCallEncryptedConnected();
+          startDemoAudioExperience();
+          showCipherToast('🎧', '音訊演示專線已接通！請講話或點擊擴音測試');
+        }, 1200);
+        return;
       }
 
       let realAttempt = false;
@@ -2222,24 +2064,25 @@
         audioTracks.forEach(t => (t.enabled = true));
         const audioOnlyStream = new MediaStream(audioTracks);
 
-        // 1. 原生 <audio> 元素直接掛載完整串流播放（確保行動瀏覽器硬體音訊通道立即發聲）
+        // 1. 讓原生 <audio id="remoteAudioEl"> 作為唯一硬體喇叭輸出路徑（避免 AudioContext 搶走音軌導致行動瀏覽器靜音死鎖）
         const remoteAudio = document.getElementById('remoteAudioEl');
         if (remoteAudio) {
-          remoteAudio.srcObject = stream;
+          remoteAudio.srcObject = audioOnlyStream;
           remoteAudio.muted = false;
           remoteAudio.volume = 1.0;
           const tryPlay = () => {
             remoteAudio.play().then(() => {
-              if (statusPill) statusPill.textContent = '🔊 雙向語音已接通';
+              if (statusPill) statusPill.textContent = '🔊 雙向語音已接通（有音訊輸出）';
             }).catch(() => {
-              if (statusPill) statusPill.textContent = '⚠️ 請點擊右方「📢 擴大音量」';
+              if (statusPill) statusPill.textContent = '⚠️ 請點擊右方「📢 擴大音量」啟用聲音';
             });
           };
           tryPlay();
-          setTimeout(tryPlay, 350);
+          setTimeout(tryPlay, 300);
+          setTimeout(tryPlay, 1000);
         }
 
-        // 2. Web Audio API 雙重增益放大與即時波形分析（完整連接至 destination 輸出）
+        // 2. Web Audio API 僅做「只讀即時音量波形分析」，絕不接管 destination 防止重複路由無聲
         stopRemoteAudioBridge();
         try {
           const AC = window.AudioContext || window.webkitAudioContext;
@@ -2249,43 +2092,24 @@
               remoteAudioCtx.resume().catch(() => {});
             }
             const source = remoteAudioCtx.createMediaStreamSource(audioOnlyStream);
-            remoteGainNode = remoteAudioCtx.createGain();
-            const activeGain = isSpeakerphoneOn ? 3.2 : currentSpeakerGain;
-            remoteGainNode.gain.setValueAtTime(activeGain, remoteAudioCtx.currentTime);
-
-            // 動態壓縮器：在開啟擴音放大至 3.2x 時自動防止破音失真
-            remoteCompressorNode = remoteAudioCtx.createDynamicsCompressor();
-            remoteCompressorNode.threshold.setValueAtTime(-18, remoteAudioCtx.currentTime);
-            remoteCompressorNode.knee.setValueAtTime(24, remoteAudioCtx.currentTime);
-            remoteCompressorNode.ratio.setValueAtTime(6, remoteAudioCtx.currentTime);
-            remoteCompressorNode.attack.setValueAtTime(0.005, remoteAudioCtx.currentTime);
-            remoteCompressorNode.release.setValueAtTime(0.15, remoteAudioCtx.currentTime);
-
             const analyser = remoteAudioCtx.createAnalyser();
             analyser.fftSize = 64;
             const freqData = new Uint8Array(analyser.frequencyBinCount);
-
-            // 完整串接音訊管線：source -> gain -> compressor -> analyser -> destination
-            source.connect(remoteGainNode);
-            remoteGainNode.connect(remoteCompressorNode);
-            remoteCompressorNode.connect(analyser);
-            analyser.connect(remoteAudioCtx.destination);
-
-            if (statusPill) statusPill.textContent = '🔊 雙向語音已接通';
+            source.connect(analyser);
 
             remoteMonitorInterval = setInterval(() => {
               analyser.getByteFrequencyData(freqData);
               let sum = 0;
               for (let i = 0; i < freqData.length; i++) sum += freqData[i];
               const avg = sum / freqData.length;
-              const pct = Math.min(100, Math.round((avg / 50) * 100));
+              const pct = Math.min(100, Math.round((avg / 45) * 100));
               const rBar = document.getElementById('remoteLevelBar');
               if (rBar) rBar.style.width = `${pct}%`;
             }, 80);
           }
         } catch (e) {}
       } else if (statusPill) {
-        statusPill.textContent = '⚠️ 對方未開啟麥克風權限';
+        statusPill.textContent = '⚠️ 對方裝置未傳送麥克風音軌';
       }
 
       if (stream.getVideoTracks().length > 0) {
