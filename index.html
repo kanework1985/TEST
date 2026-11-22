@@ -167,6 +167,26 @@
       border-color: rgba(16, 185, 129, 0.6);
     }
 
+    /* 自訂音量滑桿樣式 */
+    input[type="range"].volume-slider {
+      -webkit-appearance: none;
+      appearance: none;
+      height: 5px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.15);
+      outline: none;
+    }
+    input[type="range"].volume-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #10b981;
+      cursor: pointer;
+      box-shadow: 0 0 6px rgba(16, 185, 129, 0.8);
+    }
+
     @media (orientation: landscape) and (max-height: 540px) {
       .landscape-compact-hide { display: none !important; }
       #tab-dialer {
@@ -180,17 +200,6 @@
       .dialer-right { flex: 1.3; }
       .cipher-key { max-width: 46px !important; }
       .cipher-key-sub { display: none !important; }
-    }
-
-    @keyframes cipherWave {
-      0%, 100% { height: 5px; }
-      50% { height: 20px; }
-    }
-    .wave-bar {
-      width: 3.5px;
-      border-radius: 999px;
-      background: #10b981;
-      animation: cipherWave 0.85s ease-in-out infinite;
     }
 
     .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -410,15 +419,26 @@
 
         <!-- ==================== 覆蓋層 1：來電接聽彈窗 (Incoming Call Modal) ==================== -->
         <section id="incomingCallModal" class="hidden absolute inset-0 z-40 bg-slate-950/95 backdrop-blur-xl flex flex-col items-center justify-between p-6">
-          <div class="mt-8 flex flex-col items-center text-center">
+          <div class="mt-6 flex flex-col items-center text-center w-full">
             <span id="incomingCallTypeTag" class="px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 text-xs font-semibold animate-pulse">
               📞 E2EE 加密語音來電
             </span>
-            <div class="w-24 h-24 rounded-full bg-slate-900 border-2 border-emerald-400/50 flex items-center justify-center text-4xl mt-6 shadow-2xl shadow-emerald-500/20">
+            <div class="w-20 h-20 rounded-full bg-slate-900 border-2 border-emerald-400/50 flex items-center justify-center text-4xl mt-5 shadow-2xl shadow-emerald-500/20">
               🔐
             </div>
-            <h2 id="incomingCallerIdText" class="text-3xl font-mono-tech font-bold tracking-widest text-white mt-4">------</h2>
+            <h2 id="incomingCallerIdText" class="text-3xl font-mono-tech font-bold tracking-widest text-white mt-3">------</h2>
             <p class="text-xs text-slate-400 mt-1">正在請求建立端到端加密安全通道...</p>
+
+            <!-- 接聽前可同步輸入會話暗號 -->
+            <div class="w-full max-w-[260px] mt-4 flex items-center bg-white/10 border border-emerald-400/30 rounded-xl px-3 py-1.5">
+              <span class="text-xs text-emerald-300 mr-1.5">🔑</span>
+              <input
+                type="password"
+                id="incomingPassphraseInput"
+                placeholder="選填：輸入雙方約定暗號"
+                class="flex-1 bg-transparent text-xs text-white placeholder-slate-400 focus:outline-none"
+              />
+            </div>
           </div>
 
           <div class="w-full max-w-xs flex items-center justify-around mb-8">
@@ -455,22 +475,38 @@
             <div id="audioPeerIdLabel" class="text-[11px] font-mono-tech text-slate-400">號碼：------</div>
 
             <!-- SAS 雙方安全指紋膠囊 -->
-            <div class="mt-2 px-3 py-1.5 rounded-xl bg-black/50 border border-emerald-500/30 flex items-center gap-2">
+            <div class="mt-2 px-3 py-1 rounded-xl bg-black/50 border border-emerald-500/30 flex items-center gap-2">
               <span class="text-[10px] text-slate-400">SAS 核對碼:</span>
               <span id="audioSasEmoji" class="text-sm">🔐🔑🛡️⚡</span>
               <span id="audioSasHex" class="text-xs font-mono-tech font-bold text-amber-300">--------</span>
             </div>
 
             <!-- 音訊輸出狀態 -->
-            <div class="mt-2 flex items-center justify-center">
+            <div class="mt-1.5 flex items-center justify-center">
               <span id="audioTrackStatusPill" class="text-[10px] px-2.5 py-0.5 rounded-full bg-white/5 text-slate-300 border border-white/10">
                 🎙️ 準備音訊通道...
               </span>
             </div>
           </div>
 
-          <!-- 中央音波與即時收音/放音電平表 -->
-          <div class="my-2 px-4 py-2.5 rounded-2xl bg-white/5 border border-white/10 space-y-2 shrink-0">
+          <!-- 中央音波、音量調節滑桿與即時電平表 -->
+          <div class="my-2 px-3.5 py-2.5 rounded-2xl bg-white/5 border border-white/10 space-y-2 shrink-0">
+            <!-- 新增：對方語音輸出音量滑桿（解決擴音模式預設過大聲） -->
+            <div class="flex items-center justify-between gap-2 pb-1 border-b border-white/10">
+              <span class="text-[11px] text-emerald-300 font-medium shrink-0">🔉 喇叭音量</span>
+              <input
+                type="range"
+                id="audioVolumeSlider"
+                min="0.1"
+                max="1.0"
+                step="0.05"
+                value="0.45"
+                oninput="setRemoteSpeakerVolume(this.value)"
+                class="volume-slider flex-1"
+              />
+              <span id="audioVolumeLabel" class="text-[10px] font-mono-tech text-slate-300 w-9 text-right">45%</span>
+            </div>
+
             <div class="flex items-center justify-between text-[10px] text-slate-400">
               <span>本機麥克風收音</span>
               <div class="w-36 h-1.5 bg-slate-800 rounded-full overflow-hidden">
@@ -492,6 +528,7 @@
           <div class="flex-1 min-h-0 flex flex-col bg-black/40 border border-white/10 rounded-2xl p-2.5 mb-2">
             <div class="text-[10px] text-emerald-400/90 font-semibold mb-1 flex items-center justify-between">
               <span>🔥 AES-256 閱後即焚密訊 (10秒自動銷毀)</span>
+              <button onclick="renegotiatePassphrase()" class="text-[10px] text-amber-300 hover:underline">🔑 重設暗號</button>
             </div>
             <div id="ephemeralChatFeed" class="flex-1 overflow-y-auto space-y-1 text-xs pr-1"></div>
             <div class="mt-1.5 flex items-center gap-1.5 shrink-0">
@@ -514,11 +551,12 @@
           <!-- 底部通話控制按鈕列 -->
           <div class="grid grid-cols-3 gap-2.5 shrink-0 pt-1">
             <button
+              id="audioMuteBtn"
               onclick="toggleMuteAudio()"
               class="py-2.5 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/10 flex flex-col items-center justify-center gap-1 text-white active:scale-95 transition"
             >
               <span class="text-base">🎙️</span>
-              <span class="text-[10px]">靜音</span>
+              <span id="audioMuteBtnText" class="text-[10px]">靜音</span>
             </button>
             <button
               onclick="upgradeToEncryptedVideo(false)"
@@ -542,32 +580,50 @@
           <video id="remoteVideoEl" autoplay playsinline class="hidden absolute inset-0 w-full h-full object-cover"></video>
           <canvas id="remoteVideoCanvas" class="absolute inset-0 w-full h-full object-cover"></canvas>
 
-          <!-- 頂部 E2EE 安全指紋膠囊 -->
-          <div class="relative z-20 flex items-center justify-between px-3.5 pt-3 gap-2">
-            <div class="bg-black/65 backdrop-blur-md border border-emerald-400/35 rounded-2xl px-3 py-1.5 flex items-center gap-2 min-w-0">
-              <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0"></span>
-              <div class="min-w-0">
-                <div id="videoPeerTitle" class="text-xs font-bold text-white truncate">加密視訊連線</div>
-                <div class="text-[10px] font-mono-tech text-emerald-300 truncate">
-                  <span id="videoTimerText">00:00</span> · SAS: <span id="videoSasMini">🔐🔑</span>
+          <!-- 頂部 E2EE 安全指紋膠囊與音量控制 -->
+          <div class="relative z-20 px-3.5 pt-3 space-y-2">
+            <div class="flex items-center justify-between gap-2">
+              <div class="bg-black/65 backdrop-blur-md border border-emerald-400/35 rounded-2xl px-3 py-1.5 flex items-center gap-2 min-w-0">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0"></span>
+                <div class="min-w-0">
+                  <div id="videoPeerTitle" class="text-xs font-bold text-white truncate">加密視訊連線</div>
+                  <div class="text-[10px] font-mono-tech text-emerald-300 truncate">
+                    <span id="videoTimerText">00:00</span> · SAS: <span id="videoSasMini">🔐🔑</span>
+                  </div>
                 </div>
+              </div>
+
+              <div class="flex items-center gap-1.5 shrink-0">
+                <button
+                  onclick="downgradeToEncryptedAudio(false)"
+                  class="bg-sky-500/30 hover:bg-sky-500/45 backdrop-blur-md border border-sky-400/50 rounded-full px-3 py-1.5 text-[11px] font-semibold text-sky-200 active:scale-95 transition flex items-center gap-1"
+                >
+                  <span>📞</span>
+                  <span>切回語音</span>
+                </button>
+                <button
+                  onclick="activateStealthScreen()"
+                  class="bg-black/65 backdrop-blur-md border border-amber-400/40 rounded-full px-2.5 py-1.5 text-[10px] font-semibold text-amber-300 active:scale-95 transition"
+                >
+                  👁️‍🗨️ 防窺
+                </button>
               </div>
             </div>
 
-            <div class="flex items-center gap-1.5 shrink-0">
-              <button
-                onclick="downgradeToEncryptedAudio(false)"
-                class="bg-sky-500/30 hover:bg-sky-500/45 backdrop-blur-md border border-sky-400/50 rounded-full px-3 py-1.5 text-[11px] font-semibold text-sky-200 active:scale-95 transition flex items-center gap-1"
-              >
-                <span>📞</span>
-                <span>切回語音</span>
-              </button>
-              <button
-                onclick="activateStealthScreen()"
-                class="bg-black/65 backdrop-blur-md border border-amber-400/40 rounded-full px-2.5 py-1.5 text-[10px] font-semibold text-amber-300 active:scale-95 transition"
-              >
-                👁️‍🗨️ 防窺
-              </button>
+            <!-- 視訊模式懸浮音量調節列 -->
+            <div class="bg-black/60 backdrop-blur-md border border-white/15 rounded-full px-3 py-1 flex items-center gap-2 max-w-[230px]">
+              <span class="text-[10px] text-emerald-300 shrink-0">🔉</span>
+              <input
+                type="range"
+                id="videoVolumeSlider"
+                min="0.1"
+                max="1.0"
+                step="0.05"
+                value="0.45"
+                oninput="setRemoteSpeakerVolume(this.value)"
+                class="volume-slider flex-1"
+              />
+              <span id="videoVolumeLabel" class="text-[10px] font-mono-tech text-slate-200 w-8 text-right">45%</span>
             </div>
           </div>
 
@@ -764,6 +820,7 @@
       constructor() {
         this.ecdhKeyPair = null;
         this.localPublicJwk = null;
+        this.remotePublicJwk = null;
         this.localFingerprint = '--------';
         this.sharedAesKey = null;
         this.sasEmojiList = ['🔐', '🛡️', '🔑', '⚡', '🛰️', '🧬', '🧿', '💎', '🦊', '🦉', '🐺', '🦅', '🧭', '⚓', '🔥', '❄️'];
@@ -793,6 +850,7 @@
 
       async deriveSessionSecrets(remotePublicJwk, passphrase = '') {
         if (!this.ecdhKeyPair) await this.generateEphemeralKeys();
+        this.remotePublicJwk = remotePublicJwk;
 
         const remotePubKey = await window.crypto.subtle.importKey(
           'jwk',
@@ -863,6 +921,7 @@
       wipeKeys() {
         this.ecdhKeyPair = null;
         this.localPublicJwk = null;
+        this.remotePublicJwk = null;
         this.sharedAesKey = null;
       }
     }
@@ -1017,8 +1076,8 @@
       startIncomingRing() {
         this.stopRing();
         const chime = () => {
-          this.playTone(659.25, 0.15, 'sine', 0.12);
-          setTimeout(() => this.playTone(880, 0.25, 'sine', 0.12), 160);
+          this.playTone(659.25, 0.15, 'sine', 0.1);
+          setTimeout(() => this.playTone(880, 0.25, 'sine', 0.1), 160);
         };
         chime();
         this.ringTimer = setInterval(chime, 1800);
@@ -1094,12 +1153,17 @@
 
         peerObj.on('call', (call) => {
           const metaType = call.metadata && call.metadata.type;
+          // 處理視訊升級串流（僅傳送純視訊軌，避免音訊重疊）
           if (currentCallSession && metaType === 'VIDEO_STREAM_UPGRADE') {
+            if (secondaryVideoCall) {
+              try { secondaryVideoCall.close(); } catch (e) {}
+            }
             secondaryVideoCall = call;
             currentCallSession.mode = 'video';
             openVideoOverlay(currentCallSession.targetInfo).then(() => {
-              const streamToSend = localMediaStream || new MediaStream();
-              call.answer(streamToSend);
+              const videoTracks = localMediaStream ? localMediaStream.getVideoTracks() : [];
+              const videoOnlyStream = new MediaStream(videoTracks);
+              call.answer(videoOnlyStream);
               call.on('stream', (remoteStream) => {
                 attachRemoteMedia(remoteStream, 'video');
               });
@@ -1115,6 +1179,11 @@
           const callerId = String(call.peer || '').replace(PEER_NS, '') || '匿名端點';
           const mode = (call.metadata && call.metadata.mode) || 'audio';
 
+          // 同步首頁已輸入的暗號至來電彈窗
+          const mainPass = document.getElementById('sharedPassphraseInput');
+          const incPass = document.getElementById('incomingPassphraseInput');
+          if (mainPass && incPass) incPass.value = mainPass.value;
+
           sfx.startIncomingRing();
           document.getElementById('incomingCallerIdText').textContent = callerId;
           document.getElementById('incomingCallTypeTag').textContent =
@@ -1127,6 +1196,9 @@
               pendingIncomingCall = null;
               document.getElementById('incomingCallModal').classList.add('hidden');
               showCipherToast('📴', '對方已取消呼叫');
+            } else if (currentCallSession && activeMediaCall === call) {
+              showCipherToast('📴', '對方已結束通話');
+              terminateAndWipeCall(true);
             }
           });
         });
@@ -1171,7 +1243,7 @@
           try { peerObj.reconnect(); } catch (e) {}
         }
         if (currentCallSession) {
-          requestCallScreenLock();
+          requestWakeLockOnly();
           ensureAudioPlayback();
         }
       }
@@ -1200,7 +1272,7 @@
        ========================================================================== */
     let screenWakeLock = null;
 
-    async function requestCallScreenLock() {
+    async function requestWakeLockOnly() {
       try {
         if ('wakeLock' in navigator && navigator.wakeLock) {
           screenWakeLock = await navigator.wakeLock.request('screen');
@@ -1208,12 +1280,15 @@
           if (tag) tag.innerHTML = '<span>🔒 螢幕恆亮鎖定中（防自動關屏斷線）</span>';
           screenWakeLock.addEventListener('release', () => {
             if (currentCallSession && document.visibilityState === 'visible') {
-              requestCallScreenLock();
+              requestWakeLockOnly();
             }
           });
         }
       } catch (e) {}
+    }
 
+    async function requestCallScreenLock() {
+      await requestWakeLockOnly();
       try {
         const docEl = document.documentElement;
         if (!document.fullscreenElement && !document.webkitFullscreenElement) {
@@ -1413,7 +1488,7 @@
         const remoteAudio = document.getElementById('remoteAudioEl');
         if (remoteAudio && remoteAudio.srcObject && remoteAudio.paused) {
           remoteAudio.muted = false;
-          remoteAudio.volume = 1.0;
+          remoteAudio.volume = remoteSpeakerVolume;
           remoteAudio.play().catch(() => {});
         }
       }, 6000);
@@ -1442,6 +1517,14 @@
       conn.on('open', () => {
         sendPubKey();
         startConnectionHeartbeat();
+      });
+
+      // 對方關閉分頁或斷線時自動掛斷清理
+      conn.on('close', () => {
+        if (currentCallSession) {
+          showCipherToast('📴', '對方已離線，加密通道已關閉');
+          terminateAndWipeCall(true);
+        }
       });
 
       conn.on('data', async (msg) => {
@@ -1474,6 +1557,20 @@
           terminateAndWipeCall(true);
         }
       });
+    }
+
+    async function renegotiatePassphrase() {
+      if (!cryptoEngine.remotePublicJwk) {
+        showCipherToast('⚠️', '尚未取得對方公鑰');
+        return;
+      }
+      const newPass = window.prompt('請輸入與對方約定的會話暗號（留空代表不使用暗號）：', '');
+      if (newPass === null) return;
+      const passEl = document.getElementById('sharedPassphraseInput');
+      if (passEl) passEl.value = newPass;
+      const sas = await cryptoEngine.deriveSessionSecrets(cryptoEngine.remotePublicJwk, newPass);
+      updateSasDisplay(sas.sasCode, sas.sasEmojis);
+      showCipherToast('🔑', '已更新會話暗號並重新推導金鑰');
     }
 
     function updateSasDisplay(sasCode, sasEmojis) {
@@ -1563,7 +1660,7 @@
     }
 
     /* ==========================================================================
-       7. 加密通話建立、ECDH 握手、雙向音訊播放與閱後即焚密訊
+       7. 加密通話建立、ECDH 握手、雙向音訊播放與音量控制
        ========================================================================== */
     let currentCallSession = null;
     let secondaryVideoCall = null;
@@ -1579,13 +1676,38 @@
     let remoteAudioCtx = null;
     let remoteMonitorInterval = null;
     let demoLoopInterval = null;
+    let demoEchoSource = null;
+    let demoEchoGain = null;
+
+    // 預設喇叭輸出音量為 45%（避免網頁強制擴音模式造成聲音過大）
+    let remoteSpeakerVolume = 0.45;
+
+    function setRemoteSpeakerVolume(val) {
+      const v = Math.max(0.1, Math.min(1.0, parseFloat(val) || 0.45));
+      remoteSpeakerVolume = v;
+      const pctText = `${Math.round(v * 100)}%`;
+
+      const remoteAudio = document.getElementById('remoteAudioEl');
+      if (remoteAudio) {
+        remoteAudio.volume = v;
+      }
+
+      const aSlider = document.getElementById('audioVolumeSlider');
+      const vSlider = document.getElementById('videoVolumeSlider');
+      const aLabel = document.getElementById('audioVolumeLabel');
+      const vLabel = document.getElementById('videoVolumeLabel');
+      if (aSlider) aSlider.value = v;
+      if (vSlider) vSlider.value = v;
+      if (aLabel) aLabel.textContent = pctText;
+      if (vLabel) vLabel.textContent = pctText;
+    }
 
     function ensureAudioPlayback() {
       sfx.ensure();
       const remoteAudio = document.getElementById('remoteAudioEl');
       if (remoteAudio) {
         remoteAudio.muted = false;
-        remoteAudio.volume = 1.0;
+        remoteAudio.volume = remoteSpeakerVolume;
         if (remoteAudio.srcObject) {
           remoteAudio.play().catch(() => {});
         }
@@ -1597,6 +1719,14 @@
         clearInterval(demoLoopInterval);
         demoLoopInterval = null;
       }
+      if (demoEchoSource) {
+        try { demoEchoSource.disconnect(); } catch (e) {}
+        demoEchoSource = null;
+      }
+      if (demoEchoGain) {
+        try { demoEchoGain.disconnect(); } catch (e) {}
+        demoEchoGain = null;
+      }
     }
 
     function startDemoAudioExperience() {
@@ -1607,7 +1737,7 @@
 
       const playDemoVoiceTone = () => {
         if (!currentCallSession || currentCallSession.targetInfo.number !== '888888') return;
-        const vol = 0.11;
+        const vol = 0.12 * remoteSpeakerVolume;
         sfx.playTone(523.25, 0.16, 'sine', vol);
         setTimeout(() => sfx.playTone(659.25, 0.16, 'sine', vol), 170);
         setTimeout(() => sfx.playTone(783.99, 0.24, 'sine', vol), 340);
@@ -1625,11 +1755,11 @@
 
       if (localMediaStream && localMediaStream.getAudioTracks().length > 0 && sfx.ctx) {
         try {
-          const echoSrc = sfx.ctx.createMediaStreamSource(localMediaStream);
-          const echoGain = sfx.ctx.createGain();
-          echoGain.gain.setValueAtTime(0.35, sfx.ctx.currentTime);
-          echoSrc.connect(echoGain);
-          echoGain.connect(sfx.ctx.destination);
+          demoEchoSource = sfx.ctx.createMediaStreamSource(localMediaStream);
+          demoEchoGain = sfx.ctx.createGain();
+          demoEchoGain.gain.setValueAtTime(0.25, sfx.ctx.currentTime);
+          demoEchoSource.connect(demoEchoGain);
+          demoEchoGain.connect(sfx.ctx.destination);
         } catch (e) {}
       }
     }
@@ -1714,6 +1844,7 @@
       callDurationSec = 0;
       isMuted = false;
       isCamHidden = false;
+      updateMuteButtonUI();
 
       if (!cryptoEngine.ecdhKeyPair) {
         await cryptoEngine.generateEphemeralKeys();
@@ -1782,8 +1913,8 @@
               });
 
               call.on('close', () => {
-                if (currentCallSession && !currentCallSession.connected) {
-                  showCipherToast('📴', '對方未接聽或已拒接');
+                if (currentCallSession && activeMediaCall === call) {
+                  showCipherToast('📴', currentCallSession.connected ? '對方已結束通話' : '對方未接聽或已拒接');
                   terminateAndWipeCall(true);
                 }
               });
@@ -1818,6 +1949,13 @@
       sfx.stopRing();
       document.getElementById('incomingCallModal').classList.add('hidden');
 
+      // 同步來電畫面輸入的會話暗號到主暗號欄位
+      const incPass = document.getElementById('incomingPassphraseInput');
+      const mainPass = document.getElementById('sharedPassphraseInput');
+      if (incPass && mainPass) {
+        mainPass.value = incPass.value;
+      }
+
       const call = pendingIncomingCall;
       pendingIncomingCall = null;
       const callerId = String(call.peer || '').replace(PEER_NS, '') || '匿名端點';
@@ -1835,6 +1973,7 @@
       callDurationSec = 0;
       isMuted = false;
       isCamHidden = false;
+      updateMuteButtonUI();
 
       const stream = await captureLocalStream(mode === 'video');
 
@@ -1899,6 +2038,7 @@
       };
     }
 
+    // 雙向視訊升級（無論哪一方點擊開啟視訊，雙方都會開啟鏡頭並傳送純視訊軌）
     async function upgradeToEncryptedVideo(fromRemote = false) {
       if (!currentCallSession) return;
       clearTimeout(simulatedAnswerTimer);
@@ -1908,16 +2048,20 @@
       await openVideoOverlay(currentCallSession.targetInfo);
       markCallEncryptedConnected();
 
-      if (!fromRemote) {
-        if (activeDataConn && activeDataConn.open) {
-          activeDataConn.send({ type: 'UPGRADE_VIDEO' });
-        }
+      if (!fromRemote && activeDataConn && activeDataConn.open) {
+        activeDataConn.send({ type: 'UPGRADE_VIDEO' });
+      }
 
-        if (peerObj && isNetworkReady && currentCallSession.targetInfo) {
+      if (peerObj && isNetworkReady && currentCallSession.targetInfo && localMediaStream) {
+        const videoTracks = localMediaStream.getVideoTracks();
+        if (videoTracks.length > 0 && !fromRemote) {
           try {
+            if (secondaryVideoCall) {
+              try { secondaryVideoCall.close(); } catch (e) {}
+            }
             const remotePeerId = `${PEER_NS}${currentCallSession.targetInfo.number}`;
-            const videoStream = await captureLocalStream(true);
-            const vCall = peerObj.call(remotePeerId, videoStream, {
+            const videoOnlyStream = new MediaStream(videoTracks);
+            const vCall = peerObj.call(remotePeerId, videoOnlyStream, {
               metadata: { type: 'VIDEO_STREAM_UPGRADE', mode: 'video', callerId: myAnonNumber }
             });
             if (vCall) {
@@ -2079,7 +2223,7 @@
               autoGainControl: true
             }
           });
-          localMediaStream.getAudioTracks().forEach(t => (t.enabled = true));
+          localMediaStream.getAudioTracks().forEach(t => (t.enabled = !isMuted));
           startMicLevelMonitor(localMediaStream);
           if (statusPill) statusPill.textContent = '🎙️ 麥克風收音正常';
           return localMediaStream;
@@ -2095,7 +2239,7 @@
                 autoGainControl: true
               }
             });
-            localMediaStream.getAudioTracks().forEach(t => (t.enabled = true));
+            localMediaStream.getAudioTracks().forEach(t => (t.enabled = !isMuted));
             startMicLevelMonitor(localMediaStream);
             if (statusPill) statusPill.textContent = '🎙️ 麥克風收音正常';
             return localMediaStream;
@@ -2134,7 +2278,7 @@
         if (remoteAudio) {
           remoteAudio.srcObject = audioOnlyStream;
           remoteAudio.muted = false;
-          remoteAudio.volume = 1.0;
+          remoteAudio.volume = remoteSpeakerVolume;
           const tryPlay = () => {
             remoteAudio.play().then(() => {
               if (statusPill) statusPill.textContent = '🔊 雙向語音已接通';
@@ -2164,7 +2308,7 @@
             remoteMonitorInterval = setInterval(() => {
               analyser.getByteFrequencyData(freqData);
               let sum = 0;
-              for (let i = 0; i < freqData.length; i++) sum += freqData[i];
+              for (let i = 0; i < data.length; i++) sum += freqData[i];
               const avg = sum / freqData.length;
               const pct = Math.min(100, Math.round((avg / 45) * 100));
               const rBar = document.getElementById('remoteLevelBar');
@@ -2172,8 +2316,6 @@
             }, 80);
           }
         } catch (e) {}
-      } else if (statusPill) {
-        statusPill.textContent = '⚠️ 對方裝置未傳送麥克風音軌';
       }
 
       if (stream.getVideoTracks().length > 0) {
@@ -2230,11 +2372,26 @@
       }
     }
 
+    function updateMuteButtonUI() {
+      const btn = document.getElementById('audioMuteBtn');
+      const txt = document.getElementById('audioMuteBtnText');
+      if (btn && txt) {
+        if (isMuted) {
+          btn.classList.add('!bg-amber-500/30', '!border-amber-400/50', '!text-amber-200');
+          txt.textContent = '已靜音';
+        } else {
+          btn.classList.remove('!bg-amber-500/30', '!border-amber-400/50', '!text-amber-200');
+          txt.textContent = '靜音';
+        }
+      }
+    }
+
     function toggleMuteAudio() {
       isMuted = !isMuted;
       if (localMediaStream) {
         localMediaStream.getAudioTracks().forEach(t => (t.enabled = !isMuted));
       }
+      updateMuteButtonUI();
       showCipherToast('🎙️', isMuted ? '麥克風已硬體級靜音' : '麥克風已恢復收音');
     }
 
