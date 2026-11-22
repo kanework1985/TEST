@@ -151,12 +151,12 @@
     .cipher-key {
       aspect-ratio: 1 / 1;
       width: 100%;
-      max-width: clamp(50px, 15vw, 68px);
+      max-width: clamp(64px, 19vw, 82px);
       margin: 0 auto;
       border-radius: 50%;
-      background: rgba(255, 255, 255, 0.06);
+      background: rgba(255, 255, 255, 0.08);
       backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.12);
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -186,7 +186,7 @@
       }
       .dialer-left { flex: 1; }
       .dialer-right { flex: 1.3; }
-      .cipher-key { max-width: 42px !important; }
+      .cipher-key { max-width: 48px !important; }
       .cipher-key-sub { display: none !important; }
     }
 
@@ -336,37 +336,37 @@
 
           <!-- 數字鍵盤與撥號按鈕 -->
           <div class="dialer-right flex flex-col justify-center my-auto">
-            <div class="grid grid-cols-3 gap-x-4 gap-y-2.5 px-3">
+            <div class="grid grid-cols-3 gap-x-3.5 gap-y-3 px-2">
               <button class="cipher-key" data-digit="1">
-                <span class="text-2xl font-normal text-white leading-none">1</span>
+                <span class="text-3xl font-normal text-white leading-none">1</span>
               </button>
               <button class="cipher-key" data-digit="2">
-                <span class="text-2xl font-normal text-white leading-none">2</span>
+                <span class="text-3xl font-normal text-white leading-none">2</span>
               </button>
               <button class="cipher-key" data-digit="3">
-                <span class="text-2xl font-normal text-white leading-none">3</span>
+                <span class="text-3xl font-normal text-white leading-none">3</span>
               </button>
               <button class="cipher-key" data-digit="4">
-                <span class="text-2xl font-normal text-white leading-none">4</span>
+                <span class="text-3xl font-normal text-white leading-none">4</span>
               </button>
               <button class="cipher-key" data-digit="5">
-                <span class="text-2xl font-normal text-white leading-none">5</span>
+                <span class="text-3xl font-normal text-white leading-none">5</span>
               </button>
               <button class="cipher-key" data-digit="6">
-                <span class="text-2xl font-normal text-white leading-none">6</span>
+                <span class="text-3xl font-normal text-white leading-none">6</span>
               </button>
               <button class="cipher-key" data-digit="7">
-                <span class="text-2xl font-normal text-white leading-none">7</span>
+                <span class="text-3xl font-normal text-white leading-none">7</span>
               </button>
               <button class="cipher-key" data-digit="8">
-                <span class="text-2xl font-normal text-white leading-none">8</span>
+                <span class="text-3xl font-normal text-white leading-none">8</span>
               </button>
               <button class="cipher-key" data-digit="9">
-                <span class="text-2xl font-normal text-white leading-none">9</span>
+                <span class="text-3xl font-normal text-white leading-none">9</span>
               </button>
               <div class="pointer-events-none"></div>
               <button class="cipher-key" data-digit="0">
-                <span class="text-2xl font-normal text-white leading-none">0</span>
+                <span class="text-3xl font-normal text-white leading-none">0</span>
               </button>
               <div class="pointer-events-none"></div>
             </div>
@@ -1094,6 +1094,21 @@
         });
 
         peerObj.on('call', (call) => {
+          const metaType = call.metadata && call.metadata.type;
+          // 若已在通話中，且對方發起視訊軌道升級子連線，則自動靜默接聽並掛載對方視訊畫面
+          if (currentCallSession && metaType === 'VIDEO_STREAM_UPGRADE') {
+            secondaryVideoCall = call;
+            currentCallSession.mode = 'video';
+            openVideoOverlay(currentCallSession.targetInfo).then(() => {
+              const streamToSend = localMediaStream || new MediaStream();
+              call.answer(streamToSend);
+              call.on('stream', (remoteStream) => {
+                attachRemoteMedia(remoteStream, 'video');
+              });
+            });
+            return;
+          }
+
           if (currentCallSession || pendingIncomingCall) {
             call.close();
             return;
@@ -1555,6 +1570,7 @@
        7. 加密通話建立、ECDH 握手、雙向音訊播放與閱後即焚密訊
        ========================================================================== */
     let currentCallSession = null;
+    let secondaryVideoCall = null;
     let callDurationSec = 0;
     let timerInterval = null;
     let simulatedAnswerTimer = null;
@@ -1969,20 +1985,32 @@
       await openVideoOverlay(currentCallSession.targetInfo);
       markCallEncryptedConnected();
 
+      // 確保本機攝影機視訊軌已取得
       if (activeMediaCall && activeMediaCall.peerConnection) {
-        const pc = activeMediaCall.peerConnection;
-        await attachLocalVideoTrackToPeer(pc);
+        await attachLocalVideoTrackToPeer(activeMediaCall.peerConnection);
+      }
 
-        if (!fromRemote && activeDataConn && activeDataConn.open) {
+      if (!fromRemote) {
+        if (activeDataConn && activeDataConn.open) {
           activeDataConn.send({ type: 'UPGRADE_VIDEO' });
+        }
+
+        // 建立專用視訊媒體子連線，直接將本機鏡頭畫面推送給對方並接收對方視訊流
+        if (peerObj && isNetworkReady && currentCallSession.targetInfo) {
           try {
-            const offer = await pc.createOffer();
-            await pc.setLocalDescription(offer);
-            activeDataConn.send({ type: 'VIDEO_OFFER', sdp: pc.localDescription });
+            const remotePeerId = `${PEER_NS}${currentCallSession.targetInfo.number}`;
+            const videoStream = await captureLocalStream(true);
+            const vCall = peerObj.call(remotePeerId, videoStream, {
+              metadata: { type: 'VIDEO_STREAM_UPGRADE', mode: 'video', callerId: myAnonNumber }
+            });
+            if (vCall) {
+              secondaryVideoCall = vCall;
+              vCall.on('stream', (remoteStream) => {
+                attachRemoteMedia(remoteStream, 'video');
+              });
+            }
           } catch (e) {}
         }
-      } else if (!fromRemote && activeDataConn && activeDataConn.open) {
-        activeDataConn.send({ type: 'UPGRADE_VIDEO' });
       }
     }
 
@@ -1991,6 +2019,10 @@
       currentCallSession.mode = 'audio';
       if (!fromRemote && activeDataConn && activeDataConn.open) {
         activeDataConn.send({ type: 'DOWNGRADE_AUDIO' });
+      }
+      if (secondaryVideoCall) {
+        try { secondaryVideoCall.close(); } catch (e) {}
+        secondaryVideoCall = null;
       }
       if (localMediaStream) {
         localMediaStream.getVideoTracks().forEach(t => {
@@ -2074,6 +2106,10 @@
       if (activeMediaCall) {
         try { activeMediaCall.close(); } catch (e) {}
         activeMediaCall = null;
+      }
+      if (secondaryVideoCall) {
+        try { secondaryVideoCall.close(); } catch (e) {}
+        secondaryVideoCall = null;
       }
 
       releaseMediaTracks();
@@ -2211,15 +2247,11 @@
 
             const analyser = remoteAudioCtx.createAnalyser();
             analyser.fftSize = 64;
-            const freqData = new Uint8Array(analyser.frequencyBinCount);
-
-            source.connect(remoteGainNode);
-            remoteGainNode.connect(remoteCompressorNode);
-            remoteCompressorNode.connect(analyser);
-            analyser.connect(remoteAudioCtx.destination);
-
-            // 若同時使用 AudioContext 輸出，避免 <audio> 重複疊音產生回音，由 GainNode 主導輸出
-            if (remoteAudio) remoteAudio.volume = 0.05;
+            // 保持 <audio> 全音量輸出，確保任何手機瀏覽器都能直接透過原生媒體管線發聲
+            if (remoteAudio) {
+              remoteAudio.muted = false;
+              remoteAudio.volume = 1.0;
+            }
             if (statusPill) statusPill.textContent = '🔊 雙向語音已接通';
 
             remoteMonitorInterval = setInterval(() => {
@@ -2227,7 +2259,7 @@
               let sum = 0;
               for (let i = 0; i < freqData.length; i++) sum += freqData[i];
               const avg = sum / freqData.length;
-              const pct = Math.min(100, Math.round((avg / 75) * 100));
+              const pct = Math.min(100, Math.round((avg / 60) * 100));
               const rBar = document.getElementById('remoteLevelBar');
               if (rBar) rBar.style.width = `${pct}%`;
             }, 80);
@@ -2237,7 +2269,11 @@
         statusPill.textContent = '⚠️ 對方未開啟麥克風權限';
       }
 
-      if (mode === 'video' && stream.getVideoTracks().length > 0) {
+      if (stream.getVideoTracks().length > 0) {
+        if (currentCallSession && currentCallSession.mode !== 'video') {
+          currentCallSession.mode = 'video';
+          openVideoOverlay(currentCallSession.targetInfo);
+        }
         const rv = document.getElementById('remoteVideoEl');
         rv.srcObject = stream;
         rv.muted = true;
