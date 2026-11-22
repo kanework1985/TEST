@@ -479,13 +479,28 @@
                 <span id="audioTrackStatusPill" class="text-[11px] px-3 py-1 rounded-full bg-sky-500/15 border border-sky-400/30 text-sky-300">
                   🎙️ 準備麥克風中...
                 </span>
-                <button onclick="unlockAndTestAudioOutput()" class="text-[11px] px-3 py-1 rounded-full bg-white/10 hover:bg-white/20 text-white active:scale-95 transition">
-                  🔊 啟用聲音
+                <button onclick="unlockAndTestAudioOutput(true)" id="btnBoostSpeaker" class="text-[11px] px-3 py-1 rounded-full bg-emerald-500/20 hover:bg-emerald-500/35 border border-emerald-400/30 text-emerald-300 active:scale-95 transition">
+                  📢 擴大音量 (1.5x)
                 </button>
               </div>
-              <!-- 即時麥克風音量進度條 -->
-              <div class="w-44 h-1.5 bg-white/10 rounded-full overflow-hidden">
-                <div id="micLevelBar" class="h-full w-0 bg-emerald-400 transition-all duration-75"></div>
+              <!-- 雙向即時音量監測條（我方麥克風 + 對方來話聲音） -->
+              <div class="w-52 space-y-1.5 bg-white/[0.03] border border-white/10 rounded-xl px-3 py-2">
+                <div class="flex items-center justify-between text-[10px] text-slate-400">
+                  <span>🎙️ 我方發話</span>
+                  <div class="w-28 h-1.5 bg-white/10 rounded-full overflow-hidden">
+                    <div id="micLevelBar" class="h-full w-0 bg-emerald-400 transition-all duration-75"></div>
+                  </div>
+                </div>
+                <div class="flex items-center justify-between text-[10px] text-slate-400">
+                  <span>🔊 對方聲音</span>
+                  <div class="w-28 h-1.5 bg-white/10 rounded-full overflow-hidden">
+                    <div id="remoteLevelBar" class="h-full w-0 bg-cyan-400 transition-all duration-75"></div>
+                  </div>
+                </div>
+              </div>
+              <!-- 螢幕恆亮防休眠與防滑動鎖定狀態 -->
+              <div id="wakeLockStatusTag" class="text-[10px] text-amber-300/90 flex items-center gap-1">
+                <span>🔒 通話螢幕恆亮與防滑動已啟動</span>
               </div>
             </div>
 
@@ -501,10 +516,14 @@
 
           <!-- 控制列與掛斷 -->
           <div class="space-y-4">
-            <div class="grid grid-cols-3 gap-2.5 px-2">
+            <div class="grid grid-cols-4 gap-2 px-1">
               <button onclick="toggleMuteAudio()" id="btnMuteAudio" class="py-3 rounded-2xl bg-white/10 hover:bg-white/20 text-xs text-white flex flex-col items-center gap-1 transition">
                 <span>🎙️</span>
                 <span>靜音</span>
+              </button>
+              <button onclick="toggleSpeakerphone()" id="btnSpeakerAudio" class="py-3 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/10 text-xs text-white flex flex-col items-center gap-1 transition">
+                <span id="speakerAudioIcon">🔈</span>
+                <span id="speakerAudioLabel">擴音</span>
               </button>
               <button onclick="upgradeToEncryptedVideo()" class="py-3 rounded-2xl bg-cyan-500/20 hover:bg-cyan-500/35 border border-cyan-400/30 text-xs text-cyan-300 flex flex-col items-center gap-1 transition">
                 <span>📹</span>
@@ -572,23 +591,26 @@
 
           <!-- 底部視訊安全控制列 -->
           <div class="relative z-20 px-4 pb-5">
-            <div class="bg-slate-950/85 backdrop-blur-xl border border-emerald-500/25 rounded-3xl px-3 py-2.5 flex items-center justify-around shadow-2xl">
-              <button onclick="toggleMuteAudio()" id="btnVidMute" title="靜音" class="w-11 h-11 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center active:scale-90 transition">
+            <div class="bg-slate-950/85 backdrop-blur-xl border border-emerald-500/25 rounded-3xl px-2.5 py-2.5 flex items-center justify-around shadow-2xl">
+              <button onclick="toggleMuteAudio()" id="btnVidMute" title="靜音" class="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center active:scale-90 transition">
                 🎙️
               </button>
-              <button onclick="toggleVideoVisibility()" id="btnVidHide" title="遮蔽/開啟鏡頭" class="w-11 h-11 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center active:scale-90 transition">
+              <button onclick="toggleSpeakerphone()" id="btnVidSpeaker" title="開啟/關閉擴音" class="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center active:scale-90 transition">
+                🔈
+              </button>
+              <button onclick="toggleVideoVisibility()" id="btnVidHide" title="遮蔽/開啟鏡頭" class="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center active:scale-90 transition">
                 📷
               </button>
-              <button onclick="togglePrivacyBlurMask()" id="btnVidBlur" title="隱私背景模糊面具" class="w-11 h-11 rounded-full bg-white/10 hover:bg-white/20 text-cyan-300 flex items-center justify-center active:scale-90 transition">
+              <button onclick="togglePrivacyBlurMask()" id="btnVidBlur" title="隱私背景模糊面具" class="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-cyan-300 flex items-center justify-center active:scale-90 transition">
                 🎭
               </button>
-              <button onclick="openSecurityModal()" title="檢視金鑰指紋" class="w-11 h-11 rounded-full bg-emerald-500/20 hover:bg-emerald-500/35 text-emerald-300 flex items-center justify-center active:scale-90 transition">
+              <button onclick="openSecurityModal()" title="檢視金鑰指紋" class="w-10 h-10 rounded-full bg-emerald-500/20 hover:bg-emerald-500/35 text-emerald-300 flex items-center justify-center active:scale-90 transition">
                 🔐
               </button>
-              <button onclick="downgradeToEncryptedAudio()" title="切回純語音通話" class="w-11 h-11 rounded-full bg-sky-500/20 hover:bg-sky-500/35 text-sky-300 flex items-center justify-center active:scale-90 transition">
+              <button onclick="downgradeToEncryptedAudio()" title="切回純語音通話" class="w-10 h-10 rounded-full bg-sky-500/20 hover:bg-sky-500/35 text-sky-300 flex items-center justify-center active:scale-90 transition">
                 📞
               </button>
-              <button onclick="terminateAndWipeCall()" title="掛斷並銷毀金鑰" class="w-12 h-12 rounded-full bg-gradient-to-b from-rose-500 to-red-600 text-white shadow-lg shadow-rose-600/40 flex items-center justify-center active:scale-90 transition">
+              <button onclick="terminateAndWipeCall()" title="掛斷並銷毀金鑰" class="w-11 h-11 rounded-full bg-gradient-to-b from-rose-500 to-red-600 text-white shadow-lg shadow-rose-600/40 flex items-center justify-center active:scale-90 transition">
                 🔥
               </button>
             </div>
@@ -1159,10 +1181,55 @@
     /* ==========================================================================
        防誤觸手勢與瀏覽器邊緣滑動切頁防護 (Edge Swipe & Accidental Leave Guard)
        ========================================================================== */
+    let screenWakeLock = null;
+
+    async function requestCallScreenLock() {
+      // 1. 請求 Screen Wake Lock API 防止手機進入關閉螢幕/休眠模式
+      try {
+        if ('wakeLock' in navigator && navigator.wakeLock) {
+          screenWakeLock = await navigator.wakeLock.request('screen');
+          const tag = document.getElementById('wakeLockStatusTag');
+          if (tag) tag.innerHTML = '<span>🔒 螢幕恆亮鎖定中（防自動關屏斷線）</span>';
+          screenWakeLock.addEventListener('release', () => {
+            if (currentCallSession && document.visibilityState === 'visible') {
+              requestCallScreenLock();
+            }
+          });
+        }
+      } catch (e) {}
+
+      // 2. 通話中嘗試自動進入滿版全螢幕鎖定最上層，避免誤觸瀏覽器網址列或分頁列
+      try {
+        const docEl = document.documentElement;
+        if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+          document.body.classList.add('is-fullscreen');
+          if (docEl.requestFullscreen) {
+            docEl.requestFullscreen().catch(() => {});
+          } else if (docEl.webkitRequestFullscreen) {
+            docEl.webkitRequestFullscreen();
+          }
+        }
+      } catch (e) {}
+    }
+
+    function releaseCallScreenLock() {
+      if (screenWakeLock) {
+        try { screenWakeLock.release(); } catch (e) {}
+        screenWakeLock = null;
+      }
+    }
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible' && currentCallSession) {
+        requestCallScreenLock();
+        unlockAndTestAudioOutput(false);
+      }
+    });
+
     document.addEventListener('touchstart', (e) => {
       if (e.touches && e.touches.length === 1) {
         const touchX = e.touches[0].clientX;
-        const edgeMargin = 32;
+        const edgeMargin = currentCallSession ? 56 : 32;
         if (touchX <= edgeMargin || touchX >= window.innerWidth - edgeMargin) {
           e.preventDefault();
         }
@@ -1172,7 +1239,8 @@
     document.addEventListener('touchmove', (e) => {
       const target = e.target;
       const scrollable = target && target.closest('.overflow-y-auto');
-      if (!scrollable && e.cancelable && e.touches && e.touches.length > 1) {
+      // 通話進行中全面鎖定非捲動區域的滑動手勢，避免手機滑動切走網頁
+      if (!scrollable && e.cancelable && (currentCallSession || (e.touches && e.touches.length > 1))) {
         e.preventDefault();
       }
     }, { passive: false });
@@ -1491,14 +1559,115 @@
     let timerInterval = null;
     let simulatedAnswerTimer = null;
     let isMuted = false;
+    let isSpeakerphoneOn = false;
     let isCamHidden = false;
     let isBlurMaskOn = false;
     let pipCorner = 0;
     let localMediaStream = null;
     let videoLoopId = null;
+    let remoteAudioCtx = null;
+    let remoteGainNode = null;
+    let remoteCompressorNode = null;
+    let remoteMonitorInterval = null;
+    let currentSpeakerGain = 1.6;
 
-    function unlockAndTestAudioOutput() {
+    function updateSpeakerphoneUI() {
+      const btnAudio = document.getElementById('btnSpeakerAudio');
+      const iconAudio = document.getElementById('speakerAudioIcon');
+      const labelAudio = document.getElementById('speakerAudioLabel');
+      const btnVid = document.getElementById('btnVidSpeaker');
+      const btnBoost = document.getElementById('btnBoostSpeaker');
+
+      if (isSpeakerphoneOn) {
+        if (btnAudio) {
+          btnAudio.classList.remove('bg-white/10', 'text-white', 'border-white/10');
+          btnAudio.classList.add('bg-emerald-500/30', 'text-emerald-200', 'border-emerald-400/50', 'shadow-lg', 'shadow-emerald-500/20');
+        }
+        if (iconAudio) iconAudio.textContent = '📢';
+        if (labelAudio) labelAudio.textContent = '擴音中';
+        if (btnVid) {
+          btnVid.classList.remove('bg-white/10', 'text-white');
+          btnVid.classList.add('bg-emerald-500', 'text-white', 'shadow-lg', 'shadow-emerald-500/30');
+          btnVid.textContent = '📢';
+        }
+        if (btnBoost) btnBoost.textContent = '📢 擴音放大 (3.2x)';
+      } else {
+        if (btnAudio) {
+          btnAudio.classList.add('bg-white/10', 'text-white', 'border-white/10');
+          btnAudio.classList.remove('bg-emerald-500/30', 'text-emerald-200', 'border-emerald-400/50', 'shadow-lg', 'shadow-emerald-500/20');
+        }
+        if (iconAudio) iconAudio.textContent = '🔈';
+        if (labelAudio) labelAudio.textContent = '擴音';
+        if (btnVid) {
+          btnVid.classList.add('bg-white/10', 'text-white');
+          btnVid.classList.remove('bg-emerald-500', 'text-white', 'shadow-lg', 'shadow-emerald-500/30');
+          btnVid.textContent = '🔈';
+        }
+        if (btnBoost) btnBoost.textContent = currentSpeakerGain >= 2.4 ? '📢 超大音量 (2.5x)' : '📢 擴大音量 (1.5x)';
+      }
+    }
+
+    async function routeAudioToSpeakerHardware(enableSpeaker) {
+      const remoteAudio = document.getElementById('remoteAudioEl');
+      if (!remoteAudio) return;
+      try {
+        if (typeof remoteAudio.setSinkId === 'function' && navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
+          const devices = await navigator.mediaDevices.enumerateDevices();
+          const outputs = devices.filter(d => d.kind === 'audiooutput');
+          if (outputs.length > 0) {
+            const speakerDev = outputs.find(d => /speaker|擴音|揚聲器|default/i.test(d.label)) || outputs[0];
+            const earpieceDev = outputs.find(d => /earpiece|聽筒|receiver/i.test(d.label)) || outputs[0];
+            const targetDev = enableSpeaker ? speakerDev : earpieceDev;
+            if (targetDev && targetDev.deviceId) {
+              await remoteAudio.setSinkId(targetDev.deviceId);
+            }
+          }
+        }
+      } catch (e) {}
+    }
+
+    async function toggleSpeakerphone() {
+      isSpeakerphoneOn = !isSpeakerphoneOn;
       sfx.ensure();
+
+      const targetGain = isSpeakerphoneOn ? 3.2 : currentSpeakerGain;
+      if (remoteAudioCtx && remoteAudioCtx.state === 'suspended') {
+        await remoteAudioCtx.resume().catch(() => {});
+      }
+      if (remoteGainNode && remoteAudioCtx) {
+        remoteGainNode.gain.setTargetAtTime(targetGain, remoteAudioCtx.currentTime, 0.04);
+      }
+
+      const remoteAudio = document.getElementById('remoteAudioEl');
+      if (remoteAudio) {
+        remoteAudio.muted = false;
+        remoteAudio.volume = 1.0;
+        if (remoteAudio.srcObject) {
+          remoteAudio.play().catch(() => {});
+        }
+      }
+
+      await routeAudioToSpeakerHardware(isSpeakerphoneOn);
+      updateSpeakerphoneUI();
+      showCipherToast(isSpeakerphoneOn ? '📢' : '🔈', isSpeakerphoneOn ? '已開啟免持擴音模式（人聲強化 3.2x）' : '已切回一般聽筒模式');
+    }
+
+    function unlockAndTestAudioOutput(toggleBoost = false) {
+      sfx.ensure();
+      if (toggleBoost) {
+        isSpeakerphoneOn = false;
+        currentSpeakerGain = currentSpeakerGain >= 2.4 ? 1.5 : 2.5;
+        updateSpeakerphoneUI();
+      }
+
+      const effectiveGain = isSpeakerphoneOn ? 3.2 : currentSpeakerGain;
+      if (remoteAudioCtx && remoteAudioCtx.state === 'suspended') {
+        remoteAudioCtx.resume().catch(() => {});
+      }
+      if (remoteGainNode && remoteAudioCtx) {
+        remoteGainNode.gain.setValueAtTime(effectiveGain, remoteAudioCtx.currentTime);
+      }
+
       const remoteAudio = document.getElementById('remoteAudioEl');
       if (remoteAudio) {
         remoteAudio.muted = false;
@@ -1510,8 +1679,25 @@
           }).catch(() => {});
         }
       }
-      sfx.playHandshakeChime();
-      showCipherToast('🔊', '已啟用喇叭與麥克風音訊');
+      if (toggleBoost) {
+        sfx.playHandshakeChime();
+        showCipherToast('📢', `聽筒輸出增益已調整為 ${currentSpeakerGain}x`);
+      }
+    }
+
+    function stopRemoteAudioBridge() {
+      if (remoteMonitorInterval) {
+        clearInterval(remoteMonitorInterval);
+        remoteMonitorInterval = null;
+      }
+      if (remoteAudioCtx) {
+        try { remoteAudioCtx.close(); } catch (e) {}
+        remoteAudioCtx = null;
+        remoteGainNode = null;
+        remoteCompressorNode = null;
+      }
+      const rBar = document.getElementById('remoteLevelBar');
+      if (rBar) rBar.style.width = '0%';
     }
 
     let micMonitorInterval = null;
@@ -1556,7 +1742,8 @@
     }
 
     async function initiateEncryptedCall(mode) {
-      unlockAndTestAudioOutput();
+      unlockAndTestAudioOutput(false);
+      requestCallScreenLock();
 
       if (!dialedString || dialedString.length < 6) {
         showCipherToast('⚠️', '請先輸入完整的 6 碼對方號碼');
@@ -1578,9 +1765,11 @@
       currentCallSession = { targetInfo, mode, connected: false, isRealP2P: false };
       callDurationSec = 0;
       isMuted = false;
+      isSpeakerphoneOn = false;
       isCamHidden = false;
+      updateSpeakerphoneUI();
 
-      if (!cryptoEngine.localPublicJwk) {
+      if (!cryptoEngine.ecdhKeyPair) {
         await cryptoEngine.generateEphemeralKeys();
       }
 
@@ -1660,7 +1849,8 @@
 
     async function acceptIncomingCall() {
       if (!pendingIncomingCall) return;
-      unlockAndTestAudioOutput();
+      unlockAndTestAudioOutput(false);
+      requestCallScreenLock();
       sfx.stopRing();
       document.getElementById('incomingCallModal').classList.add('hidden');
 
@@ -1868,11 +2058,15 @@
 
     async function terminateAndWipeCall(fromRemote = false) {
       sfx.stopRing();
+      releaseCallScreenLock();
       clearInterval(timerInterval);
       clearTimeout(simulatedAnswerTimer);
       stopMicLevelMonitor();
+      stopRemoteAudioBridge();
       timerInterval = null;
       currentCallSession = null;
+      isSpeakerphoneOn = false;
+      updateSpeakerphoneUI();
 
       if (!fromRemote && activeDataConn && activeDataConn.open) {
         try { activeDataConn.send({ type: 'WIPE_HANGUP' }); } catch (e) {}
@@ -1978,19 +2172,67 @@
       const statusPill = document.getElementById('audioTrackStatusPill');
       if (audioTracks.length > 0) {
         audioTracks.forEach(t => (t.enabled = true));
+        const audioOnlyStream = new MediaStream(audioTracks);
+
+        // 1. 傳統 <audio> 元素掛載播放
         const remoteAudio = document.getElementById('remoteAudioEl');
         if (remoteAudio) {
-          const audioOnlyStream = new MediaStream(audioTracks);
           remoteAudio.srcObject = audioOnlyStream;
           remoteAudio.muted = false;
           remoteAudio.volume = 1.0;
           remoteAudio.play().then(() => {
             if (statusPill) statusPill.textContent = '🔊 雙向通話已接通';
           }).catch(() => {
-            if (statusPill) statusPill.textContent = '⚠️ 請點擊右方「🔊 啟用聲音」';
-            showCipherToast('🔊', '請點擊「啟用聲音」解鎖手機播放');
+            if (statusPill) statusPill.textContent = '⚠️ 請點擊右方「📢 擴大音量」';
           });
         }
+
+        // 2. Web Audio API 硬體直通增益橋接（解決手機瀏覽器 WebRTC 音訊有訊號卻無聲/極小聲問題）
+        stopRemoteAudioBridge();
+        try {
+          const AC = window.AudioContext || window.webkitAudioContext;
+          if (AC) {
+            remoteAudioCtx = new AC();
+            if (remoteAudioCtx.state === 'suspended') {
+              remoteAudioCtx.resume().catch(() => {});
+            }
+            const source = remoteAudioCtx.createMediaStreamSource(audioOnlyStream);
+            remoteGainNode = remoteAudioCtx.createGain();
+            const activeGain = isSpeakerphoneOn ? 3.2 : currentSpeakerGain;
+            remoteGainNode.gain.setValueAtTime(activeGain, remoteAudioCtx.currentTime);
+
+            // 動態壓縮器：在開啟擴音放大至 3.2x 時自動防止破音失真
+            remoteCompressorNode = remoteAudioCtx.createDynamicsCompressor();
+            remoteCompressorNode.threshold.setValueAtTime(-18, remoteAudioCtx.currentTime);
+            remoteCompressorNode.knee.setValueAtTime(24, remoteAudioCtx.currentTime);
+            remoteCompressorNode.ratio.setValueAtTime(6, remoteAudioCtx.currentTime);
+            remoteCompressorNode.attack.setValueAtTime(0.005, remoteAudioCtx.currentTime);
+            remoteCompressorNode.release.setValueAtTime(0.15, remoteAudioCtx.currentTime);
+
+            const analyser = remoteAudioCtx.createAnalyser();
+            analyser.fftSize = 64;
+            const freqData = new Uint8Array(analyser.frequencyBinCount);
+
+            source.connect(remoteGainNode);
+            remoteGainNode.connect(remoteCompressorNode);
+            remoteCompressorNode.connect(analyser);
+            analyser.connect(remoteAudioCtx.destination);
+
+            // 若同時使用 AudioContext 輸出，避免 <audio> 重複疊音產生回音，由 GainNode 主導輸出
+            if (remoteAudio) remoteAudio.volume = 0.05;
+            if (statusPill) statusPill.textContent = '🔊 雙向語音已接通';
+
+            remoteMonitorInterval = setInterval(() => {
+              analyser.getByteFrequencyData(freqData);
+              let sum = 0;
+              for (let i = 0; i < freqData.length; i++) sum += freqData[i];
+              const avg = sum / freqData.length;
+              const pct = Math.min(100, Math.round((avg / 75) * 100));
+              const rBar = document.getElementById('remoteLevelBar');
+              if (rBar) rBar.style.width = `${pct}%`;
+            }, 80);
+          }
+        } catch (e) {}
       } else if (statusPill) {
         statusPill.textContent = '⚠️ 對方未開啟麥克風權限';
       }
