@@ -364,15 +364,11 @@
               <button class="cipher-key" data-digit="9">
                 <span class="text-2xl font-normal text-white leading-none">9</span>
               </button>
-              <button class="cipher-key" data-digit="*" title="填入回音測試台 888888" onclick="fillTestLine()">
-                <span class="text-xs font-bold text-emerald-300 leading-none">測試線</span>
-              </button>
+              <div class="pointer-events-none"></div>
               <button class="cipher-key" data-digit="0">
                 <span class="text-2xl font-normal text-white leading-none">0</span>
               </button>
-              <button class="cipher-key" data-digit="#" title="貼上號碼" onclick="pasteToDialer()">
-                <span class="text-xs font-semibold text-cyan-300 leading-none">貼上</span>
-              </button>
+              <div class="pointer-events-none"></div>
             </div>
 
             <!-- 底部撥號操作列 -->
@@ -588,6 +584,9 @@
               </button>
               <button onclick="openSecurityModal()" title="檢視金鑰指紋" class="w-11 h-11 rounded-full bg-emerald-500/20 hover:bg-emerald-500/35 text-emerald-300 flex items-center justify-center active:scale-90 transition">
                 🔐
+              </button>
+              <button onclick="downgradeToEncryptedAudio()" title="切回純語音通話" class="w-11 h-11 rounded-full bg-sky-500/20 hover:bg-sky-500/35 text-sky-300 flex items-center justify-center active:scale-90 transition">
+                📞
               </button>
               <button onclick="terminateAndWipeCall()" title="掛斷並銷毀金鑰" class="w-12 h-12 rounded-full bg-gradient-to-b from-rose-500 to-red-600 text-white shadow-lg shadow-rose-600/40 flex items-center justify-center active:scale-90 transition">
                 🔥
@@ -1218,8 +1217,6 @@
       if (hintEl) {
         if (dialedString.length === 0) {
           hintEl.textContent = 'E2EE 端到端加密通話就緒';
-        } else if (dialedString === '888888') {
-          hintEl.textContent = '已選取：麥克風回音測試台 (888888)';
         } else if (dialedString.length < 6) {
           hintEl.textContent = `輸入中 (${dialedString.length}/6)`;
         } else {
@@ -1244,30 +1241,6 @@
       dialedString = dialedString.slice(0, -1);
       sfx.playTone(420, 0.06, 'triangle', 0.06);
       refreshDialUI();
-    }
-
-    function fillTestLine() {
-      dialedString = '888888';
-      sfx.playTone(880, 0.09, 'sine', 0.09);
-      refreshDialUI();
-      showCipherToast('🛰️', '已填入加密測試專線 888888');
-    }
-
-    async function pasteToDialer() {
-      sfx.playTone(980, 0.08, 'sine', 0.08);
-      try {
-        if (navigator.clipboard && navigator.clipboard.readText) {
-          const text = await navigator.clipboard.readText();
-          const digits = (text || '').replace(/\D/g, '').slice(0, 6);
-          if (digits) {
-            dialedString = digits;
-            refreshDialUI();
-            showCipherToast('📋', `已貼上識別碼：${digits}`);
-            return;
-          }
-        }
-      } catch (e) {}
-      showCipherToast('⚠️', '剪貼簿無可用數字或未授權讀取');
     }
 
     function quickDial(num, mode) {
@@ -1341,25 +1314,37 @@
         if (calcResetNext) {
           calcCurrent = val === '.' ? '0.' : val;
           calcResetNext = false;
-        } else if (val === '.') {
-          if (!calcCurrent.includes('.')) calcCurrent += '.';
         } else {
-          calcCurrent = calcCurrent === '0' ? val : calcCurrent + val;
+          if (val === '.' && calcCurrent.includes('.')) return;
+          calcCurrent = calcCurrent === '0' && val !== '.' ? val : calcCurrent + val;
         }
       }
       disp.textContent = calcCurrent;
     }
 
-    // 補齊數據通道與 SAS 指紋更新函式
-    function setupEncryptedDataChannel(conn, isIncoming) {
+    /* ==========================================================================
+       6. PeerJS 加密資料通道 (ECDH 金鑰交換、視訊/語音雙向互切與控制信令)
+       ========================================================================== */
+    function setupEncryptedDataChannel(conn, isReceiver) {
       if (!conn) return;
       activeDataConn = conn;
-      conn.on('open', async () => {
-        if (!cryptoEngine.localPublicJwk) await cryptoEngine.generateEphemeralKeys();
-        conn.send({ type: 'ECDH_PUB', jwk: cryptoEngine.localPublicJwk });
+
+      const sendPubKey = async () => {
+        if (!cryptoEngine.localPublicJwk) {
+          await cryptoEngine.generateEphemeralKeys();
+        }
+        try {
+          conn.send({ type: 'ECDH_PUB', jwk: cryptoEngine.localPublicJwk });
+        } catch (e) {}
+      };
+
+      conn.on('open', () => {
+        sendPubKey();
       });
+
       conn.on('data', async (msg) => {
-        if (!msg || !msg.type) return;
+        if (!msg || typeof msg !== 'object') return;
+
         if (msg.type === 'ECDH_PUB' && msg.jwk) {
           const passEl = document.getElementById('sharedPassphraseInput');
           const pass = passEl ? passEl.value : '';
@@ -1368,7 +1353,28 @@
           sfx.playHandshakeChime();
           if (currentCallSession) markCallEncryptedConnected();
         } else if (msg.type === 'UPGRADE_VIDEO') {
+          showCipherToast('📹', '對方已開啟視訊鏡頭，正在同步畫面...');
           upgradeToEncryptedVideo(true);
+        } else if (msg.type === 'DOWNGRADE_AUDIO') {
+          showCipherToast('📞', '對方已切換為純語音模式');
+          downgradeToEncryptedAudio(true);
+        } else if (msg.type === 'VIDEO_OFFER' && msg.sdp && activeMediaCall && activeMediaCall.peerConnection) {
+          try {
+            const pc = activeMediaCall.peerConnection;
+            await pc.setRemoteDescription(new RTCSessionDescription(msg.sdp));
+            await attachLocalVideoTrackToPeer(pc);
+            const answer = await pc.createAnswer();
+            await pc.setLocalDescription(answer);
+            conn.send({ type: 'VIDEO_ANSWER', sdp: pc.localDescription });
+          } catch (e) {}
+        } else if (msg.type === 'VIDEO_ANSWER' && msg.sdp && activeMediaCall && activeMediaCall.peerConnection) {
+          try {
+            await activeMediaCall.peerConnection.setRemoteDescription(new RTCSessionDescription(msg.sdp));
+          } catch (e) {}
+        } else if (msg.type === 'VIDEO_ICE' && msg.candidate && activeMediaCall && activeMediaCall.peerConnection) {
+          try {
+            await activeMediaCall.peerConnection.addIceCandidate(new RTCIceCandidate(msg.candidate));
+          } catch (e) {}
         } else if (msg.type === 'WIPE_HANGUP') {
           showCipherToast('📴', '對方已結束加密通話');
           terminateAndWipeCall(true);
@@ -1491,11 +1497,6 @@
     let localMediaStream = null;
     let videoLoopId = null;
 
-    const SECURE_TEST_LINES = [
-      { number: '888888', name: 'E2EE 加密視訊迴路測試台', avatar: '🛰️', themeColor: '#10b981' },
-      { number: '000000', name: '量子抗性密語驗證專線', avatar: '🛡️', themeColor: '#06b6d4' }
-    ];
-
     function unlockAndTestAudioOutput() {
       sfx.ensure();
       const remoteAudio = document.getElementById('remoteAudioEl');
@@ -1557,10 +1558,9 @@
     async function initiateEncryptedCall(mode) {
       unlockAndTestAudioOutput();
 
-      if (!dialedString) {
-        dialedString = '888888';
-        refreshDialUI();
-        showCipherToast('🛰️', '已自動帶入麥克風回音測試台 888888');
+      if (!dialedString || dialedString.length < 6) {
+        showCipherToast('⚠️', '請先輸入完整的 6 碼對方號碼');
+        return;
       }
 
       if (dialedString === myAnonNumber) {
@@ -1568,8 +1568,7 @@
         return;
       }
 
-      const testMeta = SECURE_TEST_LINES.find(x => x.number === dialedString);
-      const targetInfo = testMeta || {
+      const targetInfo = {
         number: dialedString,
         name: `對方號碼 #${dialedString}`,
         avatar: '🔐',
@@ -1598,7 +1597,7 @@
       }
 
       let realAttempt = false;
-      if (peerObj && !testMeta) {
+      if (peerObj) {
         if (peerObj.disconnected && !peerObj.destroyed) {
           try { peerObj.reconnect(); } catch (e) {}
         }
@@ -1618,6 +1617,7 @@
             if (call) {
               realAttempt = true;
               activeMediaCall = call;
+              bindPeerConnectionTrackListeners(call);
 
               call.on('stream', (remoteStream) => {
                 clearTimeout(simulatedAnswerTimer);
@@ -1648,37 +1648,7 @@
       }
 
       clearTimeout(simulatedAnswerTimer);
-      if (testMeta || !realAttempt) {
-        simulatedAnswerTimer = setTimeout(async () => {
-          if (!currentCallSession || currentCallSession.connected) return;
-          if (activeMediaCall) {
-            try { activeMediaCall.close(); } catch (e) {}
-            activeMediaCall = null;
-          }
-
-          const simRemoteKp = await window.crypto.subtle.generateKey(
-            { name: 'ECDH', namedCurve: 'P-256' },
-            false,
-            ['deriveBits']
-          );
-          const simRemoteJwk = await window.crypto.subtle.exportKey('jwk', simRemoteKp.publicKey);
-          const sas = await cryptoEngine.deriveSessionSecrets(simRemoteJwk, '');
-
-          updateSasDisplay(sas.sasCode, sas.sasEmojis);
-          sfx.stopRing();
-          sfx.playHandshakeChime();
-          currentCallSession.connected = true;
-          currentCallSession.isRealP2P = false;
-
-          // 測試專線 888888 將本機麥克風回送至喇叭，方便直接測試講話與聽筒音量
-          if (localMediaStream && localMediaStream.getAudioTracks().length > 0) {
-            attachRemoteMedia(localMediaStream, currentCallSession.mode);
-            const pill = document.getElementById('audioTrackStatusPill');
-            if (pill) pill.textContent = '🔊 測試台回音已接通（請對麥克風說話）';
-          }
-          markCallEncryptedConnected();
-        }, 1200);
-      } else {
+      if (realAttempt) {
         simulatedAnswerTimer = setTimeout(() => {
           if (currentCallSession && !currentCallSession.connected) {
             showCipherToast('⏰', '對方超過 45 秒未接聽，已結束呼叫');
@@ -1720,6 +1690,7 @@
       markCallEncryptedConnected();
 
       call.answer(stream);
+      bindPeerConnectionTrackListeners(call);
       call.on('stream', (remoteStream) => {
         attachRemoteMedia(remoteStream, currentCallSession ? currentCallSession.mode : mode);
       });
@@ -1752,15 +1723,98 @@
       document.getElementById('audioCallDot').className = 'w-2 h-2 rounded-full bg-amber-400 animate-pulse';
     }
 
-    function upgradeToEncryptedVideo(fromRemote = false) {
+    function bindPeerConnectionTrackListeners(call) {
+      if (!call || !call.peerConnection) return;
+      const pc = call.peerConnection;
+      pc.ontrack = (event) => {
+        const stream = (event.streams && event.streams[0]) || new MediaStream([event.track]);
+        if (event.track && event.track.kind === 'video' && currentCallSession) {
+          currentCallSession.mode = 'video';
+          openVideoOverlay(currentCallSession.targetInfo);
+        }
+        attachRemoteMedia(stream, currentCallSession ? currentCallSession.mode : 'video');
+      };
+      pc.onicecandidate = (event) => {
+        if (event.candidate && activeDataConn && activeDataConn.open) {
+          activeDataConn.send({ type: 'VIDEO_ICE', candidate: event.candidate });
+        }
+      };
+    }
+
+    async function attachLocalVideoTrackToPeer(pc) {
+      let videoTrack = localMediaStream && localMediaStream.getVideoTracks()[0];
+      if (!videoTrack) {
+        try {
+          if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+            const cam = await navigator.mediaDevices.getUserMedia({
+              video: { facingMode: 'user', width: { ideal: 480 }, height: { ideal: 640 } },
+              audio: false
+            });
+            videoTrack = cam.getVideoTracks()[0];
+            if (!localMediaStream) {
+              localMediaStream = cam;
+            } else if (videoTrack) {
+              localMediaStream.addTrack(videoTrack);
+            }
+          }
+        } catch (e) {}
+      }
+      if (videoTrack && pc) {
+        const sender = pc.getSenders().find(s => s.track && s.track.kind === 'video');
+        if (sender) {
+          await sender.replaceTrack(videoTrack).catch(() => {});
+        } else {
+          pc.addTrack(videoTrack, localMediaStream || new MediaStream([videoTrack]));
+        }
+      }
+      return videoTrack;
+    }
+
+    async function upgradeToEncryptedVideo(fromRemote = false) {
       if (!currentCallSession) return;
       clearTimeout(simulatedAnswerTimer);
       currentCallSession.mode = 'video';
       currentCallSession.connected = true;
-      if (!fromRemote && activeDataConn && activeDataConn.open) {
+
+      await openVideoOverlay(currentCallSession.targetInfo);
+      markCallEncryptedConnected();
+
+      if (activeMediaCall && activeMediaCall.peerConnection) {
+        const pc = activeMediaCall.peerConnection;
+        await attachLocalVideoTrackToPeer(pc);
+
+        if (!fromRemote && activeDataConn && activeDataConn.open) {
+          activeDataConn.send({ type: 'UPGRADE_VIDEO' });
+          try {
+            const offer = await pc.createOffer();
+            await pc.setLocalDescription(offer);
+            activeDataConn.send({ type: 'VIDEO_OFFER', sdp: pc.localDescription });
+          } catch (e) {}
+        }
+      } else if (!fromRemote && activeDataConn && activeDataConn.open) {
         activeDataConn.send({ type: 'UPGRADE_VIDEO' });
       }
-      openVideoOverlay(currentCallSession.targetInfo);
+    }
+
+    function downgradeToEncryptedAudio(fromRemote = false) {
+      if (!currentCallSession) return;
+      currentCallSession.mode = 'audio';
+      if (!fromRemote && activeDataConn && activeDataConn.open) {
+        activeDataConn.send({ type: 'DOWNGRADE_AUDIO' });
+      }
+      if (localMediaStream) {
+        localMediaStream.getVideoTracks().forEach(t => {
+          t.stop();
+          localMediaStream.removeTrack(t);
+        });
+      }
+      stopVideoLoop();
+      const rv = document.getElementById('remoteVideoEl');
+      if (rv) {
+        rv.srcObject = null;
+        rv.classList.add('hidden');
+      }
+      openAudioOverlay(currentCallSession.targetInfo);
       markCallEncryptedConnected();
     }
 
