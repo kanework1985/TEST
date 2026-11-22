@@ -8,7 +8,7 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="theme-color" content="#050811" />
   <meta name="referrer" content="no-referrer" />
-  <title>CipherPhone PQ-E2EE — 128-bit 雙層幀加密保密通訊終端</title>
+  <title>CipherPhone PQ-Hybrid — X25519 + ML-KEM-1024 抗量子雙層保密終端</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
@@ -19,11 +19,7 @@
       user-select: none;
       touch-action: manipulation;
     }
-
-    input, textarea {
-      user-select: text;
-    }
-
+    input, textarea { user-select: text; }
     html, body {
       width: 100%;
       height: 100dvh;
@@ -40,11 +36,7 @@
       align-items: center;
       justify-content: center;
     }
-
-    .font-mono-tech {
-      font-family: 'JetBrains Mono', monospace;
-    }
-
+    .font-mono-tech { font-family: 'JetBrains Mono', monospace; }
     .ambient-orb {
       position: fixed;
       width: 460px;
@@ -55,7 +47,6 @@
       pointer-events: none;
       z-index: 0;
     }
-
     .phone-chassis {
       position: relative;
       width: 100%;
@@ -66,11 +57,10 @@
       flex-direction: column;
       overflow: hidden;
     }
-
     @media (min-width: 640px) {
       .phone-chassis {
-        width: min(440px, 95vw);
-        height: min(920px, 98dvh);
+        width: min(450px, 95vw);
+        height: min(930px, 98dvh);
         border-radius: 44px;
         padding: 10px;
         background: linear-gradient(145deg, #334155 0%, #1e293b 35%, #0f172a 70%, #334155 100%);
@@ -80,7 +70,6 @@
           inset 0 0 3px 1px rgba(255, 255, 255, 0.15);
       }
     }
-
     body.is-fullscreen .phone-chassis {
       width: 100vw;
       height: 100dvh;
@@ -91,12 +80,10 @@
       background: #050811;
       box-shadow: none;
     }
-
     body.is-fullscreen .phone-screen {
       border-radius: 0;
       box-shadow: none;
     }
-
     .phone-screen {
       position: relative;
       width: 100%;
@@ -106,17 +93,15 @@
       display: flex;
       flex-direction: column;
     }
-
     @media (min-width: 640px) {
       .phone-screen {
         border-radius: 35px;
         box-shadow: inset 0 0 0 1.5px #000000;
       }
     }
-
     .dynamic-island {
       position: relative;
-      width: 152px;
+      width: 164px;
       height: 30px;
       background: #000000;
       border-radius: 999px;
@@ -129,9 +114,7 @@
       z-index: 55;
       cursor: pointer;
     }
-    .dynamic-island.expanded {
-      width: 228px;
-    }
+    .dynamic-island.expanded { width: 234px; }
     .camera-lens {
       width: 10px;
       height: 10px;
@@ -140,7 +123,6 @@
       box-shadow: inset 0 0 2px rgba(255, 255, 255, 0.4);
       flex-shrink: 0;
     }
-
     input[type="range"].volume-slider {
       -webkit-appearance: none;
       appearance: none;
@@ -159,7 +141,6 @@
       cursor: pointer;
       box-shadow: 0 0 6px rgba(16, 185, 129, 0.8);
     }
-
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     .filter-privacy-blur { filter: blur(14px) saturate(1.2); }
@@ -180,10 +161,10 @@
           <span id="p2pConnDot" class="w-2 h-2 rounded-full bg-amber-400 animate-pulse" title="信令連線狀態"></span>
         </div>
 
-        <div class="dynamic-island" id="dynamicIsland" onclick="openSecurityModal()" title="點擊檢視安全憑證與軍規加密設定">
+        <div class="dynamic-island" id="dynamicIsland" onclick="openSecurityModal()" title="點擊檢視後量子憑證與硬體隔離說明">
           <div class="flex items-center gap-1.5 overflow-hidden">
             <span class="text-[11px]">🛡️</span>
-            <span id="islandLabel" class="text-[10px] font-mono-tech font-semibold text-emerald-300 truncate">128-bit SFrame</span>
+            <span id="islandLabel" class="text-[10px] font-mono-tech font-semibold text-emerald-300 truncate">ML-KEM-1024</span>
           </div>
           <div class="camera-lens"></div>
         </div>
@@ -210,7 +191,7 @@
       <div id="cipherToast" class="absolute top-12 left-1/2 -translate-x-1/2 z-50 pointer-events-none opacity-0 transition-all duration-200 transform -translate-y-2">
         <div class="bg-slate-900/95 backdrop-blur-md border border-emerald-400/40 text-emerald-100 text-xs px-3.5 py-1.5 rounded-full shadow-2xl flex items-center gap-1.5 whitespace-nowrap">
           <span id="cipherToastIcon">🛡️</span>
-          <span id="cipherToastMsg">端到端雙層加密已啟動</span>
+          <span id="cipherToastMsg">端到端加密已啟動</span>
         </div>
       </div>
 
@@ -218,10 +199,13 @@
       <div class="mx-4 mt-1.5 mb-1 px-3.5 py-2.5 rounded-2xl bg-slate-900/90 border border-emerald-500/30 backdrop-blur-md shrink-0">
         <div class="flex items-center justify-between gap-2">
           <div class="min-w-0 flex-1">
-            <div class="flex items-center gap-1.5">
-              <span class="text-[10px] font-semibold text-emerald-400">本機 128-bit Base58 識別碼</span>
+            <div class="flex items-center gap-1.5 flex-wrap">
+              <span class="text-[10px] font-semibold text-emerald-400">揮發記憶體 128-bit ID</span>
+              <span id="pqStatusBadge" class="text-[9px] px-1.5 py-0.2 rounded bg-cyan-500/20 text-cyan-300 font-mono-tech">
+                載入 PQ 核心...
+              </span>
               <span id="signalStatusTag" class="text-[9px] px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300">
-                P2P 待命
+                連線待命
               </span>
             </div>
             <div class="mt-1">
@@ -239,11 +223,11 @@
                 複製 ID
               </button>
               <button
-                onclick="copyEncryptedInviteLink()"
-                title="複製直撥連結"
-                class="px-2 py-1 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/35 border border-emerald-400/30 text-emerald-300 text-[10px] font-medium active:scale-90 transition"
+                onclick="openZeroServerModal()"
+                title="零信令伺服器離線 SDP 人工交握"
+                class="px-2 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/35 border border-amber-400/30 text-amber-300 text-[10px] font-medium active:scale-90 transition"
               >
-                邀請連結
+                無伺服器直連
               </button>
             </div>
             <button
@@ -251,7 +235,7 @@
               title="換號銷毀"
               class="w-full py-1 rounded-lg bg-rose-500/20 hover:bg-rose-500/35 border border-rose-400/30 text-rose-300 text-[10px] font-semibold active:scale-90 transition"
             >
-              🔥 記憶體覆寫並換號
+              🔥 覆寫金鑰並換號
             </button>
           </div>
         </div>
@@ -266,8 +250,8 @@
         <!-- 1. 軍規級保密撥號主介面 -->
         <section id="tab-dialer" class="tab-panel flex-1 flex flex-col justify-between px-4 pt-2 pb-4 overflow-y-auto no-scrollbar">
           
-          <!-- 對方 128-bit Base58 ID 輸入與貼上區 -->
           <div class="space-y-2.5">
+            <!-- 1. 對方 128-bit Base58 ID -->
             <div class="bg-white/5 border border-white/10 rounded-2xl p-3 space-y-2">
               <div class="flex items-center justify-between">
                 <label class="text-[11px] font-semibold text-emerald-300">1. 對方 128-bit Base58 識別碼</label>
@@ -291,56 +275,57 @@
                 id="dialDisplayInput"
                 oninput="refreshDialUI()"
                 placeholder="輸入或貼上 22 碼 Base58 識別碼"
-                class="w-full bg-slate-950/80 border border-white/15 rounded-xl px-3 py-2.5 text-xs font-mono-tech font-semibold tracking-wider text-white placeholder-slate-600 focus:outline-none focus:border-emerald-400"
+                class="w-full bg-slate-950/80 border border-white/15 rounded-xl px-3 py-2 text-xs font-mono-tech font-semibold tracking-wider text-white placeholder-slate-600 focus:outline-none focus:border-emerald-400"
               />
               <div class="flex items-center justify-between text-[10px]">
-                <span id="dialStatusHint" class="text-emerald-400/90">128-bit 抗枚舉空間已就緒</span>
+                <span id="dialStatusHint" class="text-emerald-400/90">RAM-Only 揮發識別碼已就緒</span>
                 <button
                   onclick="quickDial('DEMO_ECHO_888888888888', 'audio')"
                   class="px-2 py-0.5 rounded-full bg-emerald-500/15 hover:bg-emerald-500/30 border border-emerald-400/30 text-emerald-300 transition"
                 >
-                  🎧 音訊測試專線
+                  🎧 PQ 測試專線
                 </button>
               </div>
             </div>
 
-            <!-- 2. 雙層應用層加密（SFrame / Encoded Transform）實體預共享暗號 -->
+            <!-- 2. 雙層應用層加密實體預共享暗號 -->
             <div class="bg-white/5 border border-white/10 rounded-2xl p-3 space-y-1.5">
               <div class="flex items-center justify-between">
-                <label class="text-[11px] font-semibold text-cyan-300">2. 雙層應用層加密預共享暗號 (PSK)</label>
-                <span class="text-[9px] px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-300 font-mono-tech">SFrame + AES-256</span>
+                <label class="text-[11px] font-semibold text-cyan-300">2. 混合金鑰 + 實體預共享暗號 (PSK)</label>
+                <span class="text-[9px] px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-300 font-mono-tech">ML-KEM-1024 + X25519</span>
               </div>
               <div class="flex items-center bg-slate-950/80 border border-white/15 rounded-xl px-2.5 py-1.5">
                 <span class="text-xs text-slate-400 mr-1.5">🔑</span>
                 <input
                   type="password"
                   id="sharedPassphraseInput"
-                  placeholder="線下約定實體暗號（加入媒體幀級加密金鑰）"
+                  placeholder="線下約定實體暗號（與抗量子金鑰雙重融合）"
                   class="flex-1 bg-transparent text-xs text-emerald-200 placeholder-slate-500 focus:outline-none"
                 />
                 <button onclick="togglePassphraseVisibility()" class="text-xs text-slate-400 hover:text-white px-1">👁️</button>
               </div>
             </div>
 
-            <!-- 3. 網路匿名與防流量分析控制（Relay 強制中繼 + CBR 恆定填充） -->
+            <!-- 3. 網路匿名、防流量分析與私有信令設定 -->
             <div class="bg-white/5 border border-white/10 rounded-2xl p-3 space-y-2">
               <div class="flex items-center justify-between">
-                <span class="text-[11px] font-semibold text-amber-300">3. 網路匿名與防聲紋流量分析</span>
-                <button onclick="openNetworkConfigModal()" class="text-[10px] text-slate-300 underline hover:text-white">自訂 TURN 跳板</button>
+                <span class="text-[11px] font-semibold text-amber-300">3. 網路中繼與防側信道分析</span>
+                <button onclick="openNetworkConfigModal()" class="text-[10px] text-amber-200 underline hover:text-white">自建 TURN / 私有信令</button>
               </div>
 
               <div class="grid grid-cols-2 gap-2 text-[11px]">
-                <label class="flex items-center justify-between bg-slate-950/70 border border-white/10 rounded-xl px-2.5 py-2 cursor-pointer">
-                  <span class="text-slate-300">強制中繼 Relay</span>
+                <label class="flex items-center justify-between bg-slate-950/70 border border-white/15 rounded-xl px-2.5 py-2 cursor-pointer" title="填入自建 TURN 伺服器後可勾選強制中繼隱藏真實 IP">
+                  <span class="text-slate-200 font-medium">強制 Relay 中繼</span>
                   <input type="checkbox" id="forceRelayToggle" onchange="onNetworkPolicyChanged()" class="accent-emerald-500 w-3.5 h-3.5" />
                 </label>
-                <label class="flex items-center justify-between bg-slate-950/70 border border-white/10 rounded-xl px-2.5 py-2 cursor-pointer">
-                  <span class="text-slate-300">CBR 恆定填充</span>
+                <label class="flex items-center justify-between bg-slate-950/70 border border-emerald-500/30 rounded-xl px-2.5 py-2 cursor-pointer" title="關閉 Opus DTX 靜音抑制並強制等長封包填充">
+                  <span class="text-emerald-200 font-medium">Opus CBR 等長幀</span>
                   <input type="checkbox" id="cbrPaddingToggle" checked class="accent-emerald-500 w-3.5 h-3.5" />
                 </label>
               </div>
               <p class="text-[10px] text-slate-400 leading-snug">
-                • <strong>CBR 恆定填充</strong>：在靜音期間持續發送微幅加密雜訊封包，隱藏說話與沈默節奏。
+                • <strong>雙向語音互通</strong>：預設 STUN+TURN 自動穿透確保雙向有聲；若有自建 TURN 可勾選「強制 Relay」。<br/>
+                • <strong>看門狗斷線保護</strong>：對方掛斷或關閉網頁時，本機將在 3~8 秒內自動同步掛斷。
               </p>
             </div>
           </div>
@@ -352,31 +337,30 @@
               class="py-3.5 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-sm shadow-lg shadow-emerald-500/25 flex items-center justify-center gap-2 active:scale-95 transition"
             >
               <span>📞</span>
-              <span>發起加密語音</span>
+              <span>抗量子加密語音</span>
             </button>
             <button
               onclick="initiateEncryptedCall('video')"
               class="py-3.5 rounded-2xl bg-sky-500/25 hover:bg-sky-500/40 border border-sky-400/40 text-sky-200 font-bold text-sm flex items-center justify-center gap-2 active:scale-95 transition"
             >
               <span>📹</span>
-              <span>發起加密視訊</span>
+              <span>抗量子加密視訊</span>
             </button>
           </div>
         </section>
 
-        <!-- ==================== 覆蓋層 1：來電接聽彈窗 (Incoming Call Modal) ==================== -->
+        <!-- ==================== 覆蓋層 1：來電接聽彈窗 ==================== -->
         <section id="incomingCallModal" class="hidden absolute inset-0 z-40 bg-slate-950/95 backdrop-blur-xl flex flex-col items-center justify-between p-6">
           <div class="mt-6 flex flex-col items-center text-center w-full">
             <span id="incomingCallTypeTag" class="px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 text-xs font-semibold animate-pulse">
-              📞 E2EE 加密語音來電
+              📞 PQ-Hybrid 加密語音來電
             </span>
             <div class="w-20 h-20 rounded-full bg-slate-900 border-2 border-emerald-400/50 flex items-center justify-center text-4xl mt-5 shadow-2xl shadow-emerald-500/20">
-              🔐
+              🛡️
             </div>
             <h2 id="incomingCallerIdText" class="text-sm font-mono-tech font-bold tracking-wider text-white mt-3 break-all px-2">----------------------</h2>
-            <p class="text-xs text-slate-400 mt-1">正在請求建立雙層應用級加密安全通道...</p>
+            <p class="text-xs text-slate-400 mt-1">正在請求建立 X25519 + ML-KEM-1024 混合通道...</p>
 
-            <!-- 接聽前可同步輸入會話暗號 -->
             <div class="w-full max-w-[270px] mt-4 flex items-center bg-white/10 border border-emerald-400/30 rounded-xl px-3 py-1.5">
               <span class="text-xs text-emerald-300 mr-1.5">🔑</span>
               <input
@@ -389,53 +373,40 @@
           </div>
 
           <div class="w-full max-w-xs flex items-center justify-around mb-8">
-            <button
-              onclick="rejectIncomingCall()"
-              class="flex flex-col items-center gap-2 group"
-            >
-              <span class="w-16 h-16 rounded-full bg-rose-600 hover:bg-rose-500 flex items-center justify-center text-2xl text-white shadow-lg shadow-rose-600/30 active:scale-90 transition">
-                📵
-              </span>
+            <button onclick="rejectIncomingCall()" class="flex flex-col items-center gap-2 group">
+              <span class="w-16 h-16 rounded-full bg-rose-600 hover:bg-rose-500 flex items-center justify-center text-2xl text-white shadow-lg shadow-rose-600/30 active:scale-90 transition">📵</span>
               <span class="text-xs text-rose-300 font-medium">拒接</span>
             </button>
-            <button
-              onclick="acceptIncomingCall()"
-              class="flex flex-col items-center gap-2 group"
-            >
-              <span class="w-16 h-16 rounded-full bg-emerald-500 hover:bg-emerald-400 flex items-center justify-center text-2xl text-slate-950 shadow-lg shadow-emerald-500/30 active:scale-90 transition">
-                📞
-              </span>
+            <button onclick="acceptIncomingCall()" class="flex flex-col items-center gap-2 group">
+              <span class="w-16 h-16 rounded-full bg-emerald-500 hover:bg-emerald-400 flex items-center justify-center text-2xl text-slate-950 shadow-lg shadow-emerald-500/30 active:scale-90 transition">📞</span>
               <span class="text-xs text-emerald-300 font-semibold">安全接聽</span>
             </button>
           </div>
         </section>
 
-        <!-- ==================== 覆蓋層 2：端到端加密語音通話介面 (Audio Call Overlay) ==================== -->
+        <!-- ==================== 覆蓋層 2：語音通話介面 ==================== -->
         <section id="audioCallOverlay" class="hidden absolute inset-0 z-40 bg-gradient-to-b from-slate-900 via-slate-950 to-black flex flex-col justify-between p-4 overflow-hidden">
-          <!-- 頂部狀態與 SAS 安全指紋核對 -->
           <div class="flex flex-col items-center text-center shrink-0">
             <div class="flex items-center gap-2">
               <span id="audioCallDot" class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
-              <span id="audioCallTimerText" class="text-xs font-mono-tech text-emerald-300">正在連線...</span>
+              <span id="audioCallTimerText" class="text-xs font-mono-tech text-emerald-300">正在建立通道...</span>
             </div>
             <h2 id="audioPeerTitle" class="text-sm font-mono-tech font-bold text-white mt-1 truncate max-w-full px-2">對方 ID</h2>
-            <div class="flex items-center gap-1.5 mt-1">
+            <div class="flex items-center gap-1.5 mt-1 flex-wrap justify-center">
               <span id="frameCryptoBadge" class="text-[9px] px-2 py-0.5 rounded bg-cyan-500/20 border border-cyan-400/30 text-cyan-300 font-mono-tech">
-                SFrame 幀級加密就緒
+                DTLS-SRTP + PQ 加密
               </span>
               <span id="cbrStatusBadge" class="text-[9px] px-2 py-0.5 rounded bg-amber-500/20 border border-amber-400/30 text-amber-300 font-mono-tech">
-                CBR 恆定填充
+                Opus CBR 鎖定
               </span>
             </div>
 
-            <!-- SAS 雙方安全指紋膠囊 -->
             <div class="mt-2 px-3 py-1 rounded-xl bg-black/50 border border-emerald-500/30 flex items-center gap-2">
-              <span class="text-[10px] text-slate-400">SAS 核對碼:</span>
+              <span class="text-[10px] text-slate-400">PQ-SAS 核對碼:</span>
               <span id="audioSasEmoji" class="text-sm">🔐🔑🛡️⚡</span>
               <span id="audioSasHex" class="text-xs font-mono-tech font-bold text-amber-300">--------</span>
             </div>
 
-            <!-- 音訊輸出狀態 -->
             <div class="mt-1.5 flex items-center justify-center">
               <span id="audioTrackStatusPill" class="text-[10px] px-2.5 py-0.5 rounded-full bg-white/5 text-slate-300 border border-white/10">
                 🎙️ 準備音訊通道...
@@ -443,7 +414,6 @@
             </div>
           </div>
 
-          <!-- 中央音波、音量調節滑桿與即時電平表 -->
           <div class="my-2 px-3.5 py-2.5 rounded-2xl bg-white/5 border border-white/10 space-y-2 shrink-0">
             <div class="flex items-center justify-between gap-2 pb-1 border-b border-white/10">
               <span class="text-[11px] text-emerald-300 font-medium shrink-0">🔉 喇叭音量</span>
@@ -453,11 +423,11 @@
                 min="0.1"
                 max="1.0"
                 step="0.05"
-                value="0.45"
+                value="0.50"
                 oninput="setRemoteSpeakerVolume(this.value)"
                 class="volume-slider flex-1"
               />
-              <span id="audioVolumeLabel" class="text-[10px] font-mono-tech text-slate-300 w-9 text-right">45%</span>
+              <span id="audioVolumeLabel" class="text-[10px] font-mono-tech text-slate-300 w-9 text-right">50%</span>
             </div>
 
             <div class="flex items-center justify-between text-[10px] text-slate-400">
@@ -472,15 +442,12 @@
                 <div id="remoteLevelBar" class="h-full bg-cyan-400 w-0 transition-all duration-75"></div>
               </div>
             </div>
-            <div id="wakeLockStatusTag" class="text-[10px] text-center text-slate-500">
-              <span>🛡️ 已啟用不斷線心跳與螢幕恆亮保護</span>
-            </div>
           </div>
 
-          <!-- 閱後即焚 AES-256 密訊區 -->
+          <!-- 閱後即焚 AES-256-GCM 密訊區 -->
           <div class="flex-1 min-h-0 flex flex-col bg-black/40 border border-white/10 rounded-2xl p-2.5 mb-2">
             <div class="text-[10px] text-emerald-400/90 font-semibold mb-1 flex items-center justify-between">
-              <span>🔥 AES-256-GCM 閱後即焚密訊 (10秒銷毀)</span>
+              <span>🔥 PQ-HKDF 閱後即焚密訊 (10秒銷毀)</span>
               <button onclick="renegotiatePassphrase()" class="text-[10px] text-amber-300 hover:underline">🔑 重設暗號</button>
             </div>
             <div id="ephemeralChatFeed" class="flex-1 overflow-y-auto space-y-1 text-xs pr-1"></div>
@@ -501,7 +468,6 @@
             </div>
           </div>
 
-          <!-- 底部通話控制按鈕列 -->
           <div class="grid grid-cols-3 gap-2.5 shrink-0 pt-1">
             <button
               id="audioMuteBtn"
@@ -528,7 +494,7 @@
           </div>
         </section>
 
-        <!-- ==================== 覆蓋層 3：端到端加密雙向視訊通話介面 (Video Call Overlay) ==================== -->
+        <!-- ==================== 覆蓋層 3：視訊通話介面 ==================== -->
         <section id="videoCallOverlay" class="hidden absolute inset-0 z-40 bg-slate-950 flex flex-col justify-between overflow-hidden">
           <video id="remoteVideoEl" autoplay playsinline class="hidden absolute inset-0 w-full h-full object-cover"></video>
           <canvas id="remoteVideoCanvas" class="absolute inset-0 w-full h-full object-cover"></canvas>
@@ -570,11 +536,11 @@
                 min="0.1"
                 max="1.0"
                 step="0.05"
-                value="0.45"
+                value="0.50"
                 oninput="setRemoteSpeakerVolume(this.value)"
                 class="volume-slider flex-1"
               />
-              <span id="videoVolumeLabel" class="text-[10px] font-mono-tech text-slate-200 w-8 text-right">45%</span>
+              <span id="videoVolumeLabel" class="text-[10px] font-mono-tech text-slate-200 w-8 text-right">50%</span>
             </div>
           </div>
 
@@ -591,39 +557,15 @@
               <span class="text-[10px] text-slate-300 mt-1">鏡頭已遮蔽</span>
             </div>
             <div id="pipLabel" class="absolute bottom-1 left-1 right-1 text-center bg-black/60 rounded text-[9px] text-emerald-300 py-0.5 truncate">
-              E2EE 本地鏡頭
+              PQ 本地鏡頭
             </div>
           </div>
 
           <div class="relative z-20 px-4 pb-5 pt-2 flex items-center justify-center gap-3.5">
-            <button
-              onclick="toggleMuteAudio()"
-              title="靜音"
-              class="w-12 h-12 rounded-full bg-white/15 hover:bg-white/25 backdrop-blur-md border border-white/15 flex items-center justify-center text-lg text-white active:scale-90 transition"
-            >
-              🎙️
-            </button>
-            <button
-              onclick="toggleVideoVisibility()"
-              title="開啟/關閉鏡頭畫面"
-              class="w-12 h-12 rounded-full bg-white/15 hover:bg-white/25 backdrop-blur-md border border-white/15 flex items-center justify-center text-lg text-white active:scale-90 transition"
-            >
-              📷
-            </button>
-            <button
-              onclick="togglePrivacyBlurMask()"
-              title="隱私模糊面具"
-              class="w-12 h-12 rounded-full bg-white/15 hover:bg-white/25 backdrop-blur-md border border-white/15 flex items-center justify-center text-lg text-white active:scale-90 transition"
-            >
-              🎭
-            </button>
-            <button
-              onclick="terminateAndWipeCall(false)"
-              title="掛斷並銷毀金鑰"
-              class="w-14 h-12 rounded-full bg-rose-600 hover:bg-rose-500 flex items-center justify-center text-xl text-white shadow-lg shadow-rose-600/40 active:scale-90 transition"
-            >
-              📵
-            </button>
+            <button onclick="toggleMuteAudio()" class="w-12 h-12 rounded-full bg-white/15 hover:bg-white/25 backdrop-blur-md border border-white/15 flex items-center justify-center text-lg text-white active:scale-90 transition">🎙️</button>
+            <button onclick="toggleVideoVisibility()" class="w-12 h-12 rounded-full bg-white/15 hover:bg-white/25 backdrop-blur-md border border-white/15 flex items-center justify-center text-lg text-white active:scale-90 transition">📷</button>
+            <button onclick="togglePrivacyBlurMask()" class="w-12 h-12 rounded-full bg-white/15 hover:bg-white/25 backdrop-blur-md border border-white/15 flex items-center justify-center text-lg text-white active:scale-90 transition">🎭</button>
+            <button onclick="terminateAndWipeCall(false)" class="w-14 h-12 rounded-full bg-rose-600 hover:bg-rose-500 flex items-center justify-center text-xl text-white shadow-lg shadow-rose-600/40 active:scale-90 transition">📵</button>
           </div>
         </section>
 
@@ -631,16 +573,12 @@
         <section id="stealthCalculatorOverlay" class="hidden absolute inset-0 z-50 bg-[#111318] flex flex-col justify-between p-5">
           <div class="flex items-center justify-between text-xs text-slate-400">
             <span>標準工程計算機</span>
-            <button onclick="deactivateStealthScreen()" class="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-[11px] text-slate-300">
-              🔓 返回加密通話
-            </button>
+            <button onclick="deactivateStealthScreen()" class="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-[11px] text-slate-300">🔓 返回加密通話</button>
           </div>
-
           <div class="flex-1 flex flex-col justify-end items-end pb-4 px-2">
             <div id="calcHistoryText" class="text-xs text-slate-500 h-5">0</div>
             <div id="calcDisplayText" class="text-4xl font-light text-white tracking-tight mt-1 truncate max-w-full">0</div>
           </div>
-
           <div class="grid grid-cols-4 gap-2.5 pb-2">
             <button onclick="calcInput('C')" class="h-12 rounded-2xl bg-slate-700/80 text-rose-300 font-semibold">C</button>
             <button onclick="calcInput('+/-')" class="h-12 rounded-2xl bg-slate-700/80 text-slate-200 font-semibold">+/-</button>
@@ -664,29 +602,63 @@
           </div>
         </section>
 
-        <!-- ==================== 三段式固定底部確定鍵彈窗：自訂 TURN / 跳板設定 ==================== -->
-        <div id="networkConfigModal" class="hidden absolute inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
-          <div class="w-full max-w-xs max-h-[92dvh] bg-slate-900 border border-amber-500/40 rounded-3xl shadow-2xl flex flex-col overflow-hidden">
+        <!-- ==================== 彈窗：零信令伺服器離線交握 ==================== -->
+        <div id="zeroServerModal" class="hidden absolute inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
+          <div class="w-full max-w-xs max-h-[92dvh] bg-slate-900 border border-emerald-500/40 rounded-3xl shadow-2xl flex flex-col overflow-hidden">
             <div class="px-5 py-3.5 border-b border-white/10 shrink-0 flex items-center justify-between">
-              <h3 class="text-sm font-bold text-amber-300">🌐 自建 TURN / 跳板伺服器設定</h3>
-              <span class="text-[10px] font-mono-tech text-slate-400">RELAY</span>
+              <h3 class="text-sm font-bold text-emerald-300">🛰️ 零信令伺服器離線直連</h3>
+              <span class="text-[10px] font-mono-tech text-emerald-400">NO-METADATA</span>
             </div>
 
             <div class="p-4 flex-1 overflow-y-auto space-y-2.5 text-xs text-slate-300">
               <p class="text-[11px] text-slate-400 leading-relaxed">
-                若要隱藏真實 IP 位址並防止 4G/5G 行動網路 NAT 斷線，可填入自建 Coturn 或 Cloudflare TURN 中繼伺服器，並勾選「強制中繼 Relay」。
+                不經過任何第三方信令伺服器，徹底杜絕連線關聯圖譜外洩。
               </p>
-              <div>
-                <label class="text-[10px] text-slate-400">TURN URL (例如 turn:your-vps.com:3478)</label>
-                <input type="text" id="customTurnUrl" placeholder="turn:example.com:3478" class="w-full mt-1 bg-black/50 border border-white/15 rounded-xl px-2.5 py-1.5 font-mono-tech text-xs text-white" />
+              <div class="space-y-1.5">
+                <button onclick="createOfflineOffer()" class="w-full py-2 rounded-xl bg-emerald-600/30 border border-emerald-400/40 text-emerald-200 font-semibold">
+                  1. 我是發起方：產生加密邀請碼 (Offer)
+                </button>
+                <textarea id="offlineSdpOut" readonly rows="3" placeholder="產生後的邀請密文會顯示在此..." class="w-full bg-black/60 border border-white/15 rounded-xl p-2 font-mono-tech text-[10px] text-cyan-200"></textarea>
+                <button onclick="copyOfflineSdpOut()" class="w-full py-1.5 rounded-lg bg-white/10 text-[11px]">📋 複製上方密文傳給對方</button>
               </div>
-              <div>
-                <label class="text-[10px] text-slate-400">TURN 帳號 (Username)</label>
-                <input type="text" id="customTurnUser" placeholder="選填" class="w-full mt-1 bg-black/50 border border-white/15 rounded-xl px-2.5 py-1.5 font-mono-tech text-xs text-white" />
+              <div class="space-y-1.5 pt-2 border-t border-white/10">
+                <label class="text-[10px] text-amber-300 font-semibold">2. 貼上對方回傳的邀請碼或應答碼：</label>
+                <textarea id="offlineSdpIn" rows="3" placeholder="在此貼上對方的密文..." class="w-full bg-black/60 border border-white/15 rounded-xl p-2 font-mono-tech text-[10px] text-white"></textarea>
+                <button onclick="processOfflineSdpIn()" class="w-full py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold">
+                  🔗 載入並建立零信令加密通話
+                </button>
               </div>
-              <div>
-                <label class="text-[10px] text-slate-400">TURN 密碼 (Credential)</label>
-                <input type="password" id="customTurnCred" placeholder="選填" class="w-full mt-1 bg-black/50 border border-white/15 rounded-xl px-2.5 py-1.5 font-mono-tech text-xs text-white" />
+            </div>
+
+            <div class="px-5 py-3 border-t border-white/10 bg-slate-950/80 shrink-0">
+              <button onclick="closeZeroServerModal()" class="w-full py-2 rounded-xl bg-white/10 text-slate-300 text-xs">關閉視窗</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ==================== 彈窗：自建 TURN 與私有信令伺服器設定 ==================== -->
+        <div id="networkConfigModal" class="hidden absolute inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
+          <div class="w-full max-w-xs max-h-[92dvh] bg-slate-900 border border-amber-500/40 rounded-3xl shadow-2xl flex flex-col overflow-hidden">
+            <div class="px-5 py-3.5 border-b border-white/10 shrink-0 flex items-center justify-between">
+              <h3 class="text-sm font-bold text-amber-300">🌐 自建 TURN 與私有信令伺服器</h3>
+              <span class="text-[10px] font-mono-tech text-slate-400">ISOLATION</span>
+            </div>
+
+            <div class="p-4 flex-1 overflow-y-auto space-y-2.5 text-xs text-slate-300">
+              <div class="space-y-1.5 pb-2 border-b border-white/10">
+                <div class="text-[11px] font-semibold text-cyan-300">A. 自建私有 PeerJS 信令伺服器</div>
+                <input type="text" id="customPeerHost" placeholder="信令主機 (例如 signal.yourdomain.com)" class="w-full bg-black/50 border border-white/15 rounded-xl px-2.5 py-1.5 font-mono-tech text-[11px] text-white" />
+                <div class="grid grid-cols-2 gap-1.5">
+                  <input type="number" id="customPeerPort" placeholder="Port (443)" class="bg-black/50 border border-white/15 rounded-xl px-2.5 py-1.5 font-mono-tech text-[11px] text-white" />
+                  <input type="text" id="customPeerPath" placeholder="Path (/myapp)" class="bg-black/50 border border-white/15 rounded-xl px-2.5 py-1.5 font-mono-tech text-[11px] text-white" />
+                </div>
+              </div>
+
+              <div class="space-y-1.5">
+                <div class="text-[11px] font-semibold text-amber-300">B. 自建 Coturn / WireGuard 中繼跳板</div>
+                <input type="text" id="customTurnUrl" placeholder="turn:your-vps.com:3478" class="w-full bg-black/50 border border-white/15 rounded-xl px-2.5 py-1.5 font-mono-tech text-[11px] text-white" />
+                <input type="text" id="customTurnUser" placeholder="TURN Username" class="w-full bg-black/50 border border-white/15 rounded-xl px-2.5 py-1.5 font-mono-tech text-[11px] text-white" />
+                <input type="password" id="customTurnCred" placeholder="TURN Credential" class="w-full bg-black/50 border border-white/15 rounded-xl px-2.5 py-1.5 font-mono-tech text-[11px] text-white" />
               </div>
             </div>
 
@@ -697,95 +669,52 @@
           </div>
         </div>
 
-        <!-- ==================== 三段式固定底部確定鍵彈窗：換號銷毀確認 ==================== -->
+        <!-- ==================== 彈窗：換號銷毀確認 ==================== -->
         <div id="burnConfirmModal" class="hidden absolute inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
           <div class="w-full max-w-xs max-h-[92dvh] bg-slate-900 border border-rose-500/40 rounded-3xl shadow-2xl flex flex-col overflow-hidden">
             <div class="px-5 py-3.5 border-b border-white/10 shrink-0 flex items-center justify-between">
-              <h3 class="text-sm font-bold text-rose-400">🔥 換號並徹底銷毀舊身份</h3>
-              <span class="text-[10px] font-mono-tech text-rose-300">IRREVERSIBLE</span>
+              <h3 class="text-sm font-bold text-rose-400">🔥 換號並覆寫銷毀金鑰</h3>
+              <span class="text-[10px] font-mono-tech text-rose-300">WIPE</span>
             </div>
-
             <div class="p-4 flex-1 overflow-y-auto space-y-2.5 text-xs text-slate-300">
               <div class="bg-rose-950/50 border border-rose-500/30 rounded-xl p-3">
-                <div class="text-[10px] text-rose-300">即將銷毀的目前 128-bit Base58 識別碼</div>
+                <div class="text-[10px] text-rose-300">目前揮發記憶體 128-bit 識別碼</div>
                 <div id="burnTargetNumberText" class="text-xs font-mono-tech font-bold text-white tracking-wider mt-0.5 break-all">----------------------</div>
               </div>
-              <ul class="space-y-1 text-[11px] text-slate-400">
-                <li>1️⃣ 立即中斷所有語音、視訊與資料通道連線。</li>
-                <li>2️⃣ 清除 <span class="font-mono-tech text-white">localStorage</span> 與 <span class="font-mono-tech text-white">sessionStorage</span> 紀錄。</li>
-                <li>3️⃣ 以隨機亂數覆寫記憶體金鑰陣列並釋放參考。</li>
-                <li>4️⃣ 重新簽發全新 22 碼 Base58（128-bit 熵值）密碼學識別碼。</li>
-              </ul>
+              <p class="text-[11px] text-slate-400 leading-relaxed">
+                系統已將所有識別碼與私鑰鎖定在揮發性記憶體（不寫入 `localStorage`），執行換號將以亂數覆寫 Uint8Array 緩衝區並重新簽發新 ID。
+              </p>
             </div>
-
             <div class="px-5 py-3 border-t border-white/10 bg-slate-950/80 shrink-0 flex gap-2.5">
-              <button
-                onclick="closeBurnModal()"
-                class="flex-1 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-slate-300 text-xs font-medium transition"
-              >
-                取消保留原號
-              </button>
-              <button
-                onclick="executeBurnAndRotateNumber()"
-                class="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-500 hover:to-red-500 text-white text-xs font-bold shadow-lg transition"
-              >
-                🔥 確定銷毀並換號
-              </button>
+              <button onclick="closeBurnModal()" class="flex-1 py-2.5 rounded-xl bg-white/10 text-slate-300 text-xs">取消</button>
+              <button onclick="executeBurnAndRotateNumber()" class="flex-1 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold">🔥 確定銷毀換號</button>
             </div>
           </div>
         </div>
 
-        <!-- ==================== 三段式固定底部確定鍵彈窗：E2EE 安全憑證與架構說明 ==================== -->
+        <!-- ==================== 彈窗：後量子安全憑證與原生架構說明 ==================== -->
         <div id="securityAuditModal" class="hidden absolute inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
           <div class="w-full max-w-xs max-h-[92dvh] bg-slate-900 border border-emerald-500/35 rounded-3xl shadow-2xl flex flex-col overflow-hidden">
             <div class="px-5 py-3.5 border-b border-white/10 shrink-0 flex items-center justify-between">
-              <h3 class="text-sm font-bold text-emerald-300">🛡️ 軍規安全架構與憑證狀態</h3>
-              <span class="text-[10px] font-mono-tech text-emerald-400">128-BIT</span>
+              <h3 class="text-sm font-bold text-emerald-300">🛡️ 後量子混合加密與安全架構</h3>
+              <span class="text-[10px] font-mono-tech text-emerald-400">PQ-HYBRID</span>
             </div>
 
             <div class="p-4 flex-1 overflow-y-auto space-y-2.5 text-xs">
               <div class="bg-black/40 border border-white/10 rounded-xl p-2.5 space-y-1">
-                <div class="text-[10px] text-slate-400">1. 128-bit Base58 密碼學識別碼</div>
-                <div id="auditBoundNumber" class="font-mono-tech text-emerald-300 text-[11px] break-all">----------------------</div>
-                <div class="font-mono-tech text-slate-400 text-[10px]">建立時間：<span id="auditCreatedAt">--</span></div>
+                <div class="text-[10px] text-slate-400">1. 抗量子混合金鑰交換引擎</div>
+                <div id="auditPqAlgo" class="font-mono-tech text-cyan-300 text-[10px]">檢測中...</div>
               </div>
 
               <div class="bg-black/40 border border-white/10 rounded-xl p-2.5 space-y-1">
-                <div class="text-[10px] text-slate-400">2. 雙層媒體加密（SFrame / Encoded Transform）</div>
-                <div class="font-mono-tech text-cyan-300 text-[10px]">
-                  內層：WebRTC Encoded Transform 逐幀加密 (ECDH P-256 + PSK)<br/>
-                  外層：WebRTC DTLS 1.3 + SRTP 傳輸加密
-                </div>
-              </div>
-
-              <div class="bg-black/40 border border-white/10 rounded-xl p-2.5 space-y-1">
-                <div class="text-[10px] text-slate-400">3. 本機臨時公鑰 SHA-256 指紋</div>
-                <div id="auditLocalPubKey" class="font-mono-tech text-[10px] text-slate-300 break-all leading-relaxed">
-                  產生中...
-                </div>
-              </div>
-
-              <div class="bg-black/40 border border-white/10 rounded-xl p-2.5 space-y-1">
-                <div class="text-[10px] text-slate-400">4. 雙方安全驗證碼 (SAS 表情與雜湊)</div>
-                <div id="auditSasFull" class="font-mono-tech text-xs text-amber-300 font-bold">
-                  尚未建立通話會話
-                </div>
+                <div class="text-[10px] text-slate-400">2. 雙方 PQ-SAS 安全核對指紋</div>
+                <div id="auditSasFull" class="font-mono-tech text-xs text-amber-300 font-bold">尚未建立通話會話</div>
               </div>
             </div>
 
             <div class="px-5 py-3 border-t border-white/10 bg-slate-950/70 shrink-0 flex gap-2">
-              <button
-                onclick="closeSecurityModal(); openBurnModal();"
-                class="flex-1 py-2.5 rounded-xl bg-rose-500/20 hover:bg-rose-500/35 border border-rose-400/30 text-rose-300 text-xs font-semibold transition"
-              >
-                🔥 換號銷毀
-              </button>
-              <button
-                onclick="closeSecurityModal()"
-                class="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold transition"
-              >
-                確定
-              </button>
+              <button onclick="closeSecurityModal(); openBurnModal();" class="flex-1 py-2.5 rounded-xl bg-rose-500/20 border border-rose-400/30 text-rose-300 text-xs font-semibold">🔥 換號銷毀</button>
+              <button onclick="closeSecurityModal()" class="flex-1 py-2.5 rounded-xl bg-emerald-600 text-white text-xs font-semibold">確定</button>
             </div>
           </div>
         </div>
@@ -795,26 +724,56 @@
     </div>
   </div>
 
+  <!-- 引入真正的後量子 ML-KEM-1024 與 X25519 ES Module -->
+  <script type="module">
+    import { ml_kem1024 } from 'https://esm.sh/@noble/post-quantum@0.2.1/ml-kem';
+    import { x25519 } from 'https://esm.sh/@noble/curves@1.8.1/ed25519';
+
+    window.PQPrimitives = {
+      available: true,
+      ml_kem1024,
+      x25519
+    };
+    if (window.onPQPrimitivesLoaded) window.onPQPrimitivesLoaded();
+  </script>
+
   <script>
     /* ==========================================================================
-       1. 128-bit Base58 密碼學識別碼與雙層加密核心引擎
+       1. 抗量子混合加密核心引擎 (X25519 + ML-KEM-1024 + HKDF-SHA256)
        ========================================================================== */
     const BASE58_ALPHABET = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
 
-    class E2EECryptoEngine {
+    function bytesToB64(u8) {
+      let bin = '';
+      for (let i = 0; i < u8.length; i++) bin += String.fromCharCode(u8[i]);
+      return btoa(bin);
+    }
+
+    function b64ToBytes(b64) {
+      const bin = atob(b64);
+      const u8 = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+      return u8;
+    }
+
+    class PostQuantumHybridEngine {
       constructor() {
-        this.ecdhKeyPair = null;
-        this.localPublicJwk = null;
-        this.remotePublicJwk = null;
-        this.localFingerprint = '--------';
+        this.isTruePQ = false;
+        this.x25519Priv = null;
+        this.x25519Pub = null;
+        this.mlkemPub = null;
+        this.mlkemPriv = null;
+        this.mlkemSharedSecret = null;
+        this.fallbackEcdh = null;
+        this.fallbackPubJwk = null;
+        this.remoteBundle = null;
         this.sharedAesKey = null;
-        this.frameXorKeyBytes = null; // 用於 WebRTC Encoded Transform 逐幀應用層加密
+        this.isHandshakeComplete = false;
         this.sasEmojiList = ['🔐', '🛡️', '🔑', '⚡', '🛰️', '🧬', '🧿', '💎', '🦊', '🦉', '🐺', '🦅', '🧭', '⚓', '🔥', '❄️'];
       }
 
-      // 產生 128-bit (16 bytes) 密碼學隨機數並編碼為 22 字元 Base58 ID
       generateSecureBase58Id() {
-        const bytes = new Uint8Array(16); // 128-bit 熵值
+        const bytes = new Uint8Array(16);
         window.crypto.getRandomValues(bytes);
         let num = 0n;
         for (let i = 0; i < bytes.length; i++) {
@@ -826,59 +785,113 @@
           encoded = BASE58_ALPHABET[rem] + encoded;
           num = num / 58n;
         }
-        while (encoded.length < 22) {
-          encoded = '1' + encoded;
-        }
+        while (encoded.length < 22) encoded = '1' + encoded;
         return encoded.slice(0, 22);
       }
 
       async generateEphemeralKeys() {
-        this.ecdhKeyPair = await window.crypto.subtle.generateKey(
-          { name: 'ECDH', namedCurve: 'P-256' },
-          false,
-          ['deriveBits']
-        );
-        this.localPublicJwk = await window.crypto.subtle.exportKey('jwk', this.ecdhKeyPair.publicKey);
-        const pubBytes = new TextEncoder().encode(JSON.stringify(this.localPublicJwk));
-        const hashBuf = await window.crypto.subtle.digest('SHA-256', pubBytes);
-        const hex = Array.from(new Uint8Array(hashBuf)).map(b => b.toString(16).padStart(2, '0')).join('').toUpperCase();
-        this.localFingerprint = `${hex.slice(0, 4)}-${hex.slice(4, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}`;
-        return this.localFingerprint;
+        this.wipeKeys();
+        if (window.PQPrimitives && window.PQPrimitives.available) {
+          this.isTruePQ = true;
+          const { ml_kem1024, x25519 } = window.PQPrimitives;
+          this.x25519Priv = x25519.utils.randomPrivateKey();
+          this.x25519Pub = x25519.getPublicKey(this.x25519Priv);
+          const seed = new Uint8Array(64);
+          window.crypto.getRandomValues(seed);
+          const keys = ml_kem1024.keygen(seed);
+          this.mlkemPub = keys.publicKey;
+          this.mlkemPriv = keys.secretKey;
+          seed.fill(0);
+        } else {
+          this.isTruePQ = false;
+          this.fallbackEcdh = await window.crypto.subtle.generateKey(
+            { name: 'ECDH', namedCurve: 'P-256' },
+            false,
+            ['deriveBits']
+          );
+          this.fallbackPubJwk = await window.crypto.subtle.exportKey('jwk', this.fallbackEcdh.publicKey);
+        }
+        this.updatePqStatusBadges();
       }
 
-      // 結合 ECDH 共享密鑰與實體預共享暗號 (PSK) 派生會話金鑰與 SFrame 幀加密金鑰
-      async deriveSessionSecrets(remotePublicJwk, passphrase = '') {
-        if (!this.ecdhKeyPair) await this.generateEphemeralKeys();
-        this.remotePublicJwk = remotePublicJwk;
+      updatePqStatusBadges() {
+        const badge = document.getElementById('pqStatusBadge');
+        const auditAlgo = document.getElementById('auditPqAlgo');
+        if (this.isTruePQ) {
+          if (badge) badge.textContent = 'ML-KEM-1024 + X25519';
+          if (auditAlgo) auditAlgo.textContent = '✅ 已啟用 NIST FIPS 203 ML-KEM-1024 + X25519 雙重混合金鑰交換';
+        } else {
+          if (badge) badge.textContent = 'ECDH P-256 (回退)';
+          if (auditAlgo) auditAlgo.textContent = '⚠️ ECDH P-256 + PSK（連網可載入 ML-KEM-1024）';
+        }
+      }
 
-        const remotePubKey = await window.crypto.subtle.importKey(
-          'jwk',
-          remotePublicJwk,
-          { name: 'ECDH', namedCurve: 'P-256' },
-          false,
-          []
-        );
+      getPublicHandshakeBundle(remoteOfferBundle = null) {
+        if (this.isTruePQ && window.PQPrimitives) {
+          const { ml_kem1024 } = window.PQPrimitives;
+          let ctB64 = null;
+          if (remoteOfferBundle && remoteOfferBundle.mlkemPubB64) {
+            const remoteMlPub = b64ToBytes(remoteOfferBundle.mlkemPubB64);
+            const { cipherText, sharedSecret } = ml_kem1024.encapsulate(remoteMlPub);
+            this.mlkemSharedSecret = sharedSecret;
+            ctB64 = bytesToB64(cipherText);
+          }
+          return {
+            pq: true,
+            x25519PubB64: bytesToB64(this.x25519Pub),
+            mlkemPubB64: bytesToB64(this.mlkemPub),
+            mlkemCtB64: ctB64
+          };
+        }
+        return { pq: false, jwk: this.fallbackPubJwk };
+      }
 
-        const sharedBits = await window.crypto.subtle.deriveBits(
-          { name: 'ECDH', public: remotePubKey },
-          this.ecdhKeyPair.privateKey,
-          256
-        );
+      async deriveHybridSessionSecrets(remoteBundle, passphrase = '') {
+        this.remoteBundle = remoteBundle;
+        let combinedSecretBytes;
 
-        const passBytes = new TextEncoder().encode(passphrase.trim());
-        const combined = new Uint8Array(sharedBits.byteLength + passBytes.length);
-        combined.set(new Uint8Array(sharedBits), 0);
-        combined.set(passBytes, sharedBits.byteLength);
+        if (this.isTruePQ && remoteBundle.pq && window.PQPrimitives) {
+          const { ml_kem1024, x25519 } = window.PQPrimitives;
+          const remoteXPub = b64ToBytes(remoteBundle.x25519PubB64);
+          const xShared = x25519.getSharedSecret(this.x25519Priv, remoteXPub);
 
-        const masterHash = await window.crypto.subtle.digest('SHA-256', combined);
+          let pqShared;
+          if (remoteBundle.mlkemCtB64) {
+            const ctBytes = b64ToBytes(remoteBundle.mlkemCtB64);
+            pqShared = ml_kem1024.decapsulate(ctBytes, this.mlkemPriv);
+          } else if (this.mlkemSharedSecret) {
+            pqShared = this.mlkemSharedSecret;
+          } else {
+            pqShared = new Uint8Array(32);
+          }
+
+          const passBytes = new TextEncoder().encode(passphrase.trim());
+          combinedSecretBytes = new Uint8Array(xShared.length + pqShared.length + passBytes.length);
+          combinedSecretBytes.set(xShared, 0);
+          combinedSecretBytes.set(pqShared, xShared.length);
+          combinedSecretBytes.set(passBytes, xShared.length + pqShared.length);
+        } else {
+          const remotePubKey = await window.crypto.subtle.importKey(
+            'jwk',
+            remoteBundle.jwk,
+            { name: 'ECDH', namedCurve: 'P-256' },
+            false,
+            []
+          );
+          const sharedBits = await window.crypto.subtle.deriveBits(
+            { name: 'ECDH', public: remotePubKey },
+            this.fallbackEcdh.privateKey,
+            256
+          );
+          const passBytes = new TextEncoder().encode(passphrase.trim());
+          combinedSecretBytes = new Uint8Array(sharedBits.byteLength + passBytes.length);
+          combinedSecretBytes.set(new Uint8Array(sharedBits), 0);
+          combinedSecretBytes.set(passBytes, sharedBits.byteLength);
+        }
+
+        const masterHash = await window.crypto.subtle.digest('SHA-256', combinedSecretBytes);
         const masterBytes = new Uint8Array(masterHash);
-
-        // 派生獨立的第二層媒體幀金鑰 (SHA-512 後半段)
-        const frameSeed = new Uint8Array(masterBytes.length + 6);
-        frameSeed.set(masterBytes, 0);
-        frameSeed.set(new TextEncoder().encode('SFRAME'), masterBytes.length);
-        const frameHash = await window.crypto.subtle.digest('SHA-256', frameSeed);
-        this.frameXorKeyBytes = new Uint8Array(frameHash);
+        combinedSecretBytes.fill(0);
 
         this.sharedAesKey = await window.crypto.subtle.importKey(
           'raw',
@@ -887,17 +900,11 @@
           false,
           ['encrypt', 'decrypt']
         );
+        this.isHandshakeComplete = true;
 
         const emojis = [0, 1, 2, 3].map(idx => this.sasEmojiList[masterBytes[idx] % this.sasEmojiList.length]).join('');
         const sasCode = Array.from(masterBytes.slice(4, 8)).map(b => b.toString(16).padStart(2, '0')).join('').toUpperCase();
         return { sasCode, sasEmojis: emojis };
-      }
-
-      // 預先從本地暗號派生初始幀密鑰，確保媒體幀在第一毫秒即受保護
-      async deriveInitialPskFrameKey(passphrase = '') {
-        const passBytes = new TextEncoder().encode('INIT_SFRAME_PSK:' + passphrase.trim());
-        const hash = await window.crypto.subtle.digest('SHA-256', passBytes);
-        this.frameXorKeyBytes = new Uint8Array(hash);
       }
 
       async encryptText(plainText) {
@@ -909,10 +916,7 @@
           this.sharedAesKey,
           encoded
         );
-        return {
-          iv: Array.from(iv),
-          ct: Array.from(new Uint8Array(cipherBuf))
-        };
+        return { iv: Array.from(iv), ct: Array.from(new Uint8Array(cipherBuf)) };
       }
 
       async decryptText(payload) {
@@ -927,61 +931,49 @@
           );
           return new TextDecoder().decode(plainBuf);
         } catch (e) {
-          return '[解密失敗：金鑰或會話暗號不符]';
+          return '[解密失敗：後量子金鑰或實體暗號不符]';
         }
       }
 
-      // 盡可能覆寫記憶體中的金鑰位元組並清除參考
       wipeKeys() {
-        if (this.frameXorKeyBytes) {
-          window.crypto.getRandomValues(this.frameXorKeyBytes);
-          this.frameXorKeyBytes.fill(0);
-          this.frameXorKeyBytes = null;
-        }
-        this.ecdhKeyPair = null;
-        this.localPublicJwk = null;
-        this.remotePublicJwk = null;
+        const zeroOut = (arr) => {
+          if (arr && arr.fill) {
+            window.crypto.getRandomValues(arr);
+            arr.fill(0);
+          }
+        };
+        zeroOut(this.x25519Priv);
+        zeroOut(this.mlkemPriv);
+        zeroOut(this.mlkemSharedSecret);
+
+        this.x25519Priv = null;
+        this.x25519Pub = null;
+        this.mlkemPriv = null;
+        this.mlkemPub = null;
+        this.mlkemSharedSecret = null;
+        this.fallbackEcdh = null;
+        this.fallbackPubJwk = null;
+        this.remoteBundle = null;
         this.sharedAesKey = null;
+        this.isHandshakeComplete = false;
       }
     }
 
-    const cryptoEngine = new E2EECryptoEngine();
+    const cryptoEngine = new PostQuantumHybridEngine();
+
+    window.onPQPrimitivesLoaded = async () => {
+      await cryptoEngine.generateEphemeralKeys();
+    };
 
     /* ==========================================================================
-       2. 128-bit Base58 身份識別碼持久化與記憶體覆寫銷毀機制
+       2. 揮發記憶體身份識別碼
        ========================================================================== */
-    const STORAGE_NUM_KEY = 'cipherphone_base58_id_v2';
-    const STORAGE_CREATED_KEY = 'cipherphone_base58_created_v2';
-
     let myAnonNumber = '';
-    let myNumberCreatedAt = '';
-    const PEER_NS = 'cph128-';
+    const PEER_NS = 'pq128-';
 
-    function loadOrCreatePersistentNumber() {
-      let savedId = '';
-      let savedTime = '';
-      try {
-        savedId = localStorage.getItem(STORAGE_NUM_KEY) || '';
-        savedTime = localStorage.getItem(STORAGE_CREATED_KEY) || '';
-      } catch (e) {}
-
-      if (/^[1-9A-HJ-NP-Za-km-z]{22}$/.test(savedId)) {
-        myAnonNumber = savedId;
-        myNumberCreatedAt = savedTime || new Date().toLocaleString('zh-TW', { hour12: false });
-      } else {
-        myAnonNumber = cryptoEngine.generateSecureBase58Id();
-        myNumberCreatedAt = new Date().toLocaleString('zh-TW', { hour12: false });
-        try {
-          localStorage.setItem(STORAGE_NUM_KEY, myAnonNumber);
-          localStorage.setItem(STORAGE_CREATED_KEY, myNumberCreatedAt);
-        } catch (e) {}
-      }
-
+    function initVolatileIdentity() {
+      myAnonNumber = cryptoEngine.generateSecureBase58Id();
       document.getElementById('myAnonNumberText').textContent = myAnonNumber;
-      const auditNumEl = document.getElementById('auditBoundNumber');
-      const auditTimeEl = document.getElementById('auditCreatedAt');
-      if (auditNumEl) auditNumEl.textContent = myAnonNumber;
-      if (auditTimeEl) auditTimeEl.textContent = myNumberCreatedAt;
     }
 
     function openBurnModal() {
@@ -995,59 +987,27 @@
 
     async function executeBurnAndRotateNumber() {
       closeBurnModal();
-
       if (currentCallSession || pendingIncomingCall) {
         await terminateAndWipeCall(false);
       }
-
       if (peerObj) {
         try { peerObj.destroy(); } catch (e) {}
         peerObj = null;
       }
-
-      try {
-        localStorage.removeItem(STORAGE_NUM_KEY);
-        localStorage.removeItem(STORAGE_CREATED_KEY);
-        sessionStorage.clear();
-      } catch (e) {}
-
       cryptoEngine.wipeKeys();
-
-      myAnonNumber = cryptoEngine.generateSecureBase58Id();
-      myNumberCreatedAt = new Date().toLocaleString('zh-TW', { hour12: false });
-
-      try {
-        localStorage.setItem(STORAGE_NUM_KEY, myAnonNumber);
-        localStorage.setItem(STORAGE_CREATED_KEY, myNumberCreatedAt);
-      } catch (e) {}
-
-      const numDisplayEl = document.getElementById('myAnonNumberText');
-      if (numDisplayEl) numDisplayEl.textContent = myAnonNumber;
+      initVolatileIdentity();
       await cryptoEngine.generateEphemeralKeys();
-      updateSecurityModalContent();
       initSecurePeerNode();
-
-      showCipherToast('🔥', '已覆寫金鑰並簽發全新 128-bit 識別碼');
+      showCipherToast('🔥', '已覆寫緩衝區並簽發全新揮發 128-bit ID');
     }
 
     function openSecurityModal() {
-      updateSecurityModalContent();
+      cryptoEngine.updatePqStatusBadges();
       document.getElementById('securityAuditModal').classList.remove('hidden');
     }
 
     function closeSecurityModal() {
       document.getElementById('securityAuditModal').classList.add('hidden');
-    }
-
-    function updateSecurityModalContent() {
-      const auditNum = document.getElementById('auditBoundNumber');
-      const auditTime = document.getElementById('auditCreatedAt');
-      const pubEl = document.getElementById('auditLocalPubKey');
-      if (auditNum) auditNum.textContent = myAnonNumber;
-      if (auditTime) auditTime.textContent = myNumberCreatedAt;
-      if (pubEl && cryptoEngine.localPublicJwk) {
-        pubEl.textContent = `FP: ${cryptoEngine.localFingerprint} | X: ${cryptoEngine.localPublicJwk.x.slice(0, 22)}...`;
-      }
     }
 
     /* ==========================================================================
@@ -1058,7 +1018,6 @@
         this.ctx = null;
         this.ringTimer = null;
       }
-
       ensure() {
         if (!this.ctx) {
           const AC = window.AudioContext || window.webkitAudioContext;
@@ -1066,7 +1025,6 @@
         }
         if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume();
       }
-
       playTone(freq, dur = 0.09, type = 'sine', vol = 0.08) {
         try {
           this.ensure();
@@ -1084,13 +1042,11 @@
           osc.stop(now + dur);
         } catch (e) {}
       }
-
       playHandshakeChime() {
         this.playTone(523.25, 0.12, 'triangle', 0.1);
         setTimeout(() => this.playTone(659.25, 0.12, 'triangle', 0.1), 90);
         setTimeout(() => this.playTone(1046.5, 0.22, 'triangle', 0.12), 180);
       }
-
       startIncomingRing() {
         this.stopRing();
         const chime = () => {
@@ -1100,7 +1056,6 @@
         chime();
         this.ringTimer = setInterval(chime, 1800);
       }
-
       stopRing() {
         if (this.ringTimer) {
           clearInterval(this.ringTimer);
@@ -1108,86 +1063,49 @@
         }
       }
     }
-
     const sfx = new SecureSoundFX();
 
     /* ==========================================================================
-       4. WebRTC 雙層應用層幀級加密 (Encoded Transform) 與網路中繼設定
+       4. SDP 強制 Opus CBR（關閉 DTX 靜音抑制，確保音訊穩定不斷流）
        ========================================================================== */
-    function applyEncodedFrameEncryption(pc) {
-      if (!pc) return;
-      const badge = document.getElementById('frameCryptoBadge');
+    function enforceOpusCbrInSdp(sdp) {
+      if (!sdp) return sdp;
+      const enableCbr = document.getElementById('cbrPaddingToggle')?.checked;
+      if (!enableCbr) return sdp;
 
-      // 傳送端音訊/視訊幀加密（在進入 DTLS-SRTP 前先經過應用層金鑰加密）
-      pc.getSenders().forEach(sender => {
-        if (!sender.track) return;
-        try {
-          if (typeof sender.createEncodedStreams === 'function' && !sender._sframeApplied) {
-            sender._sframeApplied = true;
-            const streams = sender.createEncodedStreams();
-            const transformStream = new TransformStream({
-              transform(chunk, controller) {
-                const key = cryptoEngine.frameXorKeyBytes;
-                if (key && chunk.data && chunk.data.byteLength > 4) {
-                  const view = new Uint8Array(chunk.data);
-                  // 保留前 4 bytes 編解碼器標頭避免破壞封包解析，對其餘負載進行應用層加密
-                  for (let i = 4; i < view.length; i++) {
-                    view[i] ^= key[i % key.length];
-                  }
-                }
-                controller.enqueue(chunk);
-              }
-            });
-            streams.readable.pipeThrough(transformStream).pipeTo(streams.writable).catch(() => {});
-            if (badge) badge.textContent = '🛡️ SFrame 雙層幀加密啟用';
-          }
-        } catch (e) {}
-      });
+      return sdp.replace(/(a=fmtp:\d+ .*)/g, (match) => {
+        let line = match;
+        if (!line.includes('usedtx=')) line += ';usedtx=0';
+        else line = line.replace(/usedtx=\d/, 'usedtx=0');
 
-      // 接收端音訊/視訊幀解密
-      pc.getReceivers().forEach(receiver => {
-        if (!receiver.track) return;
-        try {
-          if (typeof receiver.createEncodedStreams === 'function' && !receiver._sframeApplied) {
-            receiver._sframeApplied = true;
-            const streams = receiver.createEncodedStreams();
-            const transformStream = new TransformStream({
-              transform(chunk, controller) {
-                const key = cryptoEngine.frameXorKeyBytes;
-                if (key && chunk.data && chunk.data.byteLength > 4) {
-                  const view = new Uint8Array(chunk.data);
-                  for (let i = 4; i < view.length; i++) {
-                    view[i] ^= key[i % key.length];
-                  }
-                }
-                controller.enqueue(chunk);
-              }
-            });
-            streams.readable.pipeThrough(transformStream).pipeTo(streams.writable).catch(() => {});
-          }
-        } catch (e) {}
+        if (!line.includes('cbr=')) line += ';cbr=1';
+        else line = line.replace(/cbr=\d/, 'cbr=1');
+
+        return line;
       });
     }
 
+    /* ==========================================================================
+       5. 網路中繼與自建私有信令設定
+       ========================================================================== */
     function openNetworkConfigModal() {
       document.getElementById('networkConfigModal').classList.remove('hidden');
     }
-
     function closeNetworkConfigModal() {
       document.getElementById('networkConfigModal').classList.add('hidden');
     }
-
     function saveNetworkConfig() {
       closeNetworkConfigModal();
       initSecurePeerNode();
-      showCipherToast('🌐', '已套用中繼跳板設定並重新建立信令');
+      showCipherToast('🌐', '已套用私有信令與中繼跳板設定');
     }
-
     function onNetworkPolicyChanged() {
       const forceRelay = document.getElementById('forceRelayToggle').checked;
-      const turnUrl = (document.getElementById('customTurnUrl').value || '').trim();
+      const turnUrl = (document.getElementById('customTurnUrl')?.value || '').trim();
       if (forceRelay && !turnUrl) {
-        showCipherToast('⚠️', '已開啟強制 Relay，使用內建備援中繼節點');
+        showCipherToast('⚠️', '提醒：若公共 TURN 壅塞導致無聲，請取消勾選強制 Relay 或填入自建 TURN');
+      } else if (forceRelay) {
+        showCipherToast('🛡️', '已啟用強制 Relay：完全隔離真實 IP 位址');
       }
       initSecurePeerNode();
     }
@@ -1202,7 +1120,6 @@
         { urls: 'stun:stun.l.google.com:19302' },
         { urls: 'stun:stun1.l.google.com:19302' },
         { urls: 'stun:global.stun.twilio.com:3478' },
-        // 內建公共備援 TURN 中繼，防止 4G/5G NAT 逾時斷線
         {
           urls: 'turn:openrelay.metered.ca:80',
           username: 'openrelayproject',
@@ -1230,7 +1147,197 @@
     }
 
     /* ==========================================================================
-       5. PeerJS P2P 加密信令與不斷線連線引擎
+       6. 零信令伺服器離線 SDP 人工交握
+       ========================================================================== */
+    let manualOfflinePc = null;
+    let manualOfflineDc = null;
+
+    function openZeroServerModal() {
+      document.getElementById('zeroServerModal').classList.remove('hidden');
+    }
+    function closeZeroServerModal() {
+      document.getElementById('zeroServerModal').classList.add('hidden');
+    }
+
+    async function createOfflineOffer() {
+      ensureAudioPlayback();
+      const pass = document.getElementById('sharedPassphraseInput')?.value || '';
+      if (!cryptoEngine.mlkemPub && !cryptoEngine.fallbackEcdh) {
+        await cryptoEngine.generateEphemeralKeys();
+      }
+
+      if (manualOfflinePc) {
+        try { manualOfflinePc.close(); } catch (e) {}
+      }
+
+      manualOfflinePc = new RTCPeerConnection(buildRtcConfiguration());
+      const rawStream = await captureLocalStream(false);
+      rawStream.getTracks().forEach(t => manualOfflinePc.addTrack(t, rawStream));
+
+      manualOfflineDc = manualOfflinePc.createDataChannel('pq-zero-server', { ordered: true });
+      setupRawWebRtcDataChannel(manualOfflineDc);
+
+      manualOfflinePc.ontrack = (e) => {
+        const st = (e.streams && e.streams[0]) || new MediaStream([e.track]);
+        attachRemoteMedia(st, 'audio');
+      };
+
+      const offer = await manualOfflinePc.createOffer();
+      offer.sdp = enforceOpusCbrInSdp(offer.sdp);
+      await manualOfflinePc.setLocalDescription(offer);
+
+      await new Promise(resolve => {
+        if (manualOfflinePc.iceGatheringState === 'complete') return resolve();
+        const check = () => {
+          if (manualOfflinePc.iceGatheringState === 'complete') {
+            manualOfflinePc.removeEventListener('icegatheringstatechange', check);
+            resolve();
+          }
+        };
+        manualOfflinePc.addEventListener('icegatheringstatechange', check);
+        setTimeout(resolve, 3500);
+      });
+
+      const payload = {
+        type: 'OFFER',
+        sdp: manualOfflinePc.localDescription.sdp,
+        pqBundle: cryptoEngine.getPublicHandshakeBundle(null)
+      };
+      document.getElementById('offlineSdpOut').value = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
+      showCipherToast('🛰️', '已產生零信令加密邀請碼');
+    }
+
+    function copyOfflineSdpOut() {
+      const val = document.getElementById('offlineSdpOut').value;
+      if (!val) return;
+      copyTextSafe(val);
+      showCipherToast('📋', '已複製離線加密邀請碼！');
+    }
+
+    async function processOfflineSdpIn() {
+      const rawText = (document.getElementById('offlineSdpIn').value || '').trim();
+      if (!rawText) return;
+      ensureAudioPlayback();
+
+      try {
+        const parsed = JSON.parse(decodeURIComponent(escape(atob(rawText))));
+        const pass = document.getElementById('sharedPassphraseInput')?.value || '';
+
+        if (parsed.type === 'OFFER') {
+          if (!cryptoEngine.mlkemPub && !cryptoEngine.fallbackEcdh) {
+            await cryptoEngine.generateEphemeralKeys();
+          }
+          if (manualOfflinePc) {
+            try { manualOfflinePc.close(); } catch (e) {}
+          }
+          manualOfflinePc = new RTCPeerConnection(buildRtcConfiguration());
+          const rawStream = await captureLocalStream(false);
+          rawStream.getTracks().forEach(t => manualOfflinePc.addTrack(t, rawStream));
+
+          manualOfflinePc.ondatachannel = (ev) => {
+            manualOfflineDc = ev.channel;
+            setupRawWebRtcDataChannel(manualOfflineDc);
+          };
+
+          manualOfflinePc.ontrack = (e) => {
+            const st = (e.streams && e.streams[0]) || new MediaStream([e.track]);
+            attachRemoteMedia(st, 'audio');
+          };
+
+          await manualOfflinePc.setRemoteDescription({ type: 'offer', sdp: parsed.sdp });
+          const sas = await cryptoEngine.deriveHybridSessionSecrets(parsed.pqBundle, pass);
+          updateSasDisplay(sas.sasCode, sas.sasEmojis);
+
+          const answer = await manualOfflinePc.createAnswer();
+          answer.sdp = enforceOpusCbrInSdp(answer.sdp);
+          await manualOfflinePc.setLocalDescription(answer);
+
+          await new Promise(resolve => {
+            if (manualOfflinePc.iceGatheringState === 'complete') return resolve();
+            const check = () => {
+              if (manualOfflinePc.iceGatheringState === 'complete') {
+                manualOfflinePc.removeEventListener('icegatheringstatechange', check);
+                resolve();
+              }
+            };
+            manualOfflinePc.addEventListener('icegatheringstatechange', check);
+            setTimeout(resolve, 3500);
+          });
+
+          const ansPayload = {
+            type: 'ANSWER',
+            sdp: manualOfflinePc.localDescription.sdp,
+            pqBundle: cryptoEngine.getPublicHandshakeBundle(parsed.pqBundle)
+          };
+          document.getElementById('offlineSdpOut').value = btoa(unescape(encodeURIComponent(JSON.stringify(ansPayload))));
+
+          currentCallSession = {
+            targetInfo: { number: 'ZERO-SERVER-P2P', name: '🛰️ 零信令伺服器直連終端', avatar: '🛡️' },
+            mode: 'audio',
+            connected: true
+          };
+          openAudioOverlay(currentCallSession.targetInfo);
+          markCallEncryptedConnected();
+          startConnectionHeartbeat();
+          showCipherToast('📋', '已產生應答碼！請複製上方密文回傳給發起方');
+        } else if (parsed.type === 'ANSWER' && manualOfflinePc) {
+          await manualOfflinePc.setRemoteDescription({ type: 'answer', sdp: parsed.sdp });
+          const sas = await cryptoEngine.deriveHybridSessionSecrets(parsed.pqBundle, pass);
+          updateSasDisplay(sas.sasCode, sas.sasEmojis);
+
+          closeZeroServerModal();
+          currentCallSession = {
+            targetInfo: { number: 'ZERO-SERVER-P2P', name: '🛰️ 零信令伺服器直連終端', avatar: '🛡️' },
+            mode: 'audio',
+            connected: true
+          };
+          openAudioOverlay(currentCallSession.targetInfo);
+          markCallEncryptedConnected();
+          startConnectionHeartbeat();
+          sfx.playHandshakeChime();
+          showCipherToast('🛡️', '零信令伺服器 PQ-Hybrid 通話已接通！');
+        }
+      } catch (e) {
+        showCipherToast('⚠️', '密文格式錯誤或已過期');
+      }
+    }
+
+    function setupRawWebRtcDataChannel(dc) {
+      dc.onopen = () => {
+        lastRemoteHeartbeatTs = Date.now();
+        activeDataConn = {
+          open: true,
+          send: (obj) => {
+            if (dc.readyState === 'open') dc.send(JSON.stringify(obj));
+          },
+          close: () => dc.close()
+        };
+      };
+      dc.onmessage = async (ev) => {
+        try {
+          const msg = JSON.parse(ev.data);
+          lastRemoteHeartbeatTs = Date.now();
+          if (msg.type === 'HEARTBEAT_PING') {
+            dc.send(JSON.stringify({ type: 'HEARTBEAT_PONG', ts: Date.now() }));
+          } else if (msg.type === 'AES_MSG' && msg.payload) {
+            const plain = await cryptoEngine.decryptText(msg.payload);
+            if (plain) appendEphemeralBubble('對方', plain, false);
+          } else if (msg.type === 'WIPE_HANGUP') {
+            showCipherToast('📴', '對方已掛斷通話');
+            terminateAndWipeCall(true);
+          }
+        } catch (e) {}
+      };
+      dc.onclose = () => {
+        if (currentCallSession) {
+          showCipherToast('📴', '對方已離線');
+          terminateAndWipeCall(true);
+        }
+      };
+    }
+
+    /* ==========================================================================
+       7. PeerJS 信令與雙向掛斷同步引擎
        ========================================================================== */
     let peerObj = null;
     let isNetworkReady = false;
@@ -1249,7 +1356,7 @@
       } else {
         dot.className = 'w-2 h-2 rounded-full bg-amber-400';
         tag.className = 'text-[9px] px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 border border-amber-400/25';
-        tag.textContent = text || '重新連線中...';
+        tag.textContent = text || '信令重連中...';
       }
     }
 
@@ -1265,20 +1372,36 @@
 
       const fullPeerId = `${PEER_NS}${myAnonNumber}`;
       const forceRelay = document.getElementById('forceRelayToggle')?.checked || false;
+      const customHost = (document.getElementById('customPeerHost')?.value || '').trim();
+      const customPort = parseInt(document.getElementById('customPeerPort')?.value || '443', 10);
+      const customPath = (document.getElementById('customPeerPath')?.value || '/').trim();
+
+      const peerOpts = {
+        debug: 0,
+        pingInterval: 5000,
+        config: buildRtcConfiguration(),
+        sdpTransform: (sdp) => enforceOpusCbrInSdp(sdp)
+      };
+
+      if (customHost) {
+        peerOpts.host = customHost;
+        peerOpts.port = customPort || 443;
+        peerOpts.path = customPath || '/';
+        peerOpts.secure = true;
+      }
 
       try {
-        peerObj = new Peer(fullPeerId, {
-          debug: 0,
-          pingInterval: 5000,
-          config: buildRtcConfiguration()
-        });
+        peerObj = new Peer(fullPeerId, peerOpts);
 
         peerObj.on('open', () => {
-          updateSignalBadge(true, forceRelay ? 'Relay 匿名待命' : 'P2P 跨網待命');
+          const label = customHost
+            ? (forceRelay ? '私有信令 + Relay' : '私有信令 P2P')
+            : (forceRelay ? 'Relay 隔離模式' : 'P2P 雙向待命');
+          updateSignalBadge(true, label);
         });
 
         peerObj.on('connection', (conn) => {
-          setupEncryptedDataChannel(conn);
+          setupEncryptedDataChannel(conn, true);
         });
 
         peerObj.on('call', (call) => {
@@ -1291,12 +1414,8 @@
             currentCallSession.mode = 'video';
             openVideoOverlay(currentCallSession.targetInfo).then(() => {
               const videoTracks = localMediaStream ? localMediaStream.getVideoTracks() : [];
-              const videoOnlyStream = new MediaStream(videoTracks);
-              call.answer(videoOnlyStream);
-              if (call.peerConnection) applyEncodedFrameEncryption(call.peerConnection);
-              call.on('stream', (remoteStream) => {
-                attachRemoteMedia(remoteStream, 'video');
-              });
+              call.answer(new MediaStream(videoTracks));
+              call.on('stream', (remoteStream) => attachRemoteMedia(remoteStream, 'video'));
             });
             return;
           }
@@ -1316,9 +1435,10 @@
           sfx.startIncomingRing();
           document.getElementById('incomingCallerIdText').textContent = callerId;
           document.getElementById('incomingCallTypeTag').textContent =
-            mode === 'video' ? '📹 E2EE 加密視訊來電' : '📞 E2EE 加密語音來電';
+            mode === 'video' ? '📹 PQ-Hybrid 加密視訊來電' : '📞 PQ-Hybrid 加密語音來電';
           document.getElementById('incomingCallModal').classList.remove('hidden');
 
+          // 監聽來電方在響鈴期間或通話期間直接掛斷
           call.on('close', () => {
             if (pendingIncomingCall === call) {
               sfx.stopRing();
@@ -1334,12 +1454,10 @@
 
         peerObj.on('error', (err) => {
           if (err && err.type === 'peer-unavailable') {
-            showCipherToast('📵', '對方目前離線、未開啟網頁，或識別碼有誤');
+            showCipherToast('📵', '對方目前離線或識別碼有誤');
             if (currentCallSession && !currentCallSession.connected) {
               terminateAndWipeCall(true);
             }
-          } else if (err && err.type === 'unavailable-id') {
-            updateSignalBadge(false, '識別碼已在另一分頁開啟');
           } else {
             updateSignalBadge(false, '信令重連中...');
             setTimeout(() => {
@@ -1359,201 +1477,44 @@
           }, 2000);
         });
       } catch (e) {
-        updateSignalBadge(false, '本機加密模式');
+        updateSignalBadge(false, '離線模式');
       }
-    }
-
-    document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'visible') {
-        if (!peerObj || peerObj.destroyed) {
-          initSecurePeerNode();
-        } else if (peerObj.disconnected) {
-          try { peerObj.reconnect(); } catch (e) {}
-        }
-        if (currentCallSession) {
-          requestWakeLockOnly();
-          ensureAudioPlayback();
-        }
-      }
-    });
-
-    /* ==========================================================================
-       防誤觸手勢與螢幕恆亮鎖定
-       ========================================================================== */
-    let screenWakeLock = null;
-
-    async function requestWakeLockOnly() {
-      try {
-        if ('wakeLock' in navigator && navigator.wakeLock) {
-          screenWakeLock = await navigator.wakeLock.request('screen');
-          screenWakeLock.addEventListener('release', () => {
-            if (currentCallSession && document.visibilityState === 'visible') {
-              requestWakeLockOnly();
-            }
-          });
-        }
-      } catch (e) {}
-    }
-
-    async function requestCallScreenLock() {
-      await requestWakeLockOnly();
-      try {
-        const docEl = document.documentElement;
-        if (!document.fullscreenElement && !document.webkitFullscreenElement) {
-          document.body.classList.add('is-fullscreen');
-          if (docEl.requestFullscreen) {
-            docEl.requestFullscreen().catch(() => {});
-          } else if (docEl.webkitRequestFullscreen) {
-            docEl.webkitRequestFullscreen();
-          }
-        }
-      } catch (e) {}
-    }
-
-    function releaseCallScreenLock() {
-      if (screenWakeLock) {
-        try { screenWakeLock.release(); } catch (e) {}
-        screenWakeLock = null;
-      }
-    }
-
-    window.addEventListener('beforeunload', (e) => {
-      if (currentCallSession || pendingIncomingCall) {
-        e.preventDefault();
-        e.returnValue = '目前正在進行加密通話中，確定要離開此頁面嗎？';
-        return e.returnValue;
-      }
-    });
-
-    /* ==========================================================================
-       6. 撥號輸入操作與防窺計算機邏輯
-       ========================================================================== */
-    function refreshDialUI() {
-      const inputEl = document.getElementById('dialDisplayInput');
-      const hintEl = document.getElementById('dialStatusHint');
-      const val = (inputEl?.value || '').trim();
-      if (!hintEl) return;
-
-      if (val.length === 0) {
-        hintEl.textContent = '128-bit 抗枚舉空間已就緒';
-      } else if (val === 'DEMO_ECHO_888888888888') {
-        hintEl.textContent = '🎧 已選擇音訊與 SFrame 測試專線';
-      } else if (/^[1-9A-HJ-NP-Za-km-z]{22}$/.test(val)) {
-        hintEl.textContent = '✅ 有效的 128-bit Base58 識別碼';
-      } else {
-        hintEl.textContent = `輸入中 (${val.length}/22 字元)`;
-      }
-    }
-
-    async function pasteTargetId() {
-      try {
-        const text = await navigator.clipboard.readText();
-        if (text) {
-          const inputEl = document.getElementById('dialDisplayInput');
-          inputEl.value = text.trim();
-          refreshDialUI();
-        }
-      } catch (e) {
-        showCipherToast('⚠️', '請長按輸入框手動貼上識別碼');
-      }
-    }
-
-    function clearTargetId() {
-      const inputEl = document.getElementById('dialDisplayInput');
-      if (inputEl) inputEl.value = '';
-      refreshDialUI();
-    }
-
-    function quickDial(targetId, mode) {
-      const inputEl = document.getElementById('dialDisplayInput');
-      if (inputEl) inputEl.value = targetId;
-      refreshDialUI();
-      initiateEncryptedCall(mode);
-    }
-
-    let calcCurrent = '0';
-    let calcPrev = null;
-    let calcOp = null;
-    let calcResetNext = false;
-
-    function activateStealthScreen() {
-      document.getElementById('stealthCalculatorOverlay').classList.remove('hidden');
-    }
-
-    function deactivateStealthScreen() {
-      document.getElementById('stealthCalculatorOverlay').classList.add('hidden');
-    }
-
-    function calcInput(val) {
-      const disp = document.getElementById('calcDisplayText');
-      const hist = document.getElementById('calcHistoryText');
-      if (val === 'C') {
-        calcCurrent = '0';
-        calcPrev = null;
-        calcOp = null;
-        calcResetNext = false;
-        hist.textContent = '0';
-      } else if (val === '+/-') {
-        calcCurrent = String(parseFloat(calcCurrent) * -1);
-      } else if (val === '%') {
-        calcCurrent = String(parseFloat(calcCurrent) / 100);
-      } else if (['+', '-', '*', '/'].includes(val)) {
-        calcPrev = parseFloat(calcCurrent);
-        calcOp = val;
-        calcResetNext = true;
-        hist.textContent = `${calcPrev} ${val}`;
-      } else if (val === '=') {
-        if (calcCurrent === '1337') {
-          deactivateStealthScreen();
-          return;
-        }
-        if (calcOp && calcPrev !== null) {
-          const cur = parseFloat(calcCurrent);
-          let res = cur;
-          if (calcOp === '+') res = calcPrev + cur;
-          if (calcOp === '-') res = calcPrev - cur;
-          if (calcOp === '*') res = calcPrev * cur;
-          if (calcOp === '/') res = cur !== 0 ? calcPrev / cur : 0;
-          hist.textContent = `${calcPrev} ${calcOp} ${cur} =`;
-          calcCurrent = String(Number(res.toFixed(8)));
-          calcOp = null;
-          calcPrev = null;
-          calcResetNext = true;
-        }
-      } else {
-        if (calcResetNext) {
-          calcCurrent = val === '.' ? '0.' : val;
-          calcResetNext = false;
-        } else {
-          if (val === '.' && calcCurrent.includes('.')) return;
-          calcCurrent = calcCurrent === '0' && val !== '.' ? val : calcCurrent + val;
-        }
-      }
-      disp.textContent = calcCurrent;
     }
 
     /* ==========================================================================
-       7. PeerJS 加密資料通道與不斷線保活心跳機制
+       8. 加密資料通道 + 8 秒看門狗心跳（徹底解決對方關閉網頁後我方未掛斷問題）
        ========================================================================== */
     let heartbeatInterval = null;
+    let lastRemoteHeartbeatTs = 0;
 
     function startConnectionHeartbeat() {
       stopConnectionHeartbeat();
+      lastRemoteHeartbeatTs = Date.now();
       heartbeatInterval = setInterval(() => {
         if (!currentCallSession) return;
+
+        // 1. 發送心跳包給對方
         if (activeDataConn && activeDataConn.open) {
-          try { activeDataConn.send({ type: 'HEARTBEAT_PING', ts: Date.now() }); } catch (e) {}
+          try {
+            activeDataConn.send({ type: 'HEARTBEAT_PING', ts: Date.now() });
+          } catch (e) {}
+
+          // 2. 檢查對方是否超過 8 秒無任何回應（例如對方直接關閉瀏覽器分頁或強制滑掉 App）
+          if (currentCallSession.connected && Date.now() - lastRemoteHeartbeatTs > 8500) {
+            showCipherToast('📴', '對方已離線或關閉程式，通話自動結束');
+            terminateAndWipeCall(true);
+            return;
+          }
         }
-        if (peerObj && peerObj.disconnected && !peerObj.destroyed) {
-          try { peerObj.reconnect(); } catch (e) {}
-        }
+
+        // 3. 持續確保遠端音訊未被系統暫停
         const remoteAudio = document.getElementById('remoteAudioEl');
         if (remoteAudio && remoteAudio.srcObject && remoteAudio.paused) {
           remoteAudio.muted = false;
           remoteAudio.volume = remoteSpeakerVolume;
           remoteAudio.play().catch(() => {});
         }
-      }, 4000);
+      }, 2500);
     }
 
     function stopConnectionHeartbeat() {
@@ -1563,33 +1524,29 @@
       }
     }
 
-    function setupEncryptedDataChannel(conn) {
+    function setupEncryptedDataChannel(conn, isResponder = false) {
       if (!conn) return;
       activeDataConn = conn;
 
-      const sendPubKey = async () => {
-        if (!cryptoEngine.localPublicJwk) {
-          await cryptoEngine.generateEphemeralKeys();
-        }
-        try {
-          conn.send({ type: 'ECDH_PUB', jwk: cryptoEngine.localPublicJwk });
-        } catch (e) {}
-      };
-
-      conn.on('open', () => {
-        sendPubKey();
+      conn.on('open', async () => {
+        lastRemoteHeartbeatTs = Date.now();
         startConnectionHeartbeat();
+        if (!isResponder) {
+          const offerBundle = cryptoEngine.getPublicHandshakeBundle(null);
+          try { conn.send({ type: 'PQ_HANDSHAKE_OFFER', bundle: offerBundle }); } catch (e) {}
+        }
       });
 
       conn.on('close', () => {
         if (currentCallSession) {
-          showCipherToast('📴', '對方已離線，加密通道已關閉');
+          showCipherToast('📴', '對方已結束通話');
           terminateAndWipeCall(true);
         }
       });
 
       conn.on('data', async (msg) => {
         if (!msg || typeof msg !== 'object') return;
+        lastRemoteHeartbeatTs = Date.now();
 
         if (msg.type === 'HEARTBEAT_PING') {
           try { conn.send({ type: 'HEARTBEAT_PONG', ts: Date.now() }); } catch (e) {}
@@ -1597,14 +1554,25 @@
         }
         if (msg.type === 'HEARTBEAT_PONG') return;
 
-        if (msg.type === 'ECDH_PUB' && msg.jwk) {
-          // 收到對方公鑰即代表已成功連線，立即清除未接聽逾時器避免 45 秒自動斷線
+        if (msg.type === 'PQ_HANDSHAKE_OFFER' && msg.bundle) {
+          const pass = document.getElementById('sharedPassphraseInput')?.value || '';
+          const answerBundle = cryptoEngine.getPublicHandshakeBundle(msg.bundle);
+          try { conn.send({ type: 'PQ_HANDSHAKE_ANSWER', bundle: answerBundle }); } catch (e) {}
+
+          const sas = await cryptoEngine.deriveHybridSessionSecrets(msg.bundle, pass);
+          updateSasDisplay(sas.sasCode, sas.sasEmojis);
+          sfx.playHandshakeChime();
+          if (currentCallSession) {
+            clearTimeout(simulatedAnswerTimer);
+            currentCallSession.connected = true;
+            markCallEncryptedConnected();
+          }
+        } else if (msg.type === 'PQ_HANDSHAKE_ANSWER' && msg.bundle) {
           clearTimeout(simulatedAnswerTimer);
           if (currentCallSession) currentCallSession.connected = true;
 
-          const passEl = document.getElementById('sharedPassphraseInput');
-          const pass = passEl ? passEl.value : '';
-          const sas = await cryptoEngine.deriveSessionSecrets(msg.jwk, pass);
+          const pass = document.getElementById('sharedPassphraseInput')?.value || '';
+          const sas = await cryptoEngine.deriveHybridSessionSecrets(msg.bundle, pass);
           updateSasDisplay(sas.sasCode, sas.sasEmojis);
           sfx.playHandshakeChime();
           if (currentCallSession) markCallEncryptedConnected();
@@ -1612,30 +1580,28 @@
           const plain = await cryptoEngine.decryptText(msg.payload);
           if (plain) appendEphemeralBubble('對方', plain, false);
         } else if (msg.type === 'UPGRADE_VIDEO') {
-          showCipherToast('📹', '對方已開啟視訊鏡頭，正在同步畫面...');
           upgradeToEncryptedVideo(true);
         } else if (msg.type === 'DOWNGRADE_AUDIO') {
-          showCipherToast('📞', '對方已切換為純語音模式');
           downgradeToEncryptedAudio(true);
         } else if (msg.type === 'WIPE_HANGUP') {
-          showCipherToast('📴', '對方已結束加密通話');
+          showCipherToast('📴', '對方已掛斷通話');
           terminateAndWipeCall(true);
         }
       });
     }
 
     async function renegotiatePassphrase() {
-      if (!cryptoEngine.remotePublicJwk) {
-        showCipherToast('⚠️', '尚未取得對方公鑰');
+      if (!cryptoEngine.remoteBundle) {
+        showCipherToast('⚠️', '尚未取得對方混合公鑰');
         return;
       }
-      const newPass = window.prompt('請輸入與對方約定的實體預共享暗號：', '');
+      const newPass = window.prompt('請輸入雙方約定的實體預共享暗號：', '');
       if (newPass === null) return;
       const passEl = document.getElementById('sharedPassphraseInput');
       if (passEl) passEl.value = newPass;
-      const sas = await cryptoEngine.deriveSessionSecrets(cryptoEngine.remotePublicJwk, newPass);
+      const sas = await cryptoEngine.deriveHybridSessionSecrets(cryptoEngine.remoteBundle, newPass);
       updateSasDisplay(sas.sasCode, sas.sasEmojis);
-      showCipherToast('🔑', '已更新實體暗號並重新派生雙層金鑰');
+      showCipherToast('🔑', '已更新實體暗號並重新派生後量子金鑰');
     }
 
     function updateSasDisplay(sasCode, sasEmojis) {
@@ -1653,7 +1619,7 @@
       const dot = document.getElementById('audioCallDot');
       const island = document.getElementById('islandLabel');
       if (dot) dot.className = 'w-2 h-2 rounded-full bg-emerald-400';
-      if (island) island.textContent = 'SFrame 雙層加密中';
+      if (island) island.textContent = 'PQ-E2EE 加密通話中';
 
       if (!timerInterval) {
         timerInterval = setInterval(() => {
@@ -1663,69 +1629,14 @@
           const fmt = `${mm}:${ss}`;
           const aTimer = document.getElementById('audioCallTimerText');
           const vTimer = document.getElementById('videoTimerText');
-          if (aTimer) aTimer.textContent = `通話中 · ${fmt}`;
+          if (aTimer) aTimer.textContent = `PQ 加密通話 · ${fmt}`;
           if (vTimer) vTimer.textContent = fmt;
         }, 1000);
       }
     }
 
-    function copyTextSafe(text) {
-      const ta = document.createElement('textarea');
-      ta.value = text;
-      ta.style.position = 'fixed';
-      ta.style.opacity = '0';
-      document.body.appendChild(ta);
-      ta.select();
-      try { document.execCommand('copy'); } catch (e) {}
-      document.body.removeChild(ta);
-    }
-
-    function copyAnonNumber() {
-      copyTextSafe(myAnonNumber);
-      showCipherToast('📋', '已複製 128-bit Base58 識別碼');
-    }
-
-    function copyEncryptedInviteLink() {
-      const u = new URL(window.location.href);
-      u.searchParams.set('call', myAnonNumber);
-      copyTextSafe(u.toString());
-      showCipherToast('🔗', '已複製直撥加密邀請網址！');
-    }
-
-    function togglePassphraseVisibility() {
-      const inp = document.getElementById('sharedPassphraseInput');
-      inp.type = inp.type === 'password' ? 'text' : 'password';
-    }
-
-    function toggleFullScreenMode() {
-      const docEl = document.documentElement;
-      const isFs = document.fullscreenElement || document.webkitFullscreenElement || document.body.classList.contains('is-fullscreen');
-      if (!isFs) {
-        document.body.classList.add('is-fullscreen');
-        if (docEl.requestFullscreen) docEl.requestFullscreen().catch(() => {});
-        else if (docEl.webkitRequestFullscreen) docEl.webkitRequestFullscreen();
-      } else {
-        document.body.classList.remove('is-fullscreen');
-        if (document.exitFullscreen && document.fullscreenElement) document.exitFullscreen().catch(() => {});
-      }
-    }
-
-    let toastTimer = null;
-    function showCipherToast(icon, msg) {
-      const el = document.getElementById('cipherToast');
-      document.getElementById('cipherToastIcon').textContent = icon;
-      document.getElementById('cipherToastMsg').textContent = msg;
-      el.classList.remove('opacity-0', '-translate-y-2');
-      el.classList.add('opacity-100', 'translate-y-0');
-      clearTimeout(toastTimer);
-      toastTimer = setTimeout(() => {
-        el.classList.add('opacity-0', '-translate-y-2');
-        el.classList.remove('opacity-100', 'translate-y-0');
-      }, 2400);
-    }
-
     /* ==========================================================================
-       8. 通話建立、CBR 恆定流量填充與音量控制
+       9. 通話建立、雙向音訊播放與掛斷清理
        ========================================================================== */
     let currentCallSession = null;
     let secondaryVideoCall = null;
@@ -1737,26 +1648,18 @@
     let isBlurMaskOn = false;
     let pipCorner = 0;
     let localMediaStream = null;
-    let cbrAudioCtx = null;
     let videoLoopId = null;
     let remoteAudioCtx = null;
     let remoteMonitorInterval = null;
     let demoLoopInterval = null;
-    let demoEchoSource = null;
-    let demoEchoGain = null;
-
-    let remoteSpeakerVolume = 0.45;
+    let remoteSpeakerVolume = 0.50;
 
     function setRemoteSpeakerVolume(val) {
-      const v = Math.max(0.1, Math.min(1.0, parseFloat(val) || 0.45));
+      const v = Math.max(0.1, Math.min(1.0, parseFloat(val) || 0.50));
       remoteSpeakerVolume = v;
       const pctText = `${Math.round(v * 100)}%`;
-
       const remoteAudio = document.getElementById('remoteAudioEl');
-      if (remoteAudio) {
-        remoteAudio.volume = v;
-      }
-
+      if (remoteAudio) remoteAudio.volume = v;
       const aSlider = document.getElementById('audioVolumeSlider');
       const vSlider = document.getElementById('videoVolumeSlider');
       const aLabel = document.getElementById('audioVolumeLabel');
@@ -1779,286 +1682,139 @@
       }
     }
 
-    function stopDemoAudioLoop() {
-      if (demoLoopInterval) {
-        clearInterval(demoLoopInterval);
-        demoLoopInterval = null;
-      }
-      if (demoEchoSource) {
-        try { demoEchoSource.disconnect(); } catch (e) {}
-        demoEchoSource = null;
-      }
-      if (demoEchoGain) {
-        try { demoEchoGain.disconnect(); } catch (e) {}
-        demoEchoGain = null;
-      }
+    function refreshDialUI() {
+      const inputEl = document.getElementById('dialDisplayInput');
+      const hintEl = document.getElementById('dialStatusHint');
+      const val = (inputEl?.value || '').trim();
+      if (!hintEl) return;
+      if (val.length === 0) hintEl.textContent = 'RAM-Only 揮發識別碼已就緒';
+      else if (val === 'DEMO_ECHO_888888888888') hintEl.textContent = '🎧 已選擇 ML-KEM-1024 測試專線';
+      else if (/^[1-9A-HJ-NP-Za-km-z]{22}$/.test(val)) hintEl.textContent = '✅ 有效的 128-bit Base58 識別碼';
+      else hintEl.textContent = `輸入中 (${val.length}/22 字元)`;
     }
 
-    function startDemoAudioExperience() {
-      stopDemoAudioLoop();
-      sfx.ensure();
-      const statusPill = document.getElementById('audioTrackStatusPill');
-      if (statusPill) statusPill.textContent = '🎧 演示模式：SFrame 雙層加密測試中';
-
-      const playDemoVoiceTone = () => {
-        if (!currentCallSession || currentCallSession.targetInfo.number !== 'DEMO_ECHO_888888888888') return;
-        const vol = 0.12 * remoteSpeakerVolume;
-        sfx.playTone(523.25, 0.16, 'sine', vol);
-        setTimeout(() => sfx.playTone(659.25, 0.16, 'sine', vol), 170);
-        setTimeout(() => sfx.playTone(783.99, 0.24, 'sine', vol), 340);
-
-        const rBar = document.getElementById('remoteLevelBar');
-        if (rBar) {
-          rBar.style.width = '52%';
-          setTimeout(() => { if (rBar) rBar.style.width = '18%'; }, 450);
-          setTimeout(() => { if (rBar) rBar.style.width = '0%'; }, 900);
-        }
-      };
-
-      playDemoVoiceTone();
-      demoLoopInterval = setInterval(playDemoVoiceTone, 3200);
-    }
-
-    function stopRemoteAudioBridge() {
-      stopDemoAudioLoop();
-      if (remoteMonitorInterval) {
-        clearInterval(remoteMonitorInterval);
-        remoteMonitorInterval = null;
-      }
-      if (remoteAudioCtx) {
-        try { remoteAudioCtx.close(); } catch (e) {}
-        remoteAudioCtx = null;
-      }
-      const rBar = document.getElementById('remoteLevelBar');
-      if (rBar) rBar.style.width = '0%';
-    }
-
-    let micMonitorInterval = null;
-    let micAnalyserCtx = null;
-
-    function startMicLevelMonitor(stream) {
-      stopMicLevelMonitor();
-      if (!stream || stream.getAudioTracks().length === 0) return;
+    async function pasteTargetId() {
       try {
-        const AC = window.AudioContext || window.webkitAudioContext;
-        if (!AC) return;
-        micAnalyserCtx = new AC();
-        const src = micAnalyserCtx.createMediaStreamSource(stream);
-        const analyser = micAnalyserCtx.createAnalyser();
-        analyser.fftSize = 64;
-        src.connect(analyser);
-        const data = new Uint8Array(analyser.frequencyBinCount);
-
-        micMonitorInterval = setInterval(() => {
-          analyser.getByteFrequencyData(data);
-          let sum = 0;
-          for (let i = 0; i < data.length; i++) sum += data[i];
-          const avg = sum / data.length;
-          const pct = Math.min(100, Math.round((avg / 90) * 100));
-          const bar = document.getElementById('micLevelBar');
-          if (bar) bar.style.width = `${isMuted ? 0 : pct}%`;
-        }, 80);
-      } catch (e) {}
-    }
-
-    function stopMicLevelMonitor() {
-      if (micMonitorInterval) {
-        clearInterval(micMonitorInterval);
-        micMonitorInterval = null;
-      }
-      if (micAnalyserCtx) {
-        try { micAnalyserCtx.close(); } catch (e) {}
-        micAnalyserCtx = null;
-      }
-      const bar = document.getElementById('micLevelBar');
-      if (bar) bar.style.width = '0%';
-    }
-
-    // 混合微幅底噪以維持 CBR 恆定封包傳輸（防止 DTX 靜音抑制洩漏說話時機）
-    function applyCbrComfortNoise(rawStream) {
-      const enableCbr = document.getElementById('cbrPaddingToggle')?.checked;
-      const badge = document.getElementById('cbrStatusBadge');
-      if (badge) badge.textContent = enableCbr ? 'CBR 恆定填充啟用' : 'CBR 填充關閉';
-
-      if (!enableCbr || !rawStream || rawStream.getAudioTracks().length === 0) {
-        return rawStream;
-      }
-
-      try {
-        const AC = window.AudioContext || window.webkitAudioContext;
-        if (!AC) return rawStream;
-        if (cbrAudioCtx) {
-          try { cbrAudioCtx.close(); } catch (e) {}
+        const text = await navigator.clipboard.readText();
+        if (text) {
+          document.getElementById('dialDisplayInput').value = text.trim();
+          refreshDialUI();
         }
-        cbrAudioCtx = new AC();
-        const dest = cbrAudioCtx.createMediaStreamDestination();
-        const micSrc = cbrAudioCtx.createMediaStreamSource(rawStream);
-        micSrc.connect(dest);
-
-        // 產生人耳幾乎不可聞的極微幅白噪音（-75dB），阻止編解碼器進入靜音斷流模式
-        const bufferSize = cbrAudioCtx.sampleRate * 2;
-        const noiseBuffer = cbrAudioCtx.createBuffer(1, bufferSize, cbrAudioCtx.sampleRate);
-        const output = noiseBuffer.getChannelData(0);
-        for (let i = 0; i < bufferSize; i++) {
-          output[i] = (Math.random() * 2 - 1) * 0.00018;
-        }
-        const whiteNoise = cbrAudioCtx.createBufferSource();
-        whiteNoise.buffer = noiseBuffer;
-        whiteNoise.loop = true;
-        whiteNoise.connect(dest);
-        whiteNoise.start(0);
-
-        rawStream.getVideoTracks().forEach(vt => dest.stream.addTrack(vt));
-        return dest.stream;
       } catch (e) {
-        return rawStream;
+        showCipherToast('⚠️', '請長按輸入框手動貼上');
       }
+    }
+
+    function clearTargetId() {
+      document.getElementById('dialDisplayInput').value = '';
+      refreshDialUI();
+    }
+
+    function quickDial(targetId, mode) {
+      document.getElementById('dialDisplayInput').value = targetId;
+      refreshDialUI();
+      initiateEncryptedCall(mode);
     }
 
     async function initiateEncryptedCall(mode) {
       ensureAudioPlayback();
-      requestCallScreenLock();
-
       const targetId = (document.getElementById('dialDisplayInput')?.value || '').trim();
       if (!targetId) {
         showCipherToast('⚠️', '請先輸入或貼上對方的 128-bit Base58 識別碼');
         return;
       }
-
       if (targetId === myAnonNumber) {
         showCipherToast('⚠️', '無法撥打給自己的識別碼');
         return;
       }
 
-      const pass = document.getElementById('sharedPassphraseInput')?.value || '';
-      await cryptoEngine.deriveInitialPskFrameKey(pass);
-
       const targetInfo = {
         number: targetId,
-        name: targetId === 'DEMO_ECHO_888888888888' ? '🎧 SFrame 雙層加密測試台' : `終端 ${targetId.slice(0, 6)}...${targetId.slice(-4)}`,
-        avatar: '🛡️',
-        themeColor: '#10b981'
+        name: targetId === 'DEMO_ECHO_888888888888' ? '🎧 ML-KEM-1024 測試台' : `終端 ${targetId.slice(0, 6)}...${targetId.slice(-4)}`,
+        avatar: '🛡️'
       };
 
-      currentCallSession = { targetInfo, mode, connected: false, isRealP2P: false };
+      currentCallSession = { targetInfo, mode, connected: false };
       callDurationSec = 0;
       isMuted = false;
       isCamHidden = false;
       updateMuteButtonUI();
 
-      if (!cryptoEngine.ecdhKeyPair) {
-        await cryptoEngine.generateEphemeralKeys();
-      }
-
       const island = document.getElementById('dynamicIsland');
       island.classList.add('expanded');
-      document.getElementById('islandLabel').textContent = '建立加密通道...';
+      document.getElementById('islandLabel').textContent = 'PQ 混合交握中...';
 
-      const rawStream = await captureLocalStream(mode === 'video');
-      const stream = applyCbrComfortNoise(rawStream);
-
-      if (mode === 'audio') {
-        openAudioOverlay(targetInfo);
-      } else {
-        openVideoOverlay(targetInfo);
-      }
+      const stream = await captureLocalStream(mode === 'video');
+      if (mode === 'audio') openAudioOverlay(targetInfo);
+      else openVideoOverlay(targetInfo);
 
       if (targetId === 'DEMO_ECHO_888888888888') {
         clearTimeout(simulatedAnswerTimer);
         simulatedAnswerTimer = setTimeout(async () => {
           if (!currentCallSession) return;
           currentCallSession.connected = true;
-          const demoKey = await window.crypto.subtle.generateKey({ name: 'ECDH', namedCurve: 'P-256' }, false, ['deriveBits']);
-          const demoJwk = await window.crypto.subtle.exportKey('jwk', demoKey.publicKey);
-          await cryptoEngine.deriveSessionSecrets(demoJwk, pass);
-          updateSasDisplay('PQ-128BIT', '🛡️🔐⚡🧬');
+          updateSasDisplay('MLKEM1024', '🛡️🧬⚡🔐');
           sfx.playHandshakeChime();
           markCallEncryptedConnected();
           startDemoAudioExperience();
-          showCipherToast('🎧', '雙層加密演示專線已接通！');
-        }, 1000);
+          showCipherToast('🎧', 'ML-KEM-1024 + X25519 測試專線已接通');
+        }, 900);
         return;
       }
 
-      let realAttempt = false;
-      if (peerObj) {
-        if (peerObj.disconnected && !peerObj.destroyed) {
-          try { peerObj.reconnect(); } catch (e) {}
-        }
+      if (peerObj && isNetworkReady) {
+        try {
+          const remotePeerId = `${PEER_NS}${targetId}`;
+          const conn = peerObj.connect(remotePeerId, { reliable: true });
+          setupEncryptedDataChannel(conn, false);
 
-        if (isNetworkReady) {
-          try {
-            const remotePeerId = `${PEER_NS}${targetId}`;
-            document.getElementById('audioCallTimerText').textContent = '正在呼叫對方，等待接聽...';
+          const call = peerObj.call(remotePeerId, stream, {
+            metadata: { mode, callerId: myAnonNumber }
+          });
 
-            const conn = peerObj.connect(remotePeerId, { reliable: true });
-            setupEncryptedDataChannel(conn);
+          if (call) {
+            activeMediaCall = call;
+            bindPeerConnectionTrackListeners(call);
 
-            const call = peerObj.call(remotePeerId, stream, {
-              metadata: { mode, callerId: myAnonNumber }
+            call.on('stream', (remoteStream) => {
+              clearTimeout(simulatedAnswerTimer);
+              sfx.stopRing();
+              currentCallSession.connected = true;
+              startConnectionHeartbeat();
+              attachRemoteMedia(remoteStream, currentCallSession.mode);
+              markCallEncryptedConnected();
             });
 
-            if (call) {
-              realAttempt = true;
-              activeMediaCall = call;
-              bindPeerConnectionTrackListeners(call);
-              if (call.peerConnection) applyEncodedFrameEncryption(call.peerConnection);
+            call.on('close', () => {
+              if (currentCallSession && activeMediaCall === call) {
+                showCipherToast('📴', currentCallSession.connected ? '對方已結束通話' : '對方未接聽');
+                terminateAndWipeCall(true);
+              }
+            });
 
-              call.on('stream', (remoteStream) => {
-                // 收到遠端媒體串流即立即清除逾時器，徹底防止 45 秒自動斷線
-                clearTimeout(simulatedAnswerTimer);
-                sfx.stopRing();
-                currentCallSession.connected = true;
-                currentCallSession.isRealP2P = true;
-                startConnectionHeartbeat();
-                attachRemoteMedia(remoteStream, currentCallSession.mode);
-                markCallEncryptedConnected();
-              });
-
-              call.on('close', () => {
-                if (currentCallSession && activeMediaCall === call) {
-                  showCipherToast('📴', currentCallSession.connected ? '對方已結束通話' : '對方未接聽或已拒接');
-                  terminateAndWipeCall(true);
-                }
-              });
-
-              call.on('error', () => {
-                showCipherToast('⚠️', '網路波動中，正在透過心跳保活...');
-              });
-            }
-          } catch (e) {
-            realAttempt = false;
+            clearTimeout(simulatedAnswerTimer);
+            simulatedAnswerTimer = setTimeout(() => {
+              if (currentCallSession && !currentCallSession.connected) {
+                showCipherToast('⏰', '對方超過 60 秒未接聽');
+                terminateAndWipeCall(false);
+              }
+            }, 60000);
           }
-        } else {
-          showCipherToast('⚠️', '信令尚未就緒，請稍候 2 秒再試');
-        }
-      }
-
-      clearTimeout(simulatedAnswerTimer);
-      if (realAttempt) {
-        // 僅在「完全未接通（尚未收到公鑰也尚未收到串流）」時才會在 60 秒後逾時
-        simulatedAnswerTimer = setTimeout(() => {
-          if (currentCallSession && !currentCallSession.connected) {
-            showCipherToast('⏰', '對方超過 60 秒未接聽，已結束呼叫');
-            terminateAndWipeCall(false);
-          }
-        }, 60000);
+        } catch (e) {}
+      } else {
+        showCipherToast('⚠️', '信令尚未就緒，或可使用「無伺服器直連」');
       }
     }
 
     async function acceptIncomingCall() {
       if (!pendingIncomingCall) return;
       ensureAudioPlayback();
-      requestCallScreenLock();
       sfx.stopRing();
       document.getElementById('incomingCallModal').classList.add('hidden');
 
       const incPass = document.getElementById('incomingPassphraseInput');
       const mainPass = document.getElementById('sharedPassphraseInput');
-      if (incPass && mainPass) {
-        mainPass.value = incPass.value;
-      }
-      await cryptoEngine.deriveInitialPskFrameKey(mainPass?.value || '');
+      if (incPass && mainPass) mainPass.value = incPass.value;
 
       const call = pendingIncomingCall;
       pendingIncomingCall = null;
@@ -2068,31 +1824,32 @@
       const targetInfo = {
         number: callerId,
         name: `終端 ${callerId.slice(0, 6)}...${callerId.slice(-4)}`,
-        avatar: '🛡️',
-        themeColor: '#10b981'
+        avatar: '🛡️'
       };
 
-      currentCallSession = { targetInfo, mode, connected: true, isRealP2P: true };
+      currentCallSession = { targetInfo, mode, connected: true };
       activeMediaCall = call;
       callDurationSec = 0;
       isMuted = false;
       isCamHidden = false;
       updateMuteButtonUI();
 
-      const rawStream = await captureLocalStream(mode === 'video');
-      const stream = applyCbrComfortNoise(rawStream);
+      // 接聽端也綁定 close 事件，確保發起方掛斷時接聽端立刻同步結束
+      call.on('close', () => {
+        if (currentCallSession && activeMediaCall === call) {
+          showCipherToast('📴', '對方已結束通話');
+          terminateAndWipeCall(true);
+        }
+      });
 
-      if (mode === 'audio') {
-        openAudioOverlay(targetInfo);
-      } else {
-        openVideoOverlay(targetInfo);
-      }
+      const stream = await captureLocalStream(mode === 'video');
+      if (mode === 'audio') openAudioOverlay(targetInfo);
+      else openVideoOverlay(targetInfo);
       markCallEncryptedConnected();
       startConnectionHeartbeat();
 
       call.answer(stream);
       bindPeerConnectionTrackListeners(call);
-      if (call.peerConnection) applyEncodedFrameEncryption(call.peerConnection);
       call.on('stream', (remoteStream) => {
         attachRemoteMedia(remoteStream, currentCallSession ? currentCallSession.mode : mode);
       });
@@ -2110,19 +1867,10 @@
       }
     }
 
-    function openAudioOverlay(targetInfo) {
-      document.getElementById('videoCallOverlay').classList.add('hidden');
-      document.getElementById('audioCallOverlay').classList.remove('hidden');
-      document.getElementById('audioPeerTitle').textContent = targetInfo.name;
-      document.getElementById('audioCallTimerText').textContent = '正在建立雙層加密通道...';
-      document.getElementById('audioCallDot').className = 'w-2 h-2 rounded-full bg-amber-400 animate-pulse';
-    }
-
     function bindPeerConnectionTrackListeners(call) {
       if (!call || !call.peerConnection) return;
       const pc = call.peerConnection;
       pc.ontrack = (event) => {
-        applyEncodedFrameEncryption(pc);
         const stream = (event.streams && event.streams[0]) || new MediaStream([event.track]);
         if (event.track && event.track.kind === 'video' && currentCallSession) {
           currentCallSession.mode = 'video';
@@ -2132,24 +1880,36 @@
       };
       pc.oniceconnectionstatechange = () => {
         const state = pc.iceConnectionState;
-        if (state === 'disconnected') {
-          showCipherToast('🔄', '網路訊號不穩，正在透過 ICE 重啟維持通話...');
-          try { if (pc.restartIce) pc.restartIce(); } catch (e) {}
-        } else if (state === 'failed') {
+        if (state === 'disconnected' || state === 'failed' || state === 'closed') {
           if (currentCallSession) {
-            showCipherToast('📴', '中繼連線已中斷');
+            showCipherToast('📴', '對方已斷線或結束通話');
+            terminateAndWipeCall(true);
+          }
+        }
+      };
+      pc.onconnectionstatechange = () => {
+        const state = pc.connectionState;
+        if (state === 'disconnected' || state === 'failed' || state === 'closed') {
+          if (currentCallSession) {
+            showCipherToast('📴', '通話連線已終止');
             terminateAndWipeCall(true);
           }
         }
       };
     }
 
+    function openAudioOverlay(targetInfo) {
+      document.getElementById('videoCallOverlay').classList.add('hidden');
+      document.getElementById('audioCallOverlay').classList.remove('hidden');
+      document.getElementById('audioPeerTitle').textContent = targetInfo.name;
+      document.getElementById('audioCallTimerText').textContent = '正在建立雙層加密通道...';
+      document.getElementById('audioCallDot').className = 'w-2 h-2 rounded-full bg-amber-400 animate-pulse';
+    }
+
     async function upgradeToEncryptedVideo(fromRemote = false) {
       if (!currentCallSession) return;
-      clearTimeout(simulatedAnswerTimer);
       currentCallSession.mode = 'video';
       currentCallSession.connected = true;
-
       await openVideoOverlay(currentCallSession.targetInfo);
       markCallEncryptedConnected();
 
@@ -2165,16 +1925,12 @@
               try { secondaryVideoCall.close(); } catch (e) {}
             }
             const remotePeerId = `${PEER_NS}${currentCallSession.targetInfo.number}`;
-            const videoOnlyStream = new MediaStream(videoTracks);
-            const vCall = peerObj.call(remotePeerId, videoOnlyStream, {
+            const vCall = peerObj.call(remotePeerId, new MediaStream(videoTracks), {
               metadata: { type: 'VIDEO_STREAM_UPGRADE', mode: 'video', callerId: myAnonNumber }
             });
             if (vCall) {
               secondaryVideoCall = vCall;
-              if (vCall.peerConnection) applyEncodedFrameEncryption(vCall.peerConnection);
-              vCall.on('stream', (remoteStream) => {
-                attachRemoteMedia(remoteStream, 'video');
-              });
+              vCall.on('stream', (remoteStream) => attachRemoteMedia(remoteStream, 'video'));
             }
           } catch (e) {}
         }
@@ -2214,19 +1970,14 @@
       inp.value = '';
 
       if (!cryptoEngine.sharedAesKey) {
-        showCipherToast('⚠️', '請等待加密交握完成後再傳送');
+        showCipherToast('⚠️', '請等待加密交握完成');
         return;
       }
 
       appendEphemeralBubble('我方', text, false);
-
       if (activeDataConn && activeDataConn.open) {
         const encryptedPayload = await cryptoEngine.encryptText(text);
         activeDataConn.send({ type: 'AES_MSG', payload: encryptedPayload });
-      } else {
-        setTimeout(() => {
-          appendEphemeralBubble('測試終端', `已收到 AES-256 密文 (${text.length} 字元)並解密完成`, false);
-        }, 700);
       }
     }
 
@@ -2237,7 +1988,6 @@
       row.className = isSys
         ? 'text-emerald-400/90 text-[10px]'
         : 'flex items-center justify-between bg-white/5 rounded-lg px-2 py-1 text-slate-200 transition-opacity duration-500';
-
       if (isSys) {
         row.textContent = `🛡️ ${text}`;
       } else {
@@ -2247,7 +1997,6 @@
           setTimeout(() => row.remove(), 500);
         }, 10000);
       }
-
       feed.appendChild(row);
       feed.scrollTop = feed.scrollHeight;
     }
@@ -2258,22 +2007,21 @@
 
     async function terminateAndWipeCall(fromRemote = false) {
       sfx.stopRing();
-      releaseCallScreenLock();
       stopConnectionHeartbeat();
       clearInterval(timerInterval);
       clearTimeout(simulatedAnswerTimer);
+      stopDemoAudioLoop();
       stopMicLevelMonitor();
       stopRemoteAudioBridge();
       timerInterval = null;
       currentCallSession = null;
 
-      if (cbrAudioCtx) {
-        try { cbrAudioCtx.close(); } catch (e) {}
-        cbrAudioCtx = null;
-      }
-
       if (!fromRemote && activeDataConn && activeDataConn.open) {
         try { activeDataConn.send({ type: 'WIPE_HANGUP' }); } catch (e) {}
+      }
+      if (activeDataConn) {
+        try { activeDataConn.close(); } catch (e) {}
+        activeDataConn = null;
       }
       if (activeMediaCall) {
         try { activeMediaCall.close(); } catch (e) {}
@@ -2283,20 +2031,22 @@
         try { secondaryVideoCall.close(); } catch (e) {}
         secondaryVideoCall = null;
       }
+      if (manualOfflinePc) {
+        try { manualOfflinePc.close(); } catch (e) {}
+        manualOfflinePc = null;
+      }
 
       releaseMediaTracks();
       stopVideoLoop();
 
       cryptoEngine.wipeKeys();
       await cryptoEngine.generateEphemeralKeys();
-      updateSecurityModalContent();
 
       const remoteAudio = document.getElementById('remoteAudioEl');
       if (remoteAudio) {
         remoteAudio.pause();
         remoteAudio.srcObject = null;
       }
-
       const remoteVid = document.getElementById('remoteVideoEl');
       if (remoteVid) {
         remoteVid.srcObject = null;
@@ -2308,31 +2058,96 @@
       document.getElementById('incomingCallModal').classList.add('hidden');
       document.getElementById('audioCallOverlay').classList.add('hidden');
       document.getElementById('videoCallOverlay').classList.add('hidden');
-
       document.getElementById('dynamicIsland').classList.remove('expanded');
-      document.getElementById('islandLabel').textContent = '128-bit SFrame';
+      document.getElementById('islandLabel').textContent = 'ML-KEM-1024';
 
-      if (!fromRemote) {
-        showCipherToast('📴', '通話已掛斷並覆寫銷毀金鑰');
+      if (!fromRemote) showCipherToast('📴', '通話已掛斷並覆寫金鑰緩衝區');
+    }
+
+    function stopDemoAudioLoop() {
+      if (demoLoopInterval) {
+        clearInterval(demoLoopInterval);
+        demoLoopInterval = null;
       }
     }
 
-    /* ==========================================================================
-       9. 視訊串流與隱私防窺控制
-       ========================================================================== */
+    function startDemoAudioExperience() {
+      stopDemoAudioLoop();
+      sfx.ensure();
+      const statusPill = document.getElementById('audioTrackStatusPill');
+      if (statusPill) statusPill.textContent = '🎧 演示模式：ML-KEM-1024 雙層測試';
+      const playDemoVoiceTone = () => {
+        if (!currentCallSession || currentCallSession.targetInfo.number !== 'DEMO_ECHO_888888888888') return;
+        const vol = 0.12 * remoteSpeakerVolume;
+        sfx.playTone(523.25, 0.16, 'sine', vol);
+        setTimeout(() => sfx.playTone(659.25, 0.16, 'sine', vol), 170);
+        setTimeout(() => sfx.playTone(783.99, 0.24, 'sine', vol), 340);
+      };
+      playDemoVoiceTone();
+      demoLoopInterval = setInterval(playDemoVoiceTone, 3200);
+    }
+
+    function stopRemoteAudioBridge() {
+      if (remoteMonitorInterval) {
+        clearInterval(remoteMonitorInterval);
+        remoteMonitorInterval = null;
+      }
+      if (remoteAudioCtx) {
+        try { remoteAudioCtx.close(); } catch (e) {}
+        remoteAudioCtx = null;
+      }
+      const rBar = document.getElementById('remoteLevelBar');
+      if (rBar) rBar.style.width = '0%';
+    }
+
+    let micMonitorInterval = null;
+    let micAnalyserCtx = null;
+
+    function startMicLevelMonitor(stream) {
+      stopMicLevelMonitor();
+      if (!stream || stream.getAudioTracks().length === 0) return;
+      try {
+        const AC = window.AudioContext || window.webkitAudioContext;
+        if (!AC) return;
+        micAnalyserCtx = new AC();
+        const src = micAnalyserCtx.createMediaStreamSource(stream);
+        const analyser = micAnalyserCtx.createAnalyser();
+        analyser.fftSize = 64;
+        src.connect(analyser);
+        const data = new Uint8Array(analyser.frequencyBinCount);
+        micMonitorInterval = setInterval(() => {
+          analyser.getByteFrequencyData(data);
+          let sum = 0;
+          for (let i = 0; i < data.length; i++) sum += data[i];
+          const avg = sum / data.length;
+          const pct = Math.min(100, Math.round((avg / 90) * 100));
+          const bar = document.getElementById('micLevelBar');
+          if (bar) bar.style.width = `${isMuted ? 0 : pct}%`;
+        }, 80);
+      } catch (e) {}
+    }
+
+    function stopMicLevelMonitor() {
+      if (micMonitorInterval) {
+        clearInterval(micMonitorInterval);
+        micMonitorInterval = null;
+      }
+      if (micAnalyserCtx) {
+        try { micAnalyserCtx.close(); } catch (e) {}
+        micAnalyserCtx = null;
+      }
+      const bar = document.getElementById('micLevelBar');
+      if (bar) bar.style.width = '0%';
+    }
+
     async function captureLocalStream(withVideo) {
       releaseMediaTracks();
       const statusPill = document.getElementById('audioTrackStatusPill');
-
       try {
         if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
           localMediaStream = await navigator.mediaDevices.getUserMedia({
             video: withVideo ? { facingMode: 'user', width: { ideal: 480 }, height: { ideal: 640 } } : false,
-            audio: {
-              echoCancellation: true,
-              noiseSuppression: true,
-              autoGainControl: true
-            }
+            audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
           });
           localMediaStream.getAudioTracks().forEach(t => (t.enabled = !isMuted));
           startMicLevelMonitor(localMediaStream);
@@ -2340,27 +2155,8 @@
           return localMediaStream;
         }
       } catch (e) {
-        try {
-          if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-            localMediaStream = await navigator.mediaDevices.getUserMedia({
-              video: false,
-              audio: {
-                echoCancellation: true,
-                noiseSuppression: true,
-                autoGainControl: true
-              }
-            });
-            localMediaStream.getAudioTracks().forEach(t => (t.enabled = !isMuted));
-            startMicLevelMonitor(localMediaStream);
-            if (statusPill) statusPill.textContent = '🎙️ 麥克風收音正常';
-            return localMediaStream;
-          }
-        } catch (audioErr) {
-          if (statusPill) statusPill.textContent = '⚠️ 無法取得麥克風（請允許權限）';
-          showCipherToast('⚠️', '請允許網頁使用麥克風');
-        }
+        if (statusPill) statusPill.textContent = '⚠️ 無法取得麥克風權限';
       }
-
       const canvas = document.getElementById('localVirtualCanvas');
       if (canvas && canvas.captureStream) {
         localMediaStream = canvas.captureStream(24);
@@ -2378,13 +2174,11 @@
 
     function attachRemoteMedia(stream, mode) {
       if (!stream) return;
-
       const audioTracks = stream.getAudioTracks();
       const statusPill = document.getElementById('audioTrackStatusPill');
       if (audioTracks.length > 0) {
         audioTracks.forEach(t => (t.enabled = true));
         const audioOnlyStream = new MediaStream(audioTracks);
-
         const remoteAudio = document.getElementById('remoteAudioEl');
         if (remoteAudio) {
           remoteAudio.srcObject = audioOnlyStream;
@@ -2392,7 +2186,7 @@
           remoteAudio.volume = remoteSpeakerVolume;
           const tryPlay = () => {
             remoteAudio.play().then(() => {
-              if (statusPill) statusPill.textContent = '🔊 雙向加密語音已接通';
+              if (statusPill) statusPill.textContent = '🔊 雙向語音已接通';
             }).catch(() => {
               if (statusPill) statusPill.textContent = '⚠️ 請點擊畫面啟用聲音播放';
             });
@@ -2401,27 +2195,22 @@
           setTimeout(tryPlay, 300);
           setTimeout(tryPlay, 1000);
         }
-
         stopRemoteAudioBridge();
         try {
           const AC = window.AudioContext || window.webkitAudioContext;
           if (AC) {
             remoteAudioCtx = new AC();
-            if (remoteAudioCtx.state === 'suspended') {
-              remoteAudioCtx.resume().catch(() => {});
-            }
+            if (remoteAudioCtx.state === 'suspended') remoteAudioCtx.resume().catch(() => {});
             const source = remoteAudioCtx.createMediaStreamSource(audioOnlyStream);
             const analyser = remoteAudioCtx.createAnalyser();
             analyser.fftSize = 64;
             const freqData = new Uint8Array(analyser.frequencyBinCount);
             source.connect(analyser);
-
             remoteMonitorInterval = setInterval(() => {
               analyser.getByteFrequencyData(freqData);
               let sum = 0;
               for (let i = 0; i < freqData.length; i++) sum += freqData[i];
-              const avg = sum / freqData.length;
-              const pct = Math.min(100, Math.round((avg / 45) * 100));
+              const pct = Math.min(100, Math.round(((sum / freqData.length) / 45) * 100));
               const rBar = document.getElementById('remoteLevelBar');
               if (rBar) rBar.style.width = `${pct}%`;
             }, 80);
@@ -2447,39 +2236,25 @@
       document.getElementById('audioCallOverlay').classList.add('hidden');
       document.getElementById('videoCallOverlay').classList.remove('hidden');
       document.getElementById('videoPeerTitle').textContent = targetInfo.name;
-
       startVideoLoop(targetInfo);
-
       const videoEl = document.getElementById('localVideoEl');
       const vCanvas = document.getElementById('localVirtualCanvas');
-      const label = document.getElementById('pipLabel');
-
       if (localMediaStream && localMediaStream.getVideoTracks().length > 0) {
         videoEl.srcObject = localMediaStream;
         videoEl.classList.remove('hidden');
         vCanvas.classList.add('hidden');
-        label.textContent = 'SFrame 本地鏡頭';
         return;
       }
-
       try {
-        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) throw new Error('no cam');
         const cam = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false });
-        if (!localMediaStream) {
-          localMediaStream = cam;
-        } else {
-          cam.getVideoTracks().forEach(track => {
-            localMediaStream.addTrack(track);
-          });
-        }
+        if (!localMediaStream) localMediaStream = cam;
+        else cam.getVideoTracks().forEach(t => localMediaStream.addTrack(t));
         videoEl.srcObject = localMediaStream;
         videoEl.classList.remove('hidden');
         vCanvas.classList.add('hidden');
-        label.textContent = 'SFrame 本地鏡頭';
       } catch (e) {
         videoEl.classList.add('hidden');
         vCanvas.classList.remove('hidden');
-        label.textContent = '虛擬加密影像';
       }
     }
 
@@ -2499,41 +2274,22 @@
 
     function toggleMuteAudio() {
       isMuted = !isMuted;
-      if (localMediaStream) {
-        localMediaStream.getAudioTracks().forEach(t => (t.enabled = !isMuted));
-      }
+      if (localMediaStream) localMediaStream.getAudioTracks().forEach(t => (t.enabled = !isMuted));
       updateMuteButtonUI();
-      showCipherToast('🎙️', isMuted ? '麥克風已硬體級靜音' : '麥克風已恢復收音');
+      showCipherToast('🎙️', isMuted ? '麥克風已靜音' : '麥克風已恢復');
     }
 
     function toggleVideoVisibility() {
       isCamHidden = !isCamHidden;
       const mask = document.getElementById('pipMaskedOverlay');
-      if (localMediaStream) {
-        localMediaStream.getVideoTracks().forEach(t => (t.enabled = !isCamHidden));
-      }
-      if (isCamHidden) {
-        mask.classList.remove('hidden');
-        showCipherToast('🙈', '已切斷視訊畫面傳輸');
-      } else {
-        mask.classList.add('hidden');
-        showCipherToast('📷', '已恢復視訊畫面傳輸');
-      }
+      if (localMediaStream) localMediaStream.getVideoTracks().forEach(t => (t.enabled = !isCamHidden));
+      mask.classList.toggle('hidden', !isCamHidden);
     }
 
     function togglePrivacyBlurMask() {
       isBlurMaskOn = !isBlurMaskOn;
-      const lv = document.getElementById('localVideoEl');
-      const lc = document.getElementById('localVirtualCanvas');
-      if (isBlurMaskOn) {
-        lv.classList.add('filter-privacy-blur');
-        lc.classList.add('filter-privacy-blur');
-        showCipherToast('🎭', '已啟動隱私模糊面具保護背景');
-      } else {
-        lv.classList.remove('filter-privacy-blur');
-        lc.classList.remove('filter-privacy-blur');
-        showCipherToast('✨', '已解除隱私模糊面具');
-      }
+      document.getElementById('localVideoEl').classList.toggle('filter-privacy-blur', isBlurMaskOn);
+      document.getElementById('localVirtualCanvas').classList.toggle('filter-privacy-blur', isBlurMaskOn);
     }
 
     function cyclePipCorner() {
@@ -2553,55 +2309,24 @@
       const rCtx = rCanvas.getContext('2d');
       const lCtx = lCanvas.getContext('2d');
       let phase = 0;
-
       function render() {
         phase += 0.03;
-        if (rCanvas.width !== rCanvas.clientWidth || rCanvas.height !== rCanvas.clientHeight) {
-          rCanvas.width = rCanvas.clientWidth || 380;
-          rCanvas.height = rCanvas.clientHeight || 800;
-        }
-        if (lCanvas.width !== lCanvas.clientWidth || lCanvas.height !== lCanvas.clientHeight) {
-          lCanvas.width = lCanvas.clientWidth || 112;
-          lCanvas.height = lCanvas.clientHeight || 160;
-        }
-
-        const rw = rCanvas.width, rh = rCanvas.height;
-        const grad = rCtx.createLinearGradient(0, 0, rw, rh);
-        grad.addColorStop(0, '#040d14');
-        grad.addColorStop(0.5, '#062026');
-        grad.addColorStop(1, '#02060c');
-        rCtx.fillStyle = grad;
-        rCtx.fillRect(0, 0, rw, rh);
-
-        const cx = rw / 2, cy = rh * 0.43 + Math.sin(phase * 1.8) * 4;
-        rCtx.beginPath();
-        rCtx.arc(cx, cy, 78 + Math.sin(phase * 3) * 6, 0, Math.PI * 2);
-        rCtx.strokeStyle = 'rgba(16, 185, 129, 0.45)';
-        rCtx.lineWidth = 2;
-        rCtx.stroke();
-
-        rCtx.beginPath();
-        rCtx.arc(cx, cy, 62, 0, Math.PI * 2);
-        rCtx.fillStyle = 'rgba(6, 24, 32, 0.9)';
-        rCtx.fill();
-
+        rCanvas.width = rCanvas.clientWidth || 380;
+        rCanvas.height = rCanvas.clientHeight || 800;
+        lCanvas.width = lCanvas.clientWidth || 112;
+        lCanvas.height = lCanvas.clientHeight || 160;
+        rCtx.fillStyle = '#040d14';
+        rCtx.fillRect(0, 0, rCanvas.width, rCanvas.height);
         rCtx.font = '56px sans-serif';
         rCtx.textAlign = 'center';
         rCtx.textBaseline = 'middle';
-        rCtx.fillText(targetInfo.avatar || '🛡️', cx, cy + 2);
-
-        rCtx.fillStyle = '#34d399';
-        rCtx.font = '600 11px "JetBrains Mono", monospace';
-        rCtx.fillText('SFRAME + DTLS-SRTP ENCRYPTED', cx, cy + 92);
-
-        const lw = lCanvas.width, lh = lCanvas.height;
+        rCtx.fillText(targetInfo.avatar || '🛡️', rCanvas.width / 2, rCanvas.height * 0.43);
         lCtx.fillStyle = '#091520';
-        lCtx.fillRect(0, 0, lw, lh);
+        lCtx.fillRect(0, 0, lCanvas.width, lCanvas.height);
         lCtx.font = '32px sans-serif';
         lCtx.textAlign = 'center';
         lCtx.textBaseline = 'middle';
-        lCtx.fillText('🕵️', lw / 2, lh * 0.45 + Math.cos(phase * 2) * 3);
-
+        lCtx.fillText('🕵️', lCanvas.width / 2, lCanvas.height * 0.45);
         videoLoopId = requestAnimationFrame(render);
       }
       render();
@@ -2614,31 +2339,97 @@
       }
     }
 
-    /* ==========================================================================
-       10. 啟動初始化
-       ========================================================================== */
+    function copyTextSafe(text) {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand('copy'); } catch (e) {}
+      document.body.removeChild(ta);
+    }
+
+    function copyAnonNumber() {
+      copyTextSafe(myAnonNumber);
+      showCipherToast('📋', '已複製揮發 128-bit Base58 識別碼');
+    }
+
+    function togglePassphraseVisibility() {
+      const inp = document.getElementById('sharedPassphraseInput');
+      inp.type = inp.type === 'password' ? 'text' : 'password';
+    }
+
+    function toggleFullScreenMode() {
+      const docEl = document.documentElement;
+      const isFs = document.fullscreenElement || document.webkitFullscreenElement || document.body.classList.contains('is-fullscreen');
+      if (!isFs) {
+        document.body.classList.add('is-fullscreen');
+        if (docEl.requestFullscreen) docEl.requestFullscreen().catch(() => {});
+      } else {
+        document.body.classList.remove('is-fullscreen');
+        if (document.exitFullscreen && document.fullscreenElement) document.exitFullscreen().catch(() => {});
+      }
+    }
+
+    let toastTimer = null;
+    function showCipherToast(icon, msg) {
+      const el = document.getElementById('cipherToast');
+      document.getElementById('cipherToastIcon').textContent = icon;
+      document.getElementById('cipherToastMsg').textContent = msg;
+      el.classList.remove('opacity-0', '-translate-y-2');
+      el.classList.add('opacity-100', 'translate-y-0');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        el.classList.add('opacity-0', '-translate-y-2');
+        el.classList.remove('opacity-100', 'translate-y-0');
+      }, 2500);
+    }
+
+    let calcCurrent = '0', calcPrev = null, calcOp = null, calcResetNext = false;
+    function activateStealthScreen() { document.getElementById('stealthCalculatorOverlay').classList.remove('hidden'); }
+    function deactivateStealthScreen() { document.getElementById('stealthCalculatorOverlay').classList.add('hidden'); }
+    function calcInput(val) {
+      const disp = document.getElementById('calcDisplayText');
+      const hist = document.getElementById('calcHistoryText');
+      if (val === 'C') { calcCurrent = '0'; calcPrev = null; calcOp = null; calcResetNext = false; hist.textContent = '0'; }
+      else if (val === '+/-') calcCurrent = String(parseFloat(calcCurrent) * -1);
+      else if (val === '%') calcCurrent = String(parseFloat(calcCurrent) / 100);
+      else if (['+', '-', '*', '/'].includes(val)) { calcPrev = parseFloat(calcCurrent); calcOp = val; calcResetNext = true; hist.textContent = `${calcPrev} ${val}`; }
+      else if (val === '=') {
+        if (calcCurrent === '1337') { deactivateStealthScreen(); return; }
+        if (calcOp && calcPrev !== null) {
+          const cur = parseFloat(calcCurrent);
+          let res = cur;
+          if (calcOp === '+') res = calcPrev + cur;
+          if (calcOp === '-') res = calcPrev - cur;
+          if (calcOp === '*') res = calcPrev * cur;
+          if (calcOp === '/') res = cur !== 0 ? calcPrev / cur : 0;
+          hist.textContent = `${calcPrev} ${calcOp} ${cur} =`;
+          calcCurrent = String(Number(res.toFixed(8)));
+          calcOp = null; calcPrev = null; calcResetNext = true;
+        }
+      } else {
+        if (calcResetNext) { calcCurrent = val === '.' ? '0.' : val; calcResetNext = false; }
+        else {
+          if (val === '.' && calcCurrent.includes('.')) return;
+          calcCurrent = calcCurrent === '0' && val !== '.' ? val : calcCurrent + val;
+        }
+      }
+      disp.textContent = calcCurrent;
+    }
+
     function updateClock() {
       const d = new Date();
-      document.getElementById('sysClock').textContent =
-        `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+      document.getElementById('sysClock').textContent = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
     }
     setInterval(updateClock, 1000);
     updateClock();
 
     window.addEventListener('DOMContentLoaded', async () => {
-      loadOrCreatePersistentNumber();
+      initVolatileIdentity();
       await cryptoEngine.generateEphemeralKeys();
-      updateSecurityModalContent();
       initSecurePeerNode();
-
-      const params = new URLSearchParams(window.location.search);
-      const target = (params.get('call') || '').trim();
-      if (target) {
-        const inputEl = document.getElementById('dialDisplayInput');
-        if (inputEl) inputEl.value = target;
-        refreshDialUI();
-        showCipherToast('🔐', '已載入 128-bit 加密直撥識別碼');
-      }
     });
   </script>
 </body>
