@@ -563,55 +563,19 @@
               </div>
             </div>
 
-            <button
-              onclick="activateStealthScreen()"
-              class="bg-black/65 backdrop-blur-md border border-amber-400/40 rounded-full px-3 py-1.5 text-[10px] font-semibold text-amber-300 shrink-0 active:scale-95 transition"
-            >
-              👁️‍🗨️ 防窺偽裝
-            </button>
-          </div>
-
-          <!-- 子母畫面 (PiP) -->
-          <div
-            id="pipBox"
-            onclick="cyclePipCorner()"
-            title="點擊切換位置"
-            class="absolute bottom-24 right-4 z-30 w-26 h-36 sm:w-28 sm:h-40 rounded-2xl overflow-hidden border-2 border-emerald-400/50 shadow-2xl bg-slate-900 cursor-pointer transition-all duration-300"
-          >
-            <video id="localVideoEl" autoplay playsinline muted class="w-full h-full object-cover scale-x-[-1] hidden"></video>
-            <canvas id="localVirtualCanvas" class="w-full h-full object-cover"></canvas>
-            <div id="pipLabel" class="absolute bottom-1 left-1 right-1 bg-black/70 text-[9px] text-center text-emerald-300 py-0.5 rounded">
-              E2EE 本地鏡頭
-            </div>
-            <div id="pipMaskedOverlay" class="hidden absolute inset-0 bg-slate-950/95 flex flex-col items-center justify-center text-slate-400">
-              <span class="text-xl mb-1">🙈</span>
-              <span class="text-[10px]">畫面已遮蔽</span>
-            </div>
-          </div>
-
-          <!-- 底部視訊安全控制列 -->
-          <div class="relative z-20 px-4 pb-5">
-            <div class="bg-slate-950/85 backdrop-blur-xl border border-emerald-500/25 rounded-3xl px-2.5 py-2.5 flex items-center justify-around shadow-2xl">
-              <button onclick="toggleMuteAudio()" id="btnVidMute" title="靜音" class="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center active:scale-90 transition">
-                🎙️
+            <div class="flex items-center gap-1.5 shrink-0">
+              <button
+                onclick="downgradeToEncryptedAudio()"
+                class="bg-sky-500/30 hover:bg-sky-500/45 backdrop-blur-md border border-sky-400/50 rounded-full px-3 py-1.5 text-[11px] font-semibold text-sky-200 active:scale-95 transition flex items-center gap-1"
+              >
+                <span>📞</span>
+                <span>切回語音</span>
               </button>
-              <button onclick="toggleSpeakerphone()" id="btnVidSpeaker" title="開啟/關閉擴音" class="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center active:scale-90 transition">
-                🔈
-              </button>
-              <button onclick="toggleVideoVisibility()" id="btnVidHide" title="遮蔽/開啟鏡頭" class="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center active:scale-90 transition">
-                📷
-              </button>
-              <button onclick="togglePrivacyBlurMask()" id="btnVidBlur" title="隱私背景模糊面具" class="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-cyan-300 flex items-center justify-center active:scale-90 transition">
-                🎭
-              </button>
-              <button onclick="openSecurityModal()" title="檢視金鑰指紋" class="w-10 h-10 rounded-full bg-emerald-500/20 hover:bg-emerald-500/35 text-emerald-300 flex items-center justify-center active:scale-90 transition">
-                🔐
-              </button>
-              <button onclick="downgradeToEncryptedAudio()" title="切回純語音通話" class="w-10 h-10 rounded-full bg-sky-500/20 hover:bg-sky-500/35 text-sky-300 flex items-center justify-center active:scale-90 transition">
-                📞
-              </button>
-              <button onclick="terminateAndWipeCall()" title="掛斷並銷毀金鑰" class="w-11 h-11 rounded-full bg-gradient-to-b from-rose-500 to-red-600 text-white shadow-lg shadow-rose-600/40 flex items-center justify-center active:scale-90 transition">
-                🔥
+              <button
+                onclick="activateStealthScreen()"
+                class="bg-black/65 backdrop-blur-md border border-amber-400/40 rounded-full px-2.5 py-1.5 text-[10px] font-semibold text-amber-300 active:scale-95 transition"
+              >
+                👁️‍🗨️ 防窺
               </button>
             </div>
           </div>
@@ -632,29 +596,29 @@
           </div>
 
           <div class="grid grid-cols-4 gap-2.5 pb-2">
-            <button onclick="calcInput('C')" class="py-3.5 rounded-2xl bg-slate-700/60 text-amber-300 font-semibold">AC</button>
-            <button onclick="calcInput('+/-')" class="py-3.5 rounded-2xl bg-slate-700/60 text-slate-200 font-semibold">+/-</button>
-            <button onclick="calcInput('%')" class="py-3.5 rounded-2xl bg-slate-700/60 text-slate-200 font-semibold">%</button>
-            <button onclick="calcInput('/')" class="py-3.5 rounded-2xl bg-amber-500 text-white font-bold">÷</button>
-
-            <button onclick="calcInput('7')" class="py-3.5 rounded-2xl bg-slate-800 text-white text-lg">7</button>
-            <button onclick="calcInput('8')" class="py-3.5 rounded-2xl bg-slate-800 text-white text-lg">8</button>
-            <button onclick="calcInput('9')" class="py-3.5 rounded-2xl bg-slate-800 text-white text-lg">9</button>
-            <button onclick="calcInput('*')" class="py-3.5 rounded-2xl bg-amber-500 text-white font-bold">×</button>
-
-            <button onclick="calcInput('4')" class="py-3.5 rounded-2xl bg-slate-800 text-white text-lg">4</button>
-            <button onclick="calcInput('5')" class="py-3.5 rounded-2xl bg-slate-800 text-white text-lg">5</button>
-            <button onclick="calcInput('6')" class="py-3.5 rounded-2xl bg-slate-800 text-white text-lg">6</button>
-            <button onclick="calcInput('-')" class="py-3.5 rounded-2xl bg-amber-500 text-white font-bold">−</button>
-
-            <button onclick="calcInput('1')" class="py-3.5 rounded-2xl bg-slate-800 text-white text-lg">1</button>
-            <button onclick="calcInput('2')" class="py-3.5 rounded-2xl bg-slate-800 text-white text-lg">2</button>
-            <button onclick="calcInput('3')" class="py-3.5 rounded-2xl bg-slate-800 text-white text-lg">3</button>
-            <button onclick="calcInput('+')" class="py-3.5 rounded-2xl bg-amber-500 text-white font-bold">+</button>
-
-            <button onclick="calcInput('0')" class="col-span-2 py-3.5 rounded-2xl bg-slate-800 text-white text-lg">0</button>
-            <button onclick="calcInput('.')" class="py-3.5 rounded-2xl bg-slate-800 text-white text-lg">.</button>
-            <button onclick="calcInput('=')" class="py-3.5 rounded-2xl bg-emerald-600 text-white font-bold">=</button>
+          <!-- 底部視訊安全控制列 -->
+          <div class="relative z-20 px-4 pb-5">
+            <div class="bg-slate-950/85 backdrop-blur-xl border border-emerald-500/25 rounded-3xl px-2.5 py-2.5 flex items-center justify-around shadow-2xl">
+              <button onclick="toggleMuteAudio()" id="btnVidMute" title="靜音" class="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center active:scale-90 transition">
+                🎙️
+              </button>
+              <button onclick="toggleSpeakerphone()" id="btnVidSpeaker" title="開啟/關閉擴音" class="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center active:scale-90 transition">
+                🔈
+              </button>
+              <button onclick="toggleVideoVisibility()" id="btnVidHide" title="遮蔽/開啟鏡頭" class="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center active:scale-90 transition">
+                📷
+              </button>
+              <button onclick="togglePrivacyBlurMask()" id="btnVidBlur" title="隱私背景模糊面具" class="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-cyan-300 flex items-center justify-center active:scale-90 transition">
+                🎭
+              </button>
+              <button onclick="downgradeToEncryptedAudio()" title="切回純語音模式" class="px-3 h-10 rounded-full bg-sky-500/25 hover:bg-sky-500/40 border border-sky-400/40 text-sky-200 text-xs font-semibold flex items-center gap-1 active:scale-90 transition">
+                <span>📞</span>
+                <span>語音</span>
+              </button>
+              <button onclick="terminateAndWipeCall()" title="掛斷通話" class="w-11 h-11 rounded-full bg-gradient-to-b from-rose-500 to-red-600 text-white shadow-lg shadow-rose-600/40 flex items-center justify-center active:scale-90 transition">
+                🔥
+              </button>
+            </div>
           </div>
         </section>
 
@@ -1408,6 +1372,34 @@
     /* ==========================================================================
        6. PeerJS 加密資料通道 (ECDH 金鑰交換、視訊/語音雙向互切與控制信令)
        ========================================================================== */
+    let heartbeatInterval = null;
+
+    function startConnectionHeartbeat() {
+      stopConnectionHeartbeat();
+      heartbeatInterval = setInterval(() => {
+        if (!currentCallSession) return;
+        if (activeDataConn && activeDataConn.open) {
+          try { activeDataConn.send({ type: 'HEARTBEAT_PING', ts: Date.now() }); } catch (e) {}
+        }
+        if (peerObj && peerObj.disconnected && !peerObj.destroyed) {
+          try { peerObj.reconnect(); } catch (e) {}
+        }
+        const remoteAudio = document.getElementById('remoteAudioEl');
+        if (remoteAudio && remoteAudio.srcObject && remoteAudio.paused) {
+          remoteAudio.muted = false;
+          remoteAudio.volume = 1.0;
+          remoteAudio.play().catch(() => {});
+        }
+      }, 6000);
+    }
+
+    function stopConnectionHeartbeat() {
+      if (heartbeatInterval) {
+        clearInterval(heartbeatInterval);
+        heartbeatInterval = null;
+      }
+    }
+
     function setupEncryptedDataChannel(conn, isReceiver) {
       if (!conn) return;
       activeDataConn = conn;
@@ -1423,10 +1415,17 @@
 
       conn.on('open', () => {
         sendPubKey();
+        startConnectionHeartbeat();
       });
 
       conn.on('data', async (msg) => {
         if (!msg || typeof msg !== 'object') return;
+
+        if (msg.type === 'HEARTBEAT_PING') {
+          try { conn.send({ type: 'HEARTBEAT_PONG', ts: Date.now() }); } catch (e) {}
+          return;
+        }
+        if (msg.type === 'HEARTBEAT_PONG') return;
 
         if (msg.type === 'ECDH_PUB' && msg.jwk) {
           const passEl = document.getElementById('sharedPassphraseInput');
@@ -1829,19 +1828,21 @@
                 sfx.stopRing();
                 currentCallSession.connected = true;
                 currentCallSession.isRealP2P = true;
+                startConnectionHeartbeat();
                 attachRemoteMedia(remoteStream, currentCallSession.mode);
                 markCallEncryptedConnected();
               });
 
               call.on('close', () => {
-                if (currentCallSession) {
-                  showCipherToast('📴', currentCallSession.connected ? '對方已掛斷通話' : '對方未接聽或已拒接');
+                // 僅在尚未接通前被拒接時自動結束；已接通後由明確掛斷信令或 ICE 徹底斷線控制，防止信令閒置誤斷線
+                if (currentCallSession && !currentCallSession.connected) {
+                  showCipherToast('📴', '對方未接聽或已拒接');
                   terminateAndWipeCall(true);
                 }
               });
 
               call.on('error', () => {
-                showCipherToast('⚠️', 'P2P 連線異常，請確認雙方網路');
+                showCipherToast('⚠️', 'P2P 連線波動，正在維持通話...');
               });
             }
           } catch (e) {
@@ -1894,6 +1895,7 @@
         openVideoOverlay(targetInfo);
       }
       markCallEncryptedConnected();
+      startConnectionHeartbeat();
 
       call.answer(stream);
       bindPeerConnectionTrackListeners(call);
@@ -1901,10 +1903,7 @@
         attachRemoteMedia(remoteStream, currentCallSession ? currentCallSession.mode : mode);
       });
       call.on('close', () => {
-        if (currentCallSession) {
-          showCipherToast('📴', '對方已掛斷並銷毀金鑰');
-          terminateAndWipeCall(true);
-        }
+        // 已接通的語音通話不因 PeerJS 單一媒體通道事件誤觸斷線，交由明確掛斷信令或 ICE 狀態判斷
       });
     }
 
@@ -1943,6 +1942,18 @@
       pc.onicecandidate = (event) => {
         if (event.candidate && activeDataConn && activeDataConn.open) {
           activeDataConn.send({ type: 'VIDEO_ICE', candidate: event.candidate });
+        }
+      };
+      pc.oniceconnectionstatechange = () => {
+        const state = pc.iceConnectionState;
+        if (state === 'disconnected') {
+          showCipherToast('🔄', '網路訊號不穩，正在嘗試恢復連線...');
+          try { if (pc.restartIce) pc.restartIce(); } catch (e) {}
+        } else if (state === 'failed' || state === 'closed') {
+          if (currentCallSession) {
+            showCipherToast('📴', '連線已中斷');
+            terminateAndWipeCall(true);
+          }
         }
       };
     }
@@ -2091,6 +2102,7 @@
     async function terminateAndWipeCall(fromRemote = false) {
       sfx.stopRing();
       releaseCallScreenLock();
+      stopConnectionHeartbeat();
       clearInterval(timerInterval);
       clearTimeout(simulatedAnswerTimer);
       stopMicLevelMonitor();
@@ -2210,20 +2222,24 @@
         audioTracks.forEach(t => (t.enabled = true));
         const audioOnlyStream = new MediaStream(audioTracks);
 
-        // 1. 傳統 <audio> 元素掛載播放
+        // 1. 原生 <audio> 元素直接掛載完整串流播放（確保行動瀏覽器硬體音訊通道立即發聲）
         const remoteAudio = document.getElementById('remoteAudioEl');
         if (remoteAudio) {
-          remoteAudio.srcObject = audioOnlyStream;
+          remoteAudio.srcObject = stream;
           remoteAudio.muted = false;
           remoteAudio.volume = 1.0;
-          remoteAudio.play().then(() => {
-            if (statusPill) statusPill.textContent = '🔊 雙向通話已接通';
-          }).catch(() => {
-            if (statusPill) statusPill.textContent = '⚠️ 請點擊右方「📢 擴大音量」';
-          });
+          const tryPlay = () => {
+            remoteAudio.play().then(() => {
+              if (statusPill) statusPill.textContent = '🔊 雙向語音已接通';
+            }).catch(() => {
+              if (statusPill) statusPill.textContent = '⚠️ 請點擊右方「📢 擴大音量」';
+            });
+          };
+          tryPlay();
+          setTimeout(tryPlay, 350);
         }
 
-        // 2. Web Audio API 硬體直通增益橋接（解決手機瀏覽器 WebRTC 音訊有訊號卻無聲/極小聲問題）
+        // 2. Web Audio API 雙重增益放大與即時波形分析（完整連接至 destination 輸出）
         stopRemoteAudioBridge();
         try {
           const AC = window.AudioContext || window.webkitAudioContext;
@@ -2247,11 +2263,14 @@
 
             const analyser = remoteAudioCtx.createAnalyser();
             analyser.fftSize = 64;
-            // 保持 <audio> 全音量輸出，確保任何手機瀏覽器都能直接透過原生媒體管線發聲
-            if (remoteAudio) {
-              remoteAudio.muted = false;
-              remoteAudio.volume = 1.0;
-            }
+            const freqData = new Uint8Array(analyser.frequencyBinCount);
+
+            // 完整串接音訊管線：source -> gain -> compressor -> analyser -> destination
+            source.connect(remoteGainNode);
+            remoteGainNode.connect(remoteCompressorNode);
+            remoteCompressorNode.connect(analyser);
+            analyser.connect(remoteAudioCtx.destination);
+
             if (statusPill) statusPill.textContent = '🔊 雙向語音已接通';
 
             remoteMonitorInterval = setInterval(() => {
@@ -2259,7 +2278,7 @@
               let sum = 0;
               for (let i = 0; i < freqData.length; i++) sum += freqData[i];
               const avg = sum / freqData.length;
-              const pct = Math.min(100, Math.round((avg / 60) * 100));
+              const pct = Math.min(100, Math.round((avg / 50) * 100));
               const rBar = document.getElementById('remoteLevelBar');
               if (rBar) rBar.style.width = `${pct}%`;
             }, 80);
