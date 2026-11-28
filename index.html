@@ -1,2436 +1,1353 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-Hant" class="dark">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="mobile-web-app-capable" content="yes" />
-  <meta name="theme-color" content="#050811" />
-  <meta name="referrer" content="no-referrer" />
-  <title>CipherPhone PQ-Hybrid — X25519 + ML-KEM-1024 抗量子雙層保密終端</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
-  <style>
-    * {
-      box-sizing: border-box;
-      -webkit-tap-highlight-color: transparent;
-      user-select: none;
-      touch-action: manipulation;
-    }
-    input, textarea { user-select: text; }
-    html, body {
-      width: 100%;
-      height: 100dvh;
-      margin: 0;
-      padding: 0;
-      overflow: hidden;
-      overscroll-behavior: none;
-      position: fixed;
-      inset: 0;
-      font-family: 'Inter', 'Noto Sans TC', sans-serif;
-      background: radial-gradient(circle at 20% 15%, #0f1f2e 0%, #050811 60%, #020408 100%);
-      color: #f8fafc;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .font-mono-tech { font-family: 'JetBrains Mono', monospace; }
-    .ambient-orb {
-      position: fixed;
-      width: 460px;
-      height: 460px;
-      border-radius: 50%;
-      filter: blur(130px);
-      opacity: 0.22;
-      pointer-events: none;
-      z-index: 0;
-    }
-    .phone-chassis {
-      position: relative;
-      width: 100%;
-      height: 100dvh;
-      background: #050811;
-      z-index: 10;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
-    @media (min-width: 640px) {
-      .phone-chassis {
-        width: min(450px, 95vw);
-        height: min(930px, 98dvh);
-        border-radius: 44px;
-        padding: 10px;
-        background: linear-gradient(145deg, #334155 0%, #1e293b 35%, #0f172a 70%, #334155 100%);
-        box-shadow:
-          0 25px 70px -10px rgba(0, 0, 0, 0.95),
-          0 0 0 1px rgba(16, 185, 129, 0.25),
-          inset 0 0 3px 1px rgba(255, 255, 255, 0.15);
-      }
-    }
-    body.is-fullscreen .phone-chassis {
-      width: 100vw;
-      height: 100dvh;
-      max-width: none;
-      max-height: none;
-      border-radius: 0;
-      padding: 0;
-      background: #050811;
-      box-shadow: none;
-    }
-    body.is-fullscreen .phone-screen {
-      border-radius: 0;
-      box-shadow: none;
-    }
-    .phone-screen {
-      position: relative;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(180deg, #080d19 0%, #04070e 100%);
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-    }
-    @media (min-width: 640px) {
-      .phone-screen {
-        border-radius: 35px;
-        box-shadow: inset 0 0 0 1.5px #000000;
-      }
-    }
-    .dynamic-island {
-      position: relative;
-      width: 164px;
-      height: 30px;
-      background: #000000;
-      border-radius: 999px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 10px;
-      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.85), inset 0 0 0 0.5px rgba(16, 185, 129, 0.35);
-      transition: width 0.3s ease;
-      z-index: 55;
-      cursor: pointer;
-    }
-    .dynamic-island.expanded { width: 234px; }
-    .camera-lens {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      background: radial-gradient(circle at 35% 35%, #10b981 0%, #064e3b 55%, #000000 85%);
-      box-shadow: inset 0 0 2px rgba(255, 255, 255, 0.4);
-      flex-shrink: 0;
-    }
-    input[type="range"].volume-slider {
-      -webkit-appearance: none;
-      appearance: none;
-      height: 5px;
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.15);
-      outline: none;
-    }
-    input[type="range"].volume-slider::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      appearance: none;
-      width: 14px;
-      height: 14px;
-      border-radius: 50%;
-      background: #10b981;
-      cursor: pointer;
-      box-shadow: 0 0 6px rgba(16, 185, 129, 0.8);
-    }
-    .no-scrollbar::-webkit-scrollbar { display: none; }
-    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-    .filter-privacy-blur { filter: blur(14px) saturate(1.2); }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2026 九合一大選・多源即時開票戰情室（TVBS × 民視 × 中選會）</title>
+    <!-- 載入字體：Noto Sans TC、Inter、JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <!-- 載入 Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Noto Sans TC"', '"Inter"', 'system-ui', 'sans-serif'],
+                        mono: ['"JetBrains Mono"', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* 深色戰情室專屬微調樣式 */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0b1120;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+        .tile-active {
+            box-shadow: 0 0 0 2px #38bdf8, 0 0 20px rgba(56, 189, 248, 0.35);
+        }
+        .neon-panel {
+            background: linear-gradient(180deg, rgba(17, 24, 39, 0.96) 0%, rgba(11, 17, 32, 0.98) 100%);
+        }
+        /* 移除數字輸入框預設箭頭 */
+        input[type=number]::-webkit-inner-spin-button,
+        input[type=number]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+    </style>
 </head>
-<body>
+<body class="bg-[#0b1120] text-slate-100 antialiased min-h-screen flex flex-col selection:bg-sky-500/30 selection:text-sky-200">
 
-  <div class="ambient-orb bg-emerald-600 -top-24 -left-24"></div>
-  <div class="ambient-orb bg-cyan-600 -bottom-24 -right-24"></div>
+    <!-- ==================== 1. 頂部戰情列 (War Room Header) ==================== -->
+    <header class="sticky top-0 z-30 bg-[#0b1120]/95 backdrop-blur-md border-b border-sky-500/20 shadow-2xl">
+        <div class="max-w-[1480px] mx-auto px-4 sm:px-6 py-3 space-y-2.5">
 
-  <div class="phone-chassis" id="phoneChassis">
-    <div class="phone-screen" id="phoneScreen">
-
-      <!-- 頂部系統狀態欄 + 安全動態島 + 防窺與全螢幕 -->
-      <header class="relative z-50 pt-2.5 pb-1.5 px-4 flex items-center justify-between text-xs font-semibold text-white shrink-0">
-        <div class="flex items-center gap-1.5 w-24">
-          <span class="tracking-tight text-[13px]" id="sysClock">14:02</span>
-          <span id="p2pConnDot" class="w-2 h-2 rounded-full bg-amber-400 animate-pulse" title="信令連線狀態"></span>
-        </div>
-
-        <div class="dynamic-island" id="dynamicIsland" onclick="openSecurityModal()" title="點擊檢視後量子憑證與硬體隔離說明">
-          <div class="flex items-center gap-1.5 overflow-hidden">
-            <span class="text-[11px]">🛡️</span>
-            <span id="islandLabel" class="text-[10px] font-mono-tech font-semibold text-emerald-300 truncate">ML-KEM-1024</span>
-          </div>
-          <div class="camera-lens"></div>
-        </div>
-
-        <div class="flex items-center justify-end gap-1 w-24">
-          <button
-            onclick="activateStealthScreen()"
-            title="一鍵啟動計算機防窺偽裝畫面"
-            class="px-2 py-0.5 rounded-full bg-amber-500/20 hover:bg-amber-500/35 border border-amber-400/30 text-[10px] font-medium text-amber-300 active:scale-95 transition"
-          >
-            👁️‍🗨️ 防窺
-          </button>
-          <button
-            onclick="toggleFullScreenMode()"
-            title="切換全螢幕"
-            class="px-2 py-0.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/15 text-[10px] text-slate-200 active:scale-95 transition"
-          >
-            ⛶
-          </button>
-        </div>
-      </header>
-
-      <!-- 系統安全提示 Toast -->
-      <div id="cipherToast" class="absolute top-12 left-1/2 -translate-x-1/2 z-50 pointer-events-none opacity-0 transition-all duration-200 transform -translate-y-2">
-        <div class="bg-slate-900/95 backdrop-blur-md border border-emerald-400/40 text-emerald-100 text-xs px-3.5 py-1.5 rounded-full shadow-2xl flex items-center gap-1.5 whitespace-nowrap">
-          <span id="cipherToastIcon">🛡️</span>
-          <span id="cipherToastMsg">端到端加密已啟動</span>
-        </div>
-      </div>
-
-      <!-- 128-bit Base58 密碼學識別碼卡片 -->
-      <div class="mx-4 mt-1.5 mb-1 px-3.5 py-2.5 rounded-2xl bg-slate-900/90 border border-emerald-500/30 backdrop-blur-md shrink-0">
-        <div class="flex items-center justify-between gap-2">
-          <div class="min-w-0 flex-1">
-            <div class="flex items-center gap-1.5 flex-wrap">
-              <span class="text-[10px] font-semibold text-emerald-400">揮發記憶體 128-bit ID</span>
-              <span id="pqStatusBadge" class="text-[9px] px-1.5 py-0.2 rounded bg-cyan-500/20 text-cyan-300 font-mono-tech">
-                載入 PQ 核心...
-              </span>
-              <span id="signalStatusTag" class="text-[9px] px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300">
-                連線待命
-              </span>
-            </div>
-            <div class="mt-1">
-              <span id="myAnonNumberText" class="text-[13px] font-mono-tech font-bold tracking-wider text-white break-all select-all">----------------------</span>
-            </div>
-          </div>
-
-          <div class="flex flex-col gap-1 shrink-0">
-            <div class="flex items-center gap-1">
-              <button
-                onclick="copyAnonNumber()"
-                title="複製 22 碼 Base58 識別碼"
-                class="px-2 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-white text-[10px] font-medium active:scale-90 transition"
-              >
-                複製 ID
-              </button>
-              <button
-                onclick="openZeroServerModal()"
-                title="零信令伺服器離線 SDP 人工交握"
-                class="px-2 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/35 border border-amber-400/30 text-amber-300 text-[10px] font-medium active:scale-90 transition"
-              >
-                無伺服器直連
-              </button>
-            </div>
-            <button
-              onclick="openBurnModal()"
-              title="換號銷毀"
-              class="w-full py-1 rounded-lg bg-rose-500/20 hover:bg-rose-500/35 border border-rose-400/30 text-rose-300 text-[10px] font-semibold active:scale-90 transition"
-            >
-              🔥 覆寫金鑰並換號
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- 專用遠端音訊輸出元件 -->
-      <audio id="remoteAudioEl" autoplay playsinline></audio>
-
-      <!-- ==================== 主應用分頁容器 ==================== -->
-      <main class="relative flex-1 flex flex-col overflow-hidden">
-
-        <!-- 1. 軍規級保密撥號主介面 -->
-        <section id="tab-dialer" class="tab-panel flex-1 flex flex-col justify-between px-4 pt-2 pb-4 overflow-y-auto no-scrollbar">
-          
-          <div class="space-y-2.5">
-            <!-- 1. 對方 128-bit Base58 ID -->
-            <div class="bg-white/5 border border-white/10 rounded-2xl p-3 space-y-2">
-              <div class="flex items-center justify-between">
-                <label class="text-[11px] font-semibold text-emerald-300">1. 對方 128-bit Base58 識別碼</label>
-                <div class="flex items-center gap-1.5">
-                  <button
-                    onclick="pasteTargetId()"
-                    class="text-[10px] px-2 py-0.5 rounded-lg bg-white/10 hover:bg-white/20 text-slate-200 transition"
-                  >
-                    📋 貼上
-                  </button>
-                  <button
-                    onclick="clearTargetId()"
-                    class="text-[10px] px-2 py-0.5 rounded-lg bg-white/10 hover:bg-white/20 text-slate-400 transition"
-                  >
-                    清除
-                  </button>
+            <!-- 第一列：標題、LIVE 紅燈、UTC+8 時鐘、媒體傳送門 -->
+            <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-2.5">
+                <div class="flex items-center flex-wrap gap-2.5">
+                    <div class="flex items-center gap-2.5">
+                        <span class="relative flex h-3 w-3 shrink-0">
+                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-500 opacity-80"></span>
+                            <span class="relative inline-flex rounded-full h-3 w-3 bg-rose-500"></span>
+                        </span>
+                        <h1 class="text-base sm:text-xl font-black tracking-tight text-white">
+                            2026 九合一大選・多源即時開票戰情室
+                        </h1>
+                    </div>
+                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-rose-500/20 text-rose-400 border border-rose-500/40 tracking-wider">
+                        LIVE 開票監測中
+                    </span>
+                    <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-900/90 border border-slate-700/80 text-xs font-mono text-sky-300">
+                        <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        <span id="liveClock">UTC+8 --:--:--</span>
+                    </div>
                 </div>
-              </div>
-              <input
-                type="text"
-                id="dialDisplayInput"
-                oninput="refreshDialUI()"
-                placeholder="輸入或貼上 22 碼 Base58 識別碼"
-                class="w-full bg-slate-950/80 border border-white/15 rounded-xl px-3 py-2 text-xs font-mono-tech font-semibold tracking-wider text-white placeholder-slate-600 focus:outline-none focus:border-emerald-400"
-              />
-              <div class="flex items-center justify-between text-[10px]">
-                <span id="dialStatusHint" class="text-emerald-400/90">RAM-Only 揮發識別碼已就緒</span>
-                <button
-                  onclick="quickDial('DEMO_ECHO_888888888888', 'audio')"
-                  class="px-2 py-0.5 rounded-full bg-emerald-500/15 hover:bg-emerald-500/30 border border-emerald-400/30 text-emerald-300 transition"
-                >
-                  🎧 PQ 測試專線
-                </button>
-              </div>
-            </div>
 
-            <!-- 2. 雙層應用層加密實體預共享暗號 -->
-            <div class="bg-white/5 border border-white/10 rounded-2xl p-3 space-y-1.5">
-              <div class="flex items-center justify-between">
-                <label class="text-[11px] font-semibold text-cyan-300">2. 混合金鑰 + 實體預共享暗號 (PSK)</label>
-                <span class="text-[9px] px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-300 font-mono-tech">ML-KEM-1024 + X25519</span>
-              </div>
-              <div class="flex items-center bg-slate-950/80 border border-white/15 rounded-xl px-2.5 py-1.5">
-                <span class="text-xs text-slate-400 mr-1.5">🔑</span>
-                <input
-                  type="password"
-                  id="sharedPassphraseInput"
-                  placeholder="線下約定實體暗號（與抗量子金鑰雙重融合）"
-                  class="flex-1 bg-transparent text-xs text-emerald-200 placeholder-slate-500 focus:outline-none"
-                />
-                <button onclick="togglePassphraseVisibility()" class="text-xs text-slate-400 hover:text-white px-1">👁️</button>
-              </div>
-            </div>
-
-            <!-- 3. 網路匿名、防流量分析與私有信令設定 -->
-            <div class="bg-white/5 border border-white/10 rounded-2xl p-3 space-y-2">
-              <div class="flex items-center justify-between">
-                <span class="text-[11px] font-semibold text-amber-300">3. 網路中繼與防側信道分析</span>
-                <button onclick="openNetworkConfigModal()" class="text-[10px] text-amber-200 underline hover:text-white">自建 TURN / 私有信令</button>
-              </div>
-
-              <div class="grid grid-cols-2 gap-2 text-[11px]">
-                <label class="flex items-center justify-between bg-slate-950/70 border border-white/15 rounded-xl px-2.5 py-2 cursor-pointer" title="填入自建 TURN 伺服器後可勾選強制中繼隱藏真實 IP">
-                  <span class="text-slate-200 font-medium">強制 Relay 中繼</span>
-                  <input type="checkbox" id="forceRelayToggle" onchange="onNetworkPolicyChanged()" class="accent-emerald-500 w-3.5 h-3.5" />
-                </label>
-                <label class="flex items-center justify-between bg-slate-950/70 border border-emerald-500/30 rounded-xl px-2.5 py-2 cursor-pointer" title="關閉 Opus DTX 靜音抑制並強制等長封包填充">
-                  <span class="text-emerald-200 font-medium">Opus CBR 等長幀</span>
-                  <input type="checkbox" id="cbrPaddingToggle" checked class="accent-emerald-500 w-3.5 h-3.5" />
-                </label>
-              </div>
-              <p class="text-[10px] text-slate-400 leading-snug">
-                • <strong>雙向語音互通</strong>：預設 STUN+TURN 自動穿透確保雙向有聲；若有自建 TURN 可勾選「強制 Relay」。<br/>
-                • <strong>看門狗斷線保護</strong>：對方掛斷或關閉網頁時，本機將在 3~8 秒內自動同步掛斷。
-              </p>
-            </div>
-          </div>
-
-          <!-- 底部加密撥出按鈕列 -->
-          <div class="grid grid-cols-2 gap-3 pt-2 shrink-0">
-            <button
-              onclick="initiateEncryptedCall('audio')"
-              class="py-3.5 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-sm shadow-lg shadow-emerald-500/25 flex items-center justify-center gap-2 active:scale-95 transition"
-            >
-              <span>📞</span>
-              <span>抗量子加密語音</span>
-            </button>
-            <button
-              onclick="initiateEncryptedCall('video')"
-              class="py-3.5 rounded-2xl bg-sky-500/25 hover:bg-sky-500/40 border border-sky-400/40 text-sky-200 font-bold text-sm flex items-center justify-center gap-2 active:scale-95 transition"
-            >
-              <span>📹</span>
-              <span>抗量子加密視訊</span>
-            </button>
-          </div>
-        </section>
-
-        <!-- ==================== 覆蓋層 1：來電接聽彈窗 ==================== -->
-        <section id="incomingCallModal" class="hidden absolute inset-0 z-40 bg-slate-950/95 backdrop-blur-xl flex flex-col items-center justify-between p-6">
-          <div class="mt-6 flex flex-col items-center text-center w-full">
-            <span id="incomingCallTypeTag" class="px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 text-xs font-semibold animate-pulse">
-              📞 PQ-Hybrid 加密語音來電
-            </span>
-            <div class="w-20 h-20 rounded-full bg-slate-900 border-2 border-emerald-400/50 flex items-center justify-center text-4xl mt-5 shadow-2xl shadow-emerald-500/20">
-              🛡️
-            </div>
-            <h2 id="incomingCallerIdText" class="text-sm font-mono-tech font-bold tracking-wider text-white mt-3 break-all px-2">----------------------</h2>
-            <p class="text-xs text-slate-400 mt-1">正在請求建立 X25519 + ML-KEM-1024 混合通道...</p>
-
-            <div class="w-full max-w-[270px] mt-4 flex items-center bg-white/10 border border-emerald-400/30 rounded-xl px-3 py-1.5">
-              <span class="text-xs text-emerald-300 mr-1.5">🔑</span>
-              <input
-                type="password"
-                id="incomingPassphraseInput"
-                placeholder="選填：輸入雙方約定實體暗號"
-                class="flex-1 bg-transparent text-xs text-white placeholder-slate-400 focus:outline-none"
-              />
-            </div>
-          </div>
-
-          <div class="w-full max-w-xs flex items-center justify-around mb-8">
-            <button onclick="rejectIncomingCall()" class="flex flex-col items-center gap-2 group">
-              <span class="w-16 h-16 rounded-full bg-rose-600 hover:bg-rose-500 flex items-center justify-center text-2xl text-white shadow-lg shadow-rose-600/30 active:scale-90 transition">📵</span>
-              <span class="text-xs text-rose-300 font-medium">拒接</span>
-            </button>
-            <button onclick="acceptIncomingCall()" class="flex flex-col items-center gap-2 group">
-              <span class="w-16 h-16 rounded-full bg-emerald-500 hover:bg-emerald-400 flex items-center justify-center text-2xl text-slate-950 shadow-lg shadow-emerald-500/30 active:scale-90 transition">📞</span>
-              <span class="text-xs text-emerald-300 font-semibold">安全接聽</span>
-            </button>
-          </div>
-        </section>
-
-        <!-- ==================== 覆蓋層 2：語音通話介面 ==================== -->
-        <section id="audioCallOverlay" class="hidden absolute inset-0 z-40 bg-gradient-to-b from-slate-900 via-slate-950 to-black flex flex-col justify-between p-4 overflow-hidden">
-          <div class="flex flex-col items-center text-center shrink-0">
-            <div class="flex items-center gap-2">
-              <span id="audioCallDot" class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
-              <span id="audioCallTimerText" class="text-xs font-mono-tech text-emerald-300">正在建立通道...</span>
-            </div>
-            <h2 id="audioPeerTitle" class="text-sm font-mono-tech font-bold text-white mt-1 truncate max-w-full px-2">對方 ID</h2>
-            <div class="flex items-center gap-1.5 mt-1 flex-wrap justify-center">
-              <span id="frameCryptoBadge" class="text-[9px] px-2 py-0.5 rounded bg-cyan-500/20 border border-cyan-400/30 text-cyan-300 font-mono-tech">
-                DTLS-SRTP + PQ 加密
-              </span>
-              <span id="cbrStatusBadge" class="text-[9px] px-2 py-0.5 rounded bg-amber-500/20 border border-amber-400/30 text-amber-300 font-mono-tech">
-                Opus CBR 鎖定
-              </span>
-            </div>
-
-            <div class="mt-2 px-3 py-1 rounded-xl bg-black/50 border border-emerald-500/30 flex items-center gap-2">
-              <span class="text-[10px] text-slate-400">PQ-SAS 核對碼:</span>
-              <span id="audioSasEmoji" class="text-sm">🔐🔑🛡️⚡</span>
-              <span id="audioSasHex" class="text-xs font-mono-tech font-bold text-amber-300">--------</span>
-            </div>
-
-            <div class="mt-1.5 flex items-center justify-center">
-              <span id="audioTrackStatusPill" class="text-[10px] px-2.5 py-0.5 rounded-full bg-white/5 text-slate-300 border border-white/10">
-                🎙️ 準備音訊通道...
-              </span>
-            </div>
-          </div>
-
-          <div class="my-2 px-3.5 py-2.5 rounded-2xl bg-white/5 border border-white/10 space-y-2 shrink-0">
-            <div class="flex items-center justify-between gap-2 pb-1 border-b border-white/10">
-              <span class="text-[11px] text-emerald-300 font-medium shrink-0">🔉 喇叭音量</span>
-              <input
-                type="range"
-                id="audioVolumeSlider"
-                min="0.1"
-                max="1.0"
-                step="0.05"
-                value="0.50"
-                oninput="setRemoteSpeakerVolume(this.value)"
-                class="volume-slider flex-1"
-              />
-              <span id="audioVolumeLabel" class="text-[10px] font-mono-tech text-slate-300 w-9 text-right">50%</span>
-            </div>
-
-            <div class="flex items-center justify-between text-[10px] text-slate-400">
-              <span>本機麥克風收音</span>
-              <div class="w-36 h-1.5 bg-slate-800 rounded-full overflow-hidden">
-                <div id="micLevelBar" class="h-full bg-emerald-400 w-0 transition-all duration-75"></div>
-              </div>
-            </div>
-            <div class="flex items-center justify-between text-[10px] text-slate-400">
-              <span>對方語音輸出</span>
-              <div class="w-36 h-1.5 bg-slate-800 rounded-full overflow-hidden">
-                <div id="remoteLevelBar" class="h-full bg-cyan-400 w-0 transition-all duration-75"></div>
-              </div>
-            </div>
-          </div>
-
-          <!-- 閱後即焚 AES-256-GCM 密訊區 -->
-          <div class="flex-1 min-h-0 flex flex-col bg-black/40 border border-white/10 rounded-2xl p-2.5 mb-2">
-            <div class="text-[10px] text-emerald-400/90 font-semibold mb-1 flex items-center justify-between">
-              <span>🔥 PQ-HKDF 閱後即焚密訊 (10秒銷毀)</span>
-              <button onclick="renegotiatePassphrase()" class="text-[10px] text-amber-300 hover:underline">🔑 重設暗號</button>
-            </div>
-            <div id="ephemeralChatFeed" class="flex-1 overflow-y-auto space-y-1 text-xs pr-1"></div>
-            <div class="mt-1.5 flex items-center gap-1.5 shrink-0">
-              <input
-                type="text"
-                id="ephemeralMsgInput"
-                onkeydown="if(event.key==='Enter') sendEphemeralMessage()"
-                placeholder="輸入加密短訊..."
-                class="flex-1 bg-white/10 border border-white/10 rounded-xl px-2.5 py-1.5 text-xs text-white placeholder-slate-400 focus:outline-none focus:border-emerald-400"
-              />
-              <button
-                onclick="sendEphemeralMessage()"
-                class="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold active:scale-95 transition"
-              >
-                傳送
-              </button>
-            </div>
-          </div>
-
-          <div class="grid grid-cols-3 gap-2.5 shrink-0 pt-1">
-            <button
-              id="audioMuteBtn"
-              onclick="toggleMuteAudio()"
-              class="py-2.5 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/10 flex flex-col items-center justify-center gap-1 text-white active:scale-95 transition"
-            >
-              <span class="text-base">🎙️</span>
-              <span id="audioMuteBtnText" class="text-[10px]">靜音</span>
-            </button>
-            <button
-              onclick="upgradeToEncryptedVideo(false)"
-              class="py-2.5 rounded-2xl bg-sky-500/20 hover:bg-sky-500/35 border border-sky-400/30 flex flex-col items-center justify-center gap-1 text-sky-200 active:scale-95 transition"
-            >
-              <span class="text-base">📹</span>
-              <span class="text-[10px]">開啟視訊</span>
-            </button>
-            <button
-              onclick="terminateAndWipeCall(false)"
-              class="py-2.5 rounded-2xl bg-rose-600 hover:bg-rose-500 flex flex-col items-center justify-center gap-1 text-white font-semibold shadow-lg shadow-rose-600/30 active:scale-95 transition"
-            >
-              <span class="text-base">📵</span>
-              <span class="text-[10px]">掛斷銷毀</span>
-            </button>
-          </div>
-        </section>
-
-        <!-- ==================== 覆蓋層 3：視訊通話介面 ==================== -->
-        <section id="videoCallOverlay" class="hidden absolute inset-0 z-40 bg-slate-950 flex flex-col justify-between overflow-hidden">
-          <video id="remoteVideoEl" autoplay playsinline class="hidden absolute inset-0 w-full h-full object-cover"></video>
-          <canvas id="remoteVideoCanvas" class="absolute inset-0 w-full h-full object-cover"></canvas>
-
-          <div class="relative z-20 px-3.5 pt-3 space-y-2">
-            <div class="flex items-center justify-between gap-2">
-              <div class="bg-black/65 backdrop-blur-md border border-emerald-400/35 rounded-2xl px-3 py-1.5 flex items-center gap-2 min-w-0">
-                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0"></span>
-                <div class="min-w-0">
-                  <div id="videoPeerTitle" class="text-xs font-mono-tech font-bold text-white truncate">加密視訊連線</div>
-                  <div class="text-[10px] font-mono-tech text-emerald-300 truncate">
-                    <span id="videoTimerText">00:00</span> · SAS: <span id="videoSasMini">🔐🔑</span>
-                  </div>
+                <!-- 官方與媒體即時傳送門 -->
+                <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                    <span class="text-[11px] font-bold text-slate-400 hidden sm:inline">即時傳送門：</span>
+                    <a href="https://news.tvbs.com.tw/events/2026election" target="_blank" rel="noopener noreferrer"
+                       class="px-2.5 py-1.5 rounded-lg bg-blue-500/15 hover:bg-blue-500/30 text-blue-300 border border-blue-500/35 text-xs font-bold transition-colors">
+                        TVBS 開票專區 ↗
+                    </a>
+                    <a href="https://topic.ftvnews.com.tw/2026election/" target="_blank" rel="noopener noreferrer"
+                       class="px-2.5 py-1.5 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/35 text-xs font-bold transition-colors">
+                        民視 2026 大選專區 ↗
+                    </a>
+                    <a href="https://www.cec.gov.tw/" target="_blank" rel="noopener noreferrer"
+                       class="px-2.5 py-1.5 rounded-lg bg-sky-500/15 hover:bg-sky-500/30 text-sky-300 border border-sky-500/35 text-xs font-bold transition-colors">
+                        中選會官網 ↗
+                    </a>
+                    <a href="https://www.youtube.com/@TVBSNEWS01" target="_blank" rel="noopener noreferrer"
+                       class="px-2.5 py-1.5 rounded-lg bg-rose-500/15 hover:bg-rose-500/30 text-rose-300 border border-rose-500/35 text-xs font-bold transition-colors">
+                        TVBS YouTube 直播 ↗
+                    </a>
                 </div>
-              </div>
-
-              <div class="flex items-center gap-1.5 shrink-0">
-                <button
-                  onclick="downgradeToEncryptedAudio(false)"
-                  class="bg-sky-500/30 hover:bg-sky-500/45 backdrop-blur-md border border-sky-400/50 rounded-full px-3 py-1.5 text-[11px] font-semibold text-sky-200 active:scale-95 transition flex items-center gap-1"
-                >
-                  <span>📞</span>
-                  <span>切回語音</span>
-                </button>
-                <button
-                  onclick="activateStealthScreen()"
-                  class="bg-black/65 backdrop-blur-md border border-amber-400/40 rounded-full px-2.5 py-1.5 text-[10px] font-semibold text-amber-300 active:scale-95 transition"
-                >
-                  👁️‍🗨️ 防窺
-                </button>
-              </div>
             </div>
 
-            <div class="bg-black/60 backdrop-blur-md border border-white/15 rounded-full px-3 py-1 flex items-center gap-2 max-w-[230px]">
-              <span class="text-[10px] text-emerald-300 shrink-0">🔉</span>
-              <input
-                type="range"
-                id="videoVolumeSlider"
-                min="0.1"
-                max="1.0"
-                step="0.05"
-                value="0.50"
-                oninput="setRemoteSpeakerVolume(this.value)"
-                class="volume-slider flex-1"
-              />
-              <span id="videoVolumeLabel" class="text-[10px] font-mono-tech text-slate-200 w-8 text-right">50%</span>
-            </div>
-          </div>
-
-          <div
-            id="pipBox"
-            onclick="cyclePipCorner()"
-            title="點擊切換視窗角落"
-            class="absolute bottom-24 right-4 z-20 w-28 h-40 rounded-2xl overflow-hidden bg-slate-900 border-2 border-emerald-400/50 shadow-2xl cursor-pointer transition-all"
-          >
-            <video id="localVideoEl" autoplay muted playsinline class="hidden w-full h-full object-cover"></video>
-            <canvas id="localVirtualCanvas" class="w-full h-full object-cover"></canvas>
-            <div id="pipMaskedOverlay" class="hidden absolute inset-0 bg-slate-950/90 flex flex-col items-center justify-center text-center p-2">
-              <span class="text-2xl">🙈</span>
-              <span class="text-[10px] text-slate-300 mt-1">鏡頭已遮蔽</span>
-            </div>
-            <div id="pipLabel" class="absolute bottom-1 left-1 right-1 text-center bg-black/60 rounded text-[9px] text-emerald-300 py-0.5 truncate">
-              PQ 本地鏡頭
-            </div>
-          </div>
-
-          <div class="relative z-20 px-4 pb-5 pt-2 flex items-center justify-center gap-3.5">
-            <button onclick="toggleMuteAudio()" class="w-12 h-12 rounded-full bg-white/15 hover:bg-white/25 backdrop-blur-md border border-white/15 flex items-center justify-center text-lg text-white active:scale-90 transition">🎙️</button>
-            <button onclick="toggleVideoVisibility()" class="w-12 h-12 rounded-full bg-white/15 hover:bg-white/25 backdrop-blur-md border border-white/15 flex items-center justify-center text-lg text-white active:scale-90 transition">📷</button>
-            <button onclick="togglePrivacyBlurMask()" class="w-12 h-12 rounded-full bg-white/15 hover:bg-white/25 backdrop-blur-md border border-white/15 flex items-center justify-center text-lg text-white active:scale-90 transition">🎭</button>
-            <button onclick="terminateAndWipeCall(false)" class="w-14 h-12 rounded-full bg-rose-600 hover:bg-rose-500 flex items-center justify-center text-xl text-white shadow-lg shadow-rose-600/40 active:scale-90 transition">📵</button>
-          </div>
-        </section>
-
-        <!-- ==================== 覆蓋層 4：防窺計算機偽裝畫面 ==================== -->
-        <section id="stealthCalculatorOverlay" class="hidden absolute inset-0 z-50 bg-[#111318] flex flex-col justify-between p-5">
-          <div class="flex items-center justify-between text-xs text-slate-400">
-            <span>標準工程計算機</span>
-            <button onclick="deactivateStealthScreen()" class="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-[11px] text-slate-300">🔓 返回加密通話</button>
-          </div>
-          <div class="flex-1 flex flex-col justify-end items-end pb-4 px-2">
-            <div id="calcHistoryText" class="text-xs text-slate-500 h-5">0</div>
-            <div id="calcDisplayText" class="text-4xl font-light text-white tracking-tight mt-1 truncate max-w-full">0</div>
-          </div>
-          <div class="grid grid-cols-4 gap-2.5 pb-2">
-            <button onclick="calcInput('C')" class="h-12 rounded-2xl bg-slate-700/80 text-rose-300 font-semibold">C</button>
-            <button onclick="calcInput('+/-')" class="h-12 rounded-2xl bg-slate-700/80 text-slate-200 font-semibold">+/-</button>
-            <button onclick="calcInput('%')" class="h-12 rounded-2xl bg-slate-700/80 text-slate-200 font-semibold">%</button>
-            <button onclick="calcInput('/')" class="h-12 rounded-2xl bg-amber-500/80 text-white font-semibold">÷</button>
-            <button onclick="calcInput('7')" class="h-12 rounded-2xl bg-slate-800 text-white font-semibold">7</button>
-            <button onclick="calcInput('8')" class="h-12 rounded-2xl bg-slate-800 text-white font-semibold">8</button>
-            <button onclick="calcInput('9')" class="h-12 rounded-2xl bg-slate-800 text-white font-semibold">9</button>
-            <button onclick="calcInput('*')" class="h-12 rounded-2xl bg-amber-500/80 text-white font-semibold">×</button>
-            <button onclick="calcInput('4')" class="h-12 rounded-2xl bg-slate-800 text-white font-semibold">4</button>
-            <button onclick="calcInput('5')" class="h-12 rounded-2xl bg-slate-800 text-white font-semibold">5</button>
-            <button onclick="calcInput('6')" class="h-12 rounded-2xl bg-slate-800 text-white font-semibold">6</button>
-            <button onclick="calcInput('-')" class="h-12 rounded-2xl bg-amber-500/80 text-white font-semibold">−</button>
-            <button onclick="calcInput('1')" class="h-12 rounded-2xl bg-slate-800 text-white font-semibold">1</button>
-            <button onclick="calcInput('2')" class="h-12 rounded-2xl bg-slate-800 text-white font-semibold">2</button>
-            <button onclick="calcInput('3')" class="h-12 rounded-2xl bg-slate-800 text-white font-semibold">3</button>
-            <button onclick="calcInput('+')" class="h-12 rounded-2xl bg-amber-500/80 text-white font-semibold">+</button>
-            <button onclick="calcInput('0')" class="col-span-2 h-12 rounded-2xl bg-slate-800 text-white font-semibold">0</button>
-            <button onclick="calcInput('.')" class="h-12 rounded-2xl bg-slate-800 text-white font-semibold">.</button>
-            <button onclick="calcInput('=')" class="h-12 rounded-2xl bg-emerald-600 text-white font-semibold">=</button>
-          </div>
-        </section>
-
-        <!-- ==================== 彈窗：零信令伺服器離線交握 ==================== -->
-        <div id="zeroServerModal" class="hidden absolute inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
-          <div class="w-full max-w-xs max-h-[92dvh] bg-slate-900 border border-emerald-500/40 rounded-3xl shadow-2xl flex flex-col overflow-hidden">
-            <div class="px-5 py-3.5 border-b border-white/10 shrink-0 flex items-center justify-between">
-              <h3 class="text-sm font-bold text-emerald-300">🛰️ 零信令伺服器離線直連</h3>
-              <span class="text-[10px] font-mono-tech text-emerald-400">NO-METADATA</span>
-            </div>
-
-            <div class="p-4 flex-1 overflow-y-auto space-y-2.5 text-xs text-slate-300">
-              <p class="text-[11px] text-slate-400 leading-relaxed">
-                不經過任何第三方信令伺服器，徹底杜絕連線關聯圖譜外洩。
-              </p>
-              <div class="space-y-1.5">
-                <button onclick="createOfflineOffer()" class="w-full py-2 rounded-xl bg-emerald-600/30 border border-emerald-400/40 text-emerald-200 font-semibold">
-                  1. 我是發起方：產生加密邀請碼 (Offer)
-                </button>
-                <textarea id="offlineSdpOut" readonly rows="3" placeholder="產生後的邀請密文會顯示在此..." class="w-full bg-black/60 border border-white/15 rounded-xl p-2 font-mono-tech text-[10px] text-cyan-200"></textarea>
-                <button onclick="copyOfflineSdpOut()" class="w-full py-1.5 rounded-lg bg-white/10 text-[11px]">📋 複製上方密文傳給對方</button>
-              </div>
-              <div class="space-y-1.5 pt-2 border-t border-white/10">
-                <label class="text-[10px] text-amber-300 font-semibold">2. 貼上對方回傳的邀請碼或應答碼：</label>
-                <textarea id="offlineSdpIn" rows="3" placeholder="在此貼上對方的密文..." class="w-full bg-black/60 border border-white/15 rounded-xl p-2 font-mono-tech text-[10px] text-white"></textarea>
-                <button onclick="processOfflineSdpIn()" class="w-full py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold">
-                  🔗 載入並建立零信令加密通話
-                </button>
-              </div>
-            </div>
-
-            <div class="px-5 py-3 border-t border-white/10 bg-slate-950/80 shrink-0">
-              <button onclick="closeZeroServerModal()" class="w-full py-2 rounded-xl bg-white/10 text-slate-300 text-xs">關閉視窗</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- ==================== 彈窗：自建 TURN 與私有信令伺服器設定 ==================== -->
-        <div id="networkConfigModal" class="hidden absolute inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
-          <div class="w-full max-w-xs max-h-[92dvh] bg-slate-900 border border-amber-500/40 rounded-3xl shadow-2xl flex flex-col overflow-hidden">
-            <div class="px-5 py-3.5 border-b border-white/10 shrink-0 flex items-center justify-between">
-              <h3 class="text-sm font-bold text-amber-300">🌐 自建 TURN 與私有信令伺服器</h3>
-              <span class="text-[10px] font-mono-tech text-slate-400">ISOLATION</span>
-            </div>
-
-            <div class="p-4 flex-1 overflow-y-auto space-y-2.5 text-xs text-slate-300">
-              <div class="space-y-1.5 pb-2 border-b border-white/10">
-                <div class="text-[11px] font-semibold text-cyan-300">A. 自建私有 PeerJS 信令伺服器</div>
-                <input type="text" id="customPeerHost" placeholder="信令主機 (例如 signal.yourdomain.com)" class="w-full bg-black/50 border border-white/15 rounded-xl px-2.5 py-1.5 font-mono-tech text-[11px] text-white" />
-                <div class="grid grid-cols-2 gap-1.5">
-                  <input type="number" id="customPeerPort" placeholder="Port (443)" class="bg-black/50 border border-white/15 rounded-xl px-2.5 py-1.5 font-mono-tech text-[11px] text-white" />
-                  <input type="text" id="customPeerPath" placeholder="Path (/myapp)" class="bg-black/50 border border-white/15 rounded-xl px-2.5 py-1.5 font-mono-tech text-[11px] text-white" />
+            <!-- 第二列：全台 22 縣市版圖即時席次條 -->
+            <div class="bg-slate-900/90 border border-slate-800 rounded-xl px-3.5 py-2.5">
+                <div class="flex flex-wrap items-center justify-between gap-2 mb-1.5 text-xs">
+                    <div class="flex items-center gap-2">
+                        <span id="seatBarSourceLabel" class="font-bold text-slate-200">全台 22 縣市版圖即時席次（綜合交叉分析）</span>
+                        <span id="syncedCountBadge" class="px-2 py-0.5 rounded-md bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 font-mono text-[11px] font-bold">
+                            已同步 1/22 縣市
+                        </span>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-3 sm:gap-4 font-mono">
+                        <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-[#1e6bff]"></span>藍 <strong id="countKmt" class="text-blue-400 text-sm">0</strong></span>
+                        <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-[#16a34a]"></span>綠 <strong id="countDpp" class="text-emerald-400 text-sm">0</strong></span>
+                        <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-[#06b6d4]"></span>白 <strong id="countTpp" class="text-cyan-300 text-sm">0</strong></span>
+                        <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-[#94a3b8]"></span>無黨 <strong id="countInd" class="text-slate-300 text-sm">0</strong></span>
+                        <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-amber-500"></span>待開/平手 <strong id="countPending" class="text-amber-400 text-sm">0</strong></span>
+                    </div>
                 </div>
-              </div>
-
-              <div class="space-y-1.5">
-                <div class="text-[11px] font-semibold text-amber-300">B. 自建 Coturn / WireGuard 中繼跳板</div>
-                <input type="text" id="customTurnUrl" placeholder="turn:your-vps.com:3478" class="w-full bg-black/50 border border-white/15 rounded-xl px-2.5 py-1.5 font-mono-tech text-[11px] text-white" />
-                <input type="text" id="customTurnUser" placeholder="TURN Username" class="w-full bg-black/50 border border-white/15 rounded-xl px-2.5 py-1.5 font-mono-tech text-[11px] text-white" />
-                <input type="password" id="customTurnCred" placeholder="TURN Credential" class="w-full bg-black/50 border border-white/15 rounded-xl px-2.5 py-1.5 font-mono-tech text-[11px] text-white" />
-              </div>
+                <div class="w-full h-2.5 rounded-full bg-slate-800 overflow-hidden flex gap-0.5">
+                    <div id="barKmt" class="h-full bg-[#1e6bff] transition-all duration-500" style="width: 0%"></div>
+                    <div id="barDpp" class="h-full bg-[#16a34a] transition-all duration-500" style="width: 0%"></div>
+                    <div id="barTpp" class="h-full bg-[#06b6d4] transition-all duration-500" style="width: 0%"></div>
+                    <div id="barInd" class="h-full bg-[#94a3b8] transition-all duration-500" style="width: 0%"></div>
+                    <div id="barPending" class="h-full bg-amber-500/80 transition-all duration-500" style="width: 0%"></div>
+                </div>
             </div>
 
-            <div class="px-5 py-3 border-t border-white/10 bg-slate-950/80 shrink-0 flex gap-2">
-              <button onclick="closeNetworkConfigModal()" class="flex-1 py-2.5 rounded-xl bg-white/10 text-slate-300 text-xs">取消</button>
-              <button onclick="saveNetworkConfig()" class="flex-1 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold">套用並重連</button>
+            <!-- 第三列：CORS 跨域技術說明 -->
+            <div class="flex items-center gap-2 text-[11px] sm:text-xs text-slate-400 bg-sky-950/30 border border-sky-500/20 rounded-lg px-3 py-1.5 leading-relaxed">
+                <span class="text-sky-400 font-bold shrink-0">ⓘ 系統說明：</span>
+                <span>受限於瀏覽器跨域安全機制（CORS），網頁無法直接自動抓取電視台內部 API；本戰情室已預載 16:15 最新初期快訊，您可隨時點選各台專區並於右側快速同步登錄三方票數，系統將自動計算綜合得票率與各台落差分析。</span>
             </div>
-          </div>
         </div>
+    </header>
 
-        <!-- ==================== 彈窗：換號銷毀確認 ==================== -->
-        <div id="burnConfirmModal" class="hidden absolute inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
-          <div class="w-full max-w-xs max-h-[92dvh] bg-slate-900 border border-rose-500/40 rounded-3xl shadow-2xl flex flex-col overflow-hidden">
-            <div class="px-5 py-3.5 border-b border-white/10 shrink-0 flex items-center justify-between">
-              <h3 class="text-sm font-bold text-rose-400">🔥 換號並覆寫銷毀金鑰</h3>
-              <span class="text-[10px] font-mono-tech text-rose-300">WIPE</span>
+    <!-- ==================== 主戰情雙欄佈局 ==================== -->
+    <main class="flex-1 max-w-[1480px] w-full mx-auto px-4 sm:px-6 py-5 grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+
+        <!-- ==================== 2. 左側：全台 22 縣市戰情矩陣 ==================== -->
+        <section class="lg:col-span-5 neon-panel border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xl space-y-4">
+            <div class="flex items-center justify-between gap-2 border-b border-slate-800 pb-3">
+                <div>
+                    <h2 class="text-base sm:text-lg font-bold text-white flex items-center gap-2">
+                        <span class="w-1.5 h-5 rounded-full bg-sky-400"></span>
+                        全台 22 縣市戰情矩陣
+                    </h2>
+                    <p class="text-xs text-slate-400 mt-0.5">點擊任一縣市，右側即時檢視三方數據與百分率長條圖</p>
+                </div>
+                <span class="text-[11px] font-mono px-2 py-1 rounded-md bg-slate-900 border border-slate-700 text-slate-300 shrink-0">
+                    22 縣市 / 81 人
+                </span>
             </div>
-            <div class="p-4 flex-1 overflow-y-auto space-y-2.5 text-xs text-slate-300">
-              <div class="bg-rose-950/50 border border-rose-500/30 rounded-xl p-3">
-                <div class="text-[10px] text-rose-300">目前揮發記憶體 128-bit 識別碼</div>
-                <div id="burnTargetNumberText" class="text-xs font-mono-tech font-bold text-white tracking-wider mt-0.5 break-all">----------------------</div>
-              </div>
-              <p class="text-[11px] text-slate-400 leading-relaxed">
-                系統已將所有識別碼與私鑰鎖定在揮發性記憶體（不寫入 `localStorage`），執行換號將以亂數覆寫 Uint8Array 緩衝區並重新簽發新 ID。
-              </p>
+
+            <!-- 地理分區方塊列表 -->
+            <div id="tileMapContainer" class="space-y-4">
+                <!-- JS 動態渲染 -->
             </div>
-            <div class="px-5 py-3 border-t border-white/10 bg-slate-950/80 shrink-0 flex gap-2.5">
-              <button onclick="closeBurnModal()" class="flex-1 py-2.5 rounded-xl bg-white/10 text-slate-300 text-xs">取消</button>
-              <button onclick="executeBurnAndRotateNumber()" class="flex-1 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold">🔥 確定銷毀換號</button>
+        </section>
+
+        <!-- ==================== 3. 右側：縣市深度戰情分析面板 ==================== -->
+        <section id="detailPanel" class="lg:col-span-7 neon-panel border border-sky-500/20 rounded-2xl p-4 sm:p-6 shadow-2xl lg:sticky lg:top-[182px]">
+            <!-- JS 動態渲染所選縣市完整深度分析 -->
+        </section>
+    </main>
+
+    <!-- 自訂確認重置對話框 (取代 confirm) -->
+    <div id="resetModal" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm items-center justify-center p-4">
+        <div class="bg-[#111827] border border-slate-700 rounded-2xl max-w-md w-full p-5 shadow-2xl space-y-4">
+            <h3 class="text-base font-bold text-white flex items-center gap-2">
+                <span class="text-amber-400">⚠️</span> 重置為 16:15 預設快訊？
+            </h3>
+            <p class="text-sm text-slate-300 leading-relaxed">
+                此操作將清除您在本機儲存的所有手動輸入票數與投票率，並還原為系統預載的 2026/11/28 16:15 最新初期快訊（含臺北市 TVBS 初期報票）。
+            </p>
+            <div class="flex items-center justify-end gap-2.5 pt-2">
+                <button id="cancelResetBtn" type="button" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold transition-colors cursor-pointer">
+                    取消
+                </button>
+                <button id="confirmResetBtn" type="button" class="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold transition-colors cursor-pointer">
+                    確認重置
+                </button>
             </div>
-          </div>
         </div>
-
-        <!-- ==================== 彈窗：後量子安全憑證與原生架構說明 ==================== -->
-        <div id="securityAuditModal" class="hidden absolute inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div class="w-full max-w-xs max-h-[92dvh] bg-slate-900 border border-emerald-500/35 rounded-3xl shadow-2xl flex flex-col overflow-hidden">
-            <div class="px-5 py-3.5 border-b border-white/10 shrink-0 flex items-center justify-between">
-              <h3 class="text-sm font-bold text-emerald-300">🛡️ 後量子混合加密與安全架構</h3>
-              <span class="text-[10px] font-mono-tech text-emerald-400">PQ-HYBRID</span>
-            </div>
-
-            <div class="p-4 flex-1 overflow-y-auto space-y-2.5 text-xs">
-              <div class="bg-black/40 border border-white/10 rounded-xl p-2.5 space-y-1">
-                <div class="text-[10px] text-slate-400">1. 抗量子混合金鑰交換引擎</div>
-                <div id="auditPqAlgo" class="font-mono-tech text-cyan-300 text-[10px]">檢測中...</div>
-              </div>
-
-              <div class="bg-black/40 border border-white/10 rounded-xl p-2.5 space-y-1">
-                <div class="text-[10px] text-slate-400">2. 雙方 PQ-SAS 安全核對指紋</div>
-                <div id="auditSasFull" class="font-mono-tech text-xs text-amber-300 font-bold">尚未建立通話會話</div>
-              </div>
-            </div>
-
-            <div class="px-5 py-3 border-t border-white/10 bg-slate-950/70 shrink-0 flex gap-2">
-              <button onclick="closeSecurityModal(); openBurnModal();" class="flex-1 py-2.5 rounded-xl bg-rose-500/20 border border-rose-400/30 text-rose-300 text-xs font-semibold">🔥 換號銷毀</button>
-              <button onclick="closeSecurityModal()" class="flex-1 py-2.5 rounded-xl bg-emerald-600 text-white text-xs font-semibold">確定</button>
-            </div>
-          </div>
-        </div>
-
-      </main>
-
     </div>
-  </div>
 
-  <!-- 引入真正的後量子 ML-KEM-1024 與 X25519 ES Module -->
-  <script type="module">
-    import { ml_kem1024 } from 'https://esm.sh/@noble/post-quantum@0.2.1/ml-kem';
-    import { x25519 } from 'https://esm.sh/@noble/curves@1.8.1/ed25519';
+    <!-- 輕量提示 Toast -->
+    <div id="toast" class="fixed bottom-5 right-5 z-50 transform translate-y-16 opacity-0 transition-all duration-300 pointer-events-none bg-slate-900 border border-sky-500/50 text-sky-200 px-4 py-2.5 rounded-xl shadow-2xl text-xs font-bold flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-sky-400"></span>
+        <span id="toastText">已自動儲存</span>
+    </div>
 
-    window.PQPrimitives = {
-      available: true,
-      ml_kem1024,
-      x25519
-    };
-    if (window.onPQPrimitivesLoaded) window.onPQPrimitivesLoaded();
-  </script>
+    <!-- ==================== 核心資料與戰情室邏輯 ==================== -->
+    <script>
+        (function () {
+            'use strict';
 
-  <script>
-    /* ==========================================================================
-       1. 抗量子混合加密核心引擎 (X25519 + ML-KEM-1024 + HKDF-SHA256)
-       ========================================================================== */
-    const BASE58_ALPHABET = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+            const STORAGE_KEY = 'tw_election_2026_multisource_warroom_v1';
+            const REGION_ORDER = ['六都', '北台灣', '中台灣', '南台灣', '東台灣', '離島'];
 
-    function bytesToB64(u8) {
-      let bin = '';
-      for (let i = 0; i < u8.length; i++) bin += String.fromCharCode(u8[i]);
-      return btoa(bin);
-    }
+            /**
+             * 全台 22 縣市、81 位候選人完整戰情資料
+             * modelPct 為選前公開模型／封關民調參考基準 (%)
+             */
+            const countiesData = [
+                // ==================== 六都 (23人) ====================
+                {
+                    id: 'taipei', name: '臺北市', region: '六都',
+                    tags: ['極度五五波', '現任拚連任', '藍白整合'],
+                    turnoutDefault: '15:00 達 63%（TVBS 地方報票）',
+                    turnoutDetail: '12:00 達 34%（民視，中山區 40.3% 最高、北投區 26.7% 最低）',
+                    turnout2022: '67.70%',
+                    modelNote: 'PollTrack 沈 62% / 蔣 38%；TVBS 封關民調 蔣 46% vs 沈 44%',
+                    analysis: '連任保衛戰 vs. 空戰奇兵。TVBS 16:15 首波初期開票率先跳出蔣萬安 168 票、沈伯洋 139 票，屬極小型票所初期樣本；北市 15:00 地方報票投票率已達 63%，高投票率下的年輕與中間選票流向將決定勝負。',
+                    candidates: [
+                        { num: 1, name: '郭璽', party: '麻將最大黨', partyType: 'other', incumbent: false, modelPct: 0.5 },
+                        { num: 2, name: '林志成', party: '無', partyType: 'ind', incumbent: false, modelPct: 0.5 },
+                        { num: 3, name: '沈伯洋', party: '民', partyType: 'dpp', incumbent: false, modelPct: 48.0 },
+                        { num: 4, name: '蕭文乾', party: '台灣SoR無法黨', partyType: 'other', incumbent: false, modelPct: 0.5 },
+                        { num: 5, name: '蔣萬安', party: '國', partyType: 'kmt', incumbent: true, modelPct: 50.0 },
+                        { num: 6, name: '唐新民', party: '三勢盟', partyType: 'other', incumbent: false, modelPct: 0.5 }
+                    ]
+                },
+                {
+                    id: 'new-taipei', name: '新北市', region: '六都',
+                    tags: ['極度五五波', '藍白整合'],
+                    turnoutDefault: '開票統計中（預估 65%+）',
+                    turnoutDetail: '上午多處投開票所大排長龍',
+                    turnout2022: '56.60%',
+                    modelNote: 'PollTrack 蘇 62% / 李 38%；TVBS 封關民調 蘇 43% vs 李 42.4%',
+                    analysis: '全台最大票倉接班戰。蘇巧慧與李四川在 TVBS 封關民調差距僅 0.6%，屬全台最緊繃激戰區，雙方陸戰組織與藍白整合轉移率將直接定生死。',
+                    candidates: [
+                        { num: 1, name: '蘇巧慧', party: '民', partyType: 'dpp', incumbent: false, modelPct: 50.3 },
+                        { num: 2, name: '蘇輝湟', party: '無', partyType: 'ind', incumbent: false, modelPct: 0.0 },
+                        { num: 3, name: '李四川', party: '國', partyType: 'kmt', incumbent: false, modelPct: 49.7 }
+                    ]
+                },
+                {
+                    id: 'taoyuan', name: '桃園市', region: '六都',
+                    tags: ['現任拚連任'],
+                    turnoutDefault: '開票統計中（預估 65%+）',
+                    turnoutDetail: '一對一正面交鋒，無第三勢力分票',
+                    turnout2022: '59.46%',
+                    modelNote: 'PollTrack 張善政勝率 74% / 黃世杰 26%',
+                    analysis: '張善政握有現任市政優勢與穩固基本盤；民進黨由前法務部政次黃世杰挑戰，純粹檢驗藍綠基本盤與施政滿意度。',
+                    candidates: [
+                        { num: 1, name: '黃世杰', party: '民', partyType: 'dpp', incumbent: false, modelPct: 26.0 },
+                        { num: 2, name: '張善政', party: '國', partyType: 'kmt', incumbent: true, modelPct: 74.0 }
+                    ]
+                },
+                {
+                    id: 'taichung', name: '臺中市', region: '六都',
+                    tags: ['激戰五五波', '藍白整合'],
+                    turnoutDefault: '開票統計中（預估 65%+）',
+                    turnoutDetail: '傳統搖擺指標區，中間選民成關鍵',
+                    turnout2022: '60.01%',
+                    modelNote: '封關民調互有領先，江啟臣微幅占優',
+                    analysis: '盧秀燕接班之戰。立法院副院長江啟臣獲藍白整合奧援，對決基層實力雄厚的資深立委何欣純，屯區與都會區開票曲線是觀戰指標。',
+                    candidates: [
+                        { num: 1, name: '何欣純', party: '民', partyType: 'dpp', incumbent: false, modelPct: 46.5 },
+                        { num: 2, name: '洪麗華', party: '司法正義黨', partyType: 'other', incumbent: false, modelPct: 1.0 },
+                        { num: 3, name: '江啟臣', party: '國', partyType: 'kmt', incumbent: false, modelPct: 52.5 }
+                    ]
+                },
+                {
+                    id: 'tainan', name: '臺南市', region: '六都',
+                    tags: ['綠營優勢'],
+                    turnoutDefault: '12:00 約 35%（地方回報）',
+                    turnoutDetail: '投票踴躍，有望突破上屆 58.68%',
+                    turnout2022: '58.68%',
+                    modelNote: 'TPOC 預估陳亭妃 55.23% vs 謝龍介 44.77%',
+                    analysis: '綠營本命區攻防。陳亭妃基本盤深厚；謝龍介憑藉全國高知名度再度挑戰，觀察能否在市區縮小藍綠差距。',
+                    candidates: [
+                        { num: 1, name: '蕭燐洪', party: '台灣SoR無法黨', partyType: 'other', incumbent: false, modelPct: 0.0 },
+                        { num: 2, name: '謝龍介', party: '國', partyType: 'kmt', incumbent: false, modelPct: 44.8 },
+                        { num: 3, name: '陳亭妃', party: '民', partyType: 'dpp', incumbent: false, modelPct: 55.2 },
+                        { num: 4, name: '葉人文', party: '無', partyType: 'ind', incumbent: false, modelPct: 0.0 }
+                    ]
+                },
+                {
+                    id: 'kaohsiung', name: '高雄市', region: '六都',
+                    tags: ['激戰五五波'],
+                    turnoutDefault: '12:00 達 35.13%（選委會回報）',
+                    turnoutDetail: '藍綠動員積極，中午投票率破 35%',
+                    turnout2022: '58.61%',
+                    modelNote: 'TPOC 預估賴瑞隆 55% vs 柯志恩 45%',
+                    analysis: '南台灣焦點激戰。賴瑞隆承接陳其邁執政路線，柯志恩深耕四年二度披掛上陣，雙方催票力道強勁。',
+                    candidates: [
+                        { num: 1, name: '張靜', party: '司法改革黨', partyType: 'other', incumbent: false, modelPct: 0.0 },
+                        { num: 2, name: '王肇民', party: '無', partyType: 'ind', incumbent: false, modelPct: 0.0 },
+                        { num: 3, name: '柯志恩', party: '國', partyType: 'kmt', incumbent: false, modelPct: 45.0 },
+                        { num: 4, name: '洪方隆', party: '無', partyType: 'ind', incumbent: false, modelPct: 0.0 },
+                        { num: 5, name: '賴瑞隆', party: '民', partyType: 'dpp', incumbent: false, modelPct: 55.0 }
+                    ]
+                },
 
-    function b64ToBytes(b64) {
-      const bin = atob(b64);
-      const u8 = new Uint8Array(bin.length);
-      for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
-      return u8;
-    }
+                // ==================== 北台灣 (11人) ====================
+                {
+                    id: 'keelung', name: '基隆市', region: '北台灣',
+                    tags: ['激戰五五波', '現任拚連任'],
+                    turnoutDefault: '開票統計中',
+                    turnoutDetail: '府會首長正面交鋒',
+                    turnout2022: '60.16%',
+                    modelNote: 'PollTrack 評估童子瑋勝率 65% / 謝國樑 35%',
+                    analysis: '現任市長謝國樑迎戰現任議長童子瑋，兩人皆具在地政治世家深厚基層，競爭白熱化。',
+                    candidates: [
+                        { num: 1, name: '童子瑋', party: '民', partyType: 'dpp', incumbent: false, modelPct: 65.0 },
+                        { num: 2, name: '魏造文', party: '無', partyType: 'ind', incumbent: false, modelPct: 0.0 },
+                        { num: 3, name: '謝國樑', party: '國', partyType: 'kmt', incumbent: true, modelPct: 35.0 }
+                    ]
+                },
+                {
+                    id: 'hsinchu-city', name: '新竹市', region: '北台灣',
+                    tags: ['現任拚連任', '藍白整合'],
+                    turnoutDefault: '開票統計中',
+                    turnoutDetail: '國民黨禮讓現任無黨籍高虹安',
+                    turnout2022: '64.87%',
+                    modelNote: 'PollTrack 評估高虹安勝率 89%',
+                    analysis: '高虹安獲國民黨禮讓尋求連任，對決民進黨前立委莊競程，無黨籍何志勇得票為變數。',
+                    candidates: [
+                        { num: 1, name: '高虹安', party: '無', partyType: 'ind', incumbent: true, modelPct: 89.0 },
+                        { num: 2, name: '何志勇', party: '無', partyType: 'ind', incumbent: false, modelPct: 1.0 },
+                        { num: 3, name: '莊競程', party: '民', partyType: 'dpp', incumbent: false, modelPct: 10.0 }
+                    ]
+                },
+                {
+                    id: 'hsinchu-county', name: '新竹縣', region: '北台灣',
+                    tags: ['激戰五五波'],
+                    turnoutDefault: '開票統計中',
+                    turnoutDetail: '竹北高人氣正面對決藍營傳統盤',
+                    turnout2022: '60.88%',
+                    modelNote: 'PollTrack 評估鄭朝方勝率 56% / 徐欣瑩 44%',
+                    analysis: '竹北市長鄭朝方跨區挑戰國民黨立委徐欣瑩，竹北票倉得票率是綠營能否翻轉的關鍵。',
+                    candidates: [
+                        { num: 1, name: '鄭朝方', party: '民', partyType: 'dpp', incumbent: false, modelPct: 56.0 },
+                        { num: 2, name: '徐欣瑩', party: '國', partyType: 'kmt', incumbent: false, modelPct: 44.0 },
+                        { num: 3, name: '朱定瑀', party: '無', partyType: 'ind', incumbent: false, modelPct: 0.0 }
+                    ]
+                },
+                {
+                    id: 'miaoli', name: '苗栗縣', region: '北台灣',
+                    tags: ['現任拚連任'],
+                    turnoutDefault: '開票統計中',
+                    turnoutDetail: '現任首長整合派系守城',
+                    turnout2022: '67.35%',
+                    modelNote: '選前評估鍾東錦勝算極高',
+                    analysis: '鍾東錦恢復國民黨籍尋求連任；民進黨由縣議員陳品安主打世代交替挑戰。',
+                    candidates: [
+                        { num: 1, name: '陳品安', party: '民', partyType: 'dpp', incumbent: false, modelPct: 20.0 },
+                        { num: 2, name: '鍾東錦', party: '國', partyType: 'kmt', incumbent: true, modelPct: 80.0 }
+                    ]
+                },
 
-    class PostQuantumHybridEngine {
-      constructor() {
-        this.isTruePQ = false;
-        this.x25519Priv = null;
-        this.x25519Pub = null;
-        this.mlkemPub = null;
-        this.mlkemPriv = null;
-        this.mlkemSharedSecret = null;
-        this.fallbackEcdh = null;
-        this.fallbackPubJwk = null;
-        this.remoteBundle = null;
-        this.sharedAesKey = null;
-        this.isHandshakeComplete = false;
-        this.sasEmojiList = ['🔐', '🛡️', '🔑', '⚡', '🛰️', '🧬', '🧿', '💎', '🦊', '🦉', '🐺', '🦅', '🧭', '⚓', '🔥', '❄️'];
-      }
+                // ==================== 中台灣 (10人) ====================
+                {
+                    id: 'changhua', name: '彰化縣', region: '中台灣',
+                    tags: ['政黨分裂'],
+                    turnoutDefault: '開票統計中',
+                    turnoutDetail: '泛綠分裂多角混戰',
+                    turnout2022: '64.60%',
+                    modelNote: '泛綠分裂拉高國民黨魏平政勝算',
+                    analysis: '民進黨提名立委陳素月，但前彰化市長邱建富脫黨無黨參選，分票效應左右彰化版圖。',
+                    candidates: [
+                        { num: 1, name: '陳素月', party: '民', partyType: 'dpp', incumbent: false, modelPct: 30.0 },
+                        { num: 2, name: '魏平政', party: '國', partyType: 'kmt', incumbent: false, modelPct: 58.0 },
+                        { num: 3, name: '邱建富', party: '無', partyType: 'ind', incumbent: false, modelPct: 12.0 },
+                        { num: 4, name: '陳重嘉', party: '無', partyType: 'ind', incumbent: false, modelPct: 0.0 }
+                    ]
+                },
+                {
+                    id: 'nantou', name: '南投縣', region: '中台灣',
+                    tags: ['現任拚連任', '藍白整合'],
+                    turnoutDefault: '開票統計中',
+                    turnoutDetail: '一對一正面對決',
+                    turnout2022: '67.96%',
+                    modelNote: '選前評估許淑華現任優勢穩固',
+                    analysis: '許淑華基層實力雄厚且獲藍白支持，迎戰民進黨提名的温世政。',
+                    candidates: [
+                        { num: 1, name: '許淑華', party: '國', partyType: 'kmt', incumbent: true, modelPct: 82.0 },
+                        { num: 2, name: '温世政', party: '民', partyType: 'dpp', incumbent: false, modelPct: 18.0 }
+                    ]
+                },
+                {
+                    id: 'yunlin', name: '雲林縣', region: '中台灣',
+                    tags: ['激戰五五波'],
+                    turnoutDefault: '上午達 35.4%（地方回報）',
+                    turnoutDetail: '選委會預估 17:30 左右完成縣長開票',
+                    turnout2022: '67.44%',
+                    modelNote: '張家資源雄厚 vs 劉建國基層強勁，藍略占優',
+                    analysis: '兩大現任立委強強對決，張嘉郡力拚延續執政，劉建國再度挑戰，山海線票倉拉鋸激烈。',
+                    candidates: [
+                        { num: 1, name: '吳炳輝', party: '無', partyType: 'ind', incumbent: false, modelPct: 0.0 },
+                        { num: 2, name: '張嘉郡', party: '國', partyType: 'kmt', incumbent: false, modelPct: 58.0 },
+                        { num: 3, name: '劉建國', party: '民', partyType: 'dpp', incumbent: false, modelPct: 42.0 },
+                        { num: 4, name: '林佳瑜', party: '無', partyType: 'ind', incumbent: false, modelPct: 0.0 }
+                    ]
+                },
 
-      generateSecureBase58Id() {
-        const bytes = new Uint8Array(16);
-        window.crypto.getRandomValues(bytes);
-        let num = 0n;
-        for (let i = 0; i < bytes.length; i++) {
-          num = (num << 8n) + BigInt(bytes[i]);
-        }
-        let encoded = '';
-        while (num > 0n) {
-          const rem = Number(num % 58n);
-          encoded = BASE58_ALPHABET[rem] + encoded;
-          num = num / 58n;
-        }
-        while (encoded.length < 22) encoded = '1' + encoded;
-        return encoded.slice(0, 22);
-      }
+                // ==================== 南台灣 (9人) ====================
+                {
+                    id: 'chiayi-city', name: '嘉義市', region: '南台灣',
+                    tags: ['激戰五五波', '藍白整合'],
+                    turnoutDefault: '開票統計中',
+                    turnoutDetail: '全台唯一民眾黨主戰場',
+                    turnout2022: '43.99% (延後投票)',
+                    modelNote: '藍白合張啓楷對決綠營王美惠，五五波激戰',
+                    analysis: '前立委張啓楷獲國民黨禮讓，對決吸票機王美惠，直接檢驗藍白合選票轉移率。',
+                    candidates: [
+                        { num: 1, name: '王義成', party: '無', partyType: 'ind', incumbent: false, modelPct: 0.0 },
+                        { num: 2, name: '陳愷璜', party: '無', partyType: 'ind', incumbent: false, modelPct: 0.0 },
+                        { num: 3, name: '張啓楷', party: '眾', partyType: 'tpp', incumbent: false, modelPct: 49.0 },
+                        { num: 4, name: '王美惠', party: '民', partyType: 'dpp', incumbent: false, modelPct: 51.0 },
+                        { num: 5, name: '黃宏成台灣阿成世界偉人財神總統', party: '無', partyType: 'ind', incumbent: false, modelPct: 0.0 }
+                    ]
+                },
+                {
+                    id: 'chiayi-county', name: '嘉義縣', region: '南台灣',
+                    tags: ['綠營優勢'],
+                    turnoutDefault: '開票統計中',
+                    turnoutDetail: '一對一對決',
+                    turnout2022: '66.96%',
+                    modelNote: '民進黨傳統優勢區，蔡易餘勝算高',
+                    analysis: '現任立委蔡易餘接棒翁章梁；國民黨未提名，轉支持無黨籍朴子市長吳品叡。',
+                    candidates: [
+                        { num: 1, name: '吳品叡', party: '無', partyType: 'ind', incumbent: false, modelPct: 20.0 },
+                        { num: 2, name: '蔡易餘', party: '民', partyType: 'dpp', incumbent: false, modelPct: 80.0 }
+                    ]
+                },
+                {
+                    id: 'pingtung', name: '屏東縣', region: '南台灣',
+                    tags: ['激戰五五波', '現任拚連任'],
+                    turnoutDefault: '開票統計中',
+                    turnoutDetail: '2022 激戰重演',
+                    turnout2022: '66.43%',
+                    modelNote: '周春米具現任優勢，但蘇清泉緊追不捨',
+                    analysis: '上屆兩人差距微小，現任縣長周春米與國民黨立委蘇清泉二度正面交鋒。',
+                    candidates: [
+                        { num: 1, name: '蘇清泉', party: '國', partyType: 'kmt', incumbent: false, modelPct: 42.0 },
+                        { num: 2, name: '周春米', party: '民', partyType: 'dpp', incumbent: true, modelPct: 58.0 }
+                    ]
+                },
 
-      async generateEphemeralKeys() {
-        this.wipeKeys();
-        if (window.PQPrimitives && window.PQPrimitives.available) {
-          this.isTruePQ = true;
-          const { ml_kem1024, x25519 } = window.PQPrimitives;
-          this.x25519Priv = x25519.utils.randomPrivateKey();
-          this.x25519Pub = x25519.getPublicKey(this.x25519Priv);
-          const seed = new Uint8Array(64);
-          window.crypto.getRandomValues(seed);
-          const keys = ml_kem1024.keygen(seed);
-          this.mlkemPub = keys.publicKey;
-          this.mlkemPriv = keys.secretKey;
-          seed.fill(0);
-        } else {
-          this.isTruePQ = false;
-          this.fallbackEcdh = await window.crypto.subtle.generateKey(
-            { name: 'ECDH', namedCurve: 'P-256' },
-            false,
-            ['deriveBits']
-          );
-          this.fallbackPubJwk = await window.crypto.subtle.exportKey('jwk', this.fallbackEcdh.publicKey);
-        }
-        this.updatePqStatusBadges();
-      }
+                // ==================== 東台灣 (13人) ====================
+                {
+                    id: 'yilan', name: '宜蘭縣', region: '東台灣',
+                    tags: ['激戰五五波', '藍白整合'],
+                    turnoutDefault: '開票統計中',
+                    turnoutDetail: '藍白合檢驗區',
+                    turnout2022: '64.68%',
+                    modelNote: 'PollTrack 評估林國漳勝率 66% / 吳宗憲 34%',
+                    analysis: '國民黨立委吳宗憲在藍白初選勝出，對決民進黨林國漳，爭奪後林姿妙時代執政權。',
+                    candidates: [
+                        { num: 1, name: '林國漳', party: '民', partyType: 'dpp', incumbent: false, modelPct: 66.0 },
+                        { num: 2, name: '陳宏毅', party: '無', partyType: 'ind', incumbent: false, modelPct: 0.0 },
+                        { num: 3, name: '吳宗憲', party: '國', partyType: 'kmt', incumbent: false, modelPct: 34.0 },
+                        { num: 4, name: '劉燦輝', party: '無', partyType: 'ind', incumbent: false, modelPct: 0.0 },
+                        { num: 5, name: '楊鉯婷', party: '無', partyType: 'ind', incumbent: false, modelPct: 0.0 }
+                    ]
+                },
+                {
+                    id: 'hualien', name: '花蓮縣', region: '東台灣',
+                    tags: ['政黨分裂'],
+                    turnoutDefault: '開票統計中',
+                    turnoutDetail: '泛藍三強鼎立、綠營結盟',
+                    turnout2022: '58.47%',
+                    modelNote: 'PollTrack 評估游淑貞勝率 82%（須防分票變數）',
+                    analysis: '國民黨提名游淑貞，面臨現任議長張峻（獲綠營支持）與前花蓮市長魏嘉賢夾擊。',
+                    candidates: [
+                        { num: 1, name: '魏嘉賢', party: '無', partyType: 'ind', incumbent: false, modelPct: 6.0 },
+                        { num: 2, name: '張峻', party: '無', partyType: 'ind', incumbent: false, modelPct: 12.0 },
+                        { num: 3, name: '游淑貞', party: '國', partyType: 'kmt', incumbent: false, modelPct: 82.0 },
+                        { num: 4, name: '羅佩秦', party: '台灣工黨', partyType: 'other', incumbent: false, modelPct: 0.0 }
+                    ]
+                },
+                {
+                    id: 'taitung', name: '臺東縣', region: '東台灣',
+                    tags: ['藍營優勢'],
+                    turnoutDefault: '開票統計中',
+                    turnoutDetail: '雙女將對決',
+                    turnout2022: '64.08%',
+                    modelNote: 'PollTrack 評估吳秀華勝率 84%',
+                    analysis: '現任議長吳秀華接棒饒慶鈴，對決民進黨現任原住民立委陳瑩。',
+                    candidates: [
+                        { num: 1, name: '李吳穎智', party: '無', partyType: 'ind', incumbent: false, modelPct: 0.0 },
+                        { num: 2, name: '陳瑩', party: '民', partyType: 'dpp', incumbent: false, modelPct: 16.0 },
+                        { num: 3, name: '王志偉', party: '無', partyType: 'ind', incumbent: false, modelPct: 0.0 },
+                        { num: 4, name: '吳秀華', party: '國', partyType: 'kmt', incumbent: false, modelPct: 84.0 }
+                    ]
+                },
 
-      updatePqStatusBadges() {
-        const badge = document.getElementById('pqStatusBadge');
-        const auditAlgo = document.getElementById('auditPqAlgo');
-        if (this.isTruePQ) {
-          if (badge) badge.textContent = 'ML-KEM-1024 + X25519';
-          if (auditAlgo) auditAlgo.textContent = '✅ 已啟用 NIST FIPS 203 ML-KEM-1024 + X25519 雙重混合金鑰交換';
-        } else {
-          if (badge) badge.textContent = 'ECDH P-256 (回退)';
-          if (auditAlgo) auditAlgo.textContent = '⚠️ ECDH P-256 + PSK（連網可載入 ML-KEM-1024）';
-        }
-      }
+                // ==================== 離島 (15人) ====================
+                {
+                    id: 'penghu', name: '澎湖縣', region: '離島',
+                    tags: ['政黨分裂'],
+                    turnoutDefault: '開票統計中',
+                    turnoutDetail: '六強混戰票源分散',
+                    turnout2022: '56.18%',
+                    modelNote: 'PollTrack 評估陳振中勝率 79%',
+                    analysis: '藍綠各推陳振中、吳淑瑾，另有前副縣長許智富、前馬公市長葉竹林等在地強棒參戰。',
+                    candidates: [
+                        { num: 1, name: '許智富', party: '無', partyType: 'ind', incumbent: false, modelPct: 4.0 },
+                        { num: 2, name: '周倪安', party: '台聯', partyType: 'other', incumbent: false, modelPct: 0.0 },
+                        { num: 3, name: '葉竹林', party: '無', partyType: 'ind', incumbent: false, modelPct: 5.0 },
+                        { num: 4, name: '吳淑瑾', party: '民', partyType: 'dpp', incumbent: false, modelPct: 12.0 },
+                        { num: 5, name: '陳振中', party: '國', partyType: 'kmt', incumbent: false, modelPct: 79.0 },
+                        { num: 6, name: '陳盡川', party: '無', partyType: 'ind', incumbent: false, modelPct: 0.0 }
+                    ]
+                },
+                {
+                    id: 'kinmen', name: '金門縣', region: '離島',
+                    tags: ['政黨分裂', '藍營優勢'],
+                    turnoutDefault: '開票統計中',
+                    turnoutDetail: '全台參選人數最多（7人）',
+                    turnout2022: '39.81%',
+                    modelNote: 'PollTrack 評估陳玉珍勝率 >99%',
+                    analysis: '民進黨未提名，國民黨徵召立委陳玉珍，迎戰前副縣長李文良等 6 位無黨籍候選人。',
+                    candidates: [
+                        { num: 1, name: '張國威', party: '無', partyType: 'ind', incumbent: false, modelPct: 0.0 },
+                        { num: 2, name: '李文良', party: '無', partyType: 'ind', incumbent: false, modelPct: 1.0 },
+                        { num: 3, name: '洪和成', party: '無', partyType: 'ind', incumbent: false, modelPct: 0.0 },
+                        { num: 4, name: '張火木', party: '無', partyType: 'ind', incumbent: false, modelPct: 0.0 },
+                        { num: 5, name: '陳玉珍', party: '國', partyType: 'kmt', incumbent: false, modelPct: 99.0 },
+                        { num: 6, name: '梁文韜', party: '無', partyType: 'ind', incumbent: false, modelPct: 0.0 },
+                        { num: 7, name: '黃世團', party: '無', partyType: 'ind', incumbent: false, modelPct: 0.0 }
+                    ]
+                },
+                {
+                    id: 'lienchiang', name: '連江縣', region: '離島',
+                    tags: ['現任拚連任', '藍營優勢'],
+                    turnoutDefault: '開票統計中',
+                    turnoutDetail: '馬祖在地對決',
+                    turnout2022: '72.18%',
+                    modelNote: '選前評估現任王忠銘勝算高',
+                    analysis: '民進黨未提名，現任縣長王忠銘尋求連任，對決無黨籍曹爾元。',
+                    candidates: [
+                        { num: 1, name: '王忠銘', party: '國', partyType: 'kmt', incumbent: true, modelPct: 80.0 },
+                        { num: 2, name: '曹爾元', party: '無', partyType: 'ind', incumbent: false, modelPct: 20.0 }
+                    ]
+                }
+            ];
 
-      getPublicHandshakeBundle(remoteOfferBundle = null) {
-        if (this.isTruePQ && window.PQPrimitives) {
-          const { ml_kem1024 } = window.PQPrimitives;
-          let ctB64 = null;
-          if (remoteOfferBundle && remoteOfferBundle.mlkemPubB64) {
-            const remoteMlPub = b64ToBytes(remoteOfferBundle.mlkemPubB64);
-            const { cipherText, sharedSecret } = ml_kem1024.encapsulate(remoteMlPub);
-            this.mlkemSharedSecret = sharedSecret;
-            ctB64 = bytesToB64(cipherText);
-          }
-          return {
-            pq: true,
-            x25519PubB64: bytesToB64(this.x25519Pub),
-            mlkemPubB64: bytesToB64(this.mlkemPub),
-            mlkemCtB64: ctB64
-          };
-        }
-        return { pq: false, jwk: this.fallbackPubJwk };
-      }
+            /**
+             * 16:15 預設快訊資料（含臺北市 TVBS 初期開票：蔣萬安 168 票、沈伯洋 139 票）
+             */
+            function getDefaultLiveStore() {
+                return {
+                    taipei: {
+                        turnoutCustom: '',
+                        tvbs: { 5: 168, 3: 139 },
+                        ftv: {},
+                        cec: {}
+                    }
+                };
+            }
 
-      async deriveHybridSessionSecrets(remoteBundle, passphrase = '') {
-        this.remoteBundle = remoteBundle;
-        let combinedSecretBytes;
-
-        if (this.isTruePQ && remoteBundle.pq && window.PQPrimitives) {
-          const { ml_kem1024, x25519 } = window.PQPrimitives;
-          const remoteXPub = b64ToBytes(remoteBundle.x25519PubB64);
-          const xShared = x25519.getSharedSecret(this.x25519Priv, remoteXPub);
-
-          let pqShared;
-          if (remoteBundle.mlkemCtB64) {
-            const ctBytes = b64ToBytes(remoteBundle.mlkemCtB64);
-            pqShared = ml_kem1024.decapsulate(ctBytes, this.mlkemPriv);
-          } else if (this.mlkemSharedSecret) {
-            pqShared = this.mlkemSharedSecret;
-          } else {
-            pqShared = new Uint8Array(32);
-          }
-
-          const passBytes = new TextEncoder().encode(passphrase.trim());
-          combinedSecretBytes = new Uint8Array(xShared.length + pqShared.length + passBytes.length);
-          combinedSecretBytes.set(xShared, 0);
-          combinedSecretBytes.set(pqShared, xShared.length);
-          combinedSecretBytes.set(passBytes, xShared.length + pqShared.length);
-        } else {
-          const remotePubKey = await window.crypto.subtle.importKey(
-            'jwk',
-            remoteBundle.jwk,
-            { name: 'ECDH', namedCurve: 'P-256' },
-            false,
-            []
-          );
-          const sharedBits = await window.crypto.subtle.deriveBits(
-            { name: 'ECDH', public: remotePubKey },
-            this.fallbackEcdh.privateKey,
-            256
-          );
-          const passBytes = new TextEncoder().encode(passphrase.trim());
-          combinedSecretBytes = new Uint8Array(sharedBits.byteLength + passBytes.length);
-          combinedSecretBytes.set(new Uint8Array(sharedBits), 0);
-          combinedSecretBytes.set(passBytes, sharedBits.byteLength);
-        }
-
-        const masterHash = await window.crypto.subtle.digest('SHA-256', combinedSecretBytes);
-        const masterBytes = new Uint8Array(masterHash);
-        combinedSecretBytes.fill(0);
-
-        this.sharedAesKey = await window.crypto.subtle.importKey(
-          'raw',
-          masterHash,
-          { name: 'AES-GCM', length: 256 },
-          false,
-          ['encrypt', 'decrypt']
-        );
-        this.isHandshakeComplete = true;
-
-        const emojis = [0, 1, 2, 3].map(idx => this.sasEmojiList[masterBytes[idx] % this.sasEmojiList.length]).join('');
-        const sasCode = Array.from(masterBytes.slice(4, 8)).map(b => b.toString(16).padStart(2, '0')).join('').toUpperCase();
-        return { sasCode, sasEmojis: emojis };
-      }
-
-      async encryptText(plainText) {
-        if (!this.sharedAesKey) return null;
-        const iv = window.crypto.getRandomValues(new Uint8Array(12));
-        const encoded = new TextEncoder().encode(plainText);
-        const cipherBuf = await window.crypto.subtle.encrypt(
-          { name: 'AES-GCM', iv },
-          this.sharedAesKey,
-          encoded
-        );
-        return { iv: Array.from(iv), ct: Array.from(new Uint8Array(cipherBuf)) };
-      }
-
-      async decryptText(payload) {
-        if (!this.sharedAesKey || !payload || !payload.iv || !payload.ct) return null;
-        try {
-          const iv = new Uint8Array(payload.iv);
-          const ct = new Uint8Array(payload.ct);
-          const plainBuf = await window.crypto.subtle.decrypt(
-            { name: 'AES-GCM', iv },
-            this.sharedAesKey,
-            ct
-          );
-          return new TextDecoder().decode(plainBuf);
-        } catch (e) {
-          return '[解密失敗：後量子金鑰或實體暗號不符]';
-        }
-      }
-
-      wipeKeys() {
-        const zeroOut = (arr) => {
-          if (arr && arr.fill) {
-            window.crypto.getRandomValues(arr);
-            arr.fill(0);
-          }
-        };
-        zeroOut(this.x25519Priv);
-        zeroOut(this.mlkemPriv);
-        zeroOut(this.mlkemSharedSecret);
-
-        this.x25519Priv = null;
-        this.x25519Pub = null;
-        this.mlkemPriv = null;
-        this.mlkemPub = null;
-        this.mlkemSharedSecret = null;
-        this.fallbackEcdh = null;
-        this.fallbackPubJwk = null;
-        this.remoteBundle = null;
-        this.sharedAesKey = null;
-        this.isHandshakeComplete = false;
-      }
-    }
-
-    const cryptoEngine = new PostQuantumHybridEngine();
-
-    window.onPQPrimitivesLoaded = async () => {
-      await cryptoEngine.generateEphemeralKeys();
-    };
-
-    /* ==========================================================================
-       2. 揮發記憶體身份識別碼
-       ========================================================================== */
-    let myAnonNumber = '';
-    const PEER_NS = 'pq128-';
-
-    function initVolatileIdentity() {
-      myAnonNumber = cryptoEngine.generateSecureBase58Id();
-      document.getElementById('myAnonNumberText').textContent = myAnonNumber;
-    }
-
-    function openBurnModal() {
-      document.getElementById('burnTargetNumberText').textContent = myAnonNumber;
-      document.getElementById('burnConfirmModal').classList.remove('hidden');
-    }
-
-    function closeBurnModal() {
-      document.getElementById('burnConfirmModal').classList.add('hidden');
-    }
-
-    async function executeBurnAndRotateNumber() {
-      closeBurnModal();
-      if (currentCallSession || pendingIncomingCall) {
-        await terminateAndWipeCall(false);
-      }
-      if (peerObj) {
-        try { peerObj.destroy(); } catch (e) {}
-        peerObj = null;
-      }
-      cryptoEngine.wipeKeys();
-      initVolatileIdentity();
-      await cryptoEngine.generateEphemeralKeys();
-      initSecurePeerNode();
-      showCipherToast('🔥', '已覆寫緩衝區並簽發全新揮發 128-bit ID');
-    }
-
-    function openSecurityModal() {
-      cryptoEngine.updatePqStatusBadges();
-      document.getElementById('securityAuditModal').classList.remove('hidden');
-    }
-
-    function closeSecurityModal() {
-      document.getElementById('securityAuditModal').classList.add('hidden');
-    }
-
-    /* ==========================================================================
-       3. Web Audio 音效合成器
-       ========================================================================== */
-    class SecureSoundFX {
-      constructor() {
-        this.ctx = null;
-        this.ringTimer = null;
-      }
-      ensure() {
-        if (!this.ctx) {
-          const AC = window.AudioContext || window.webkitAudioContext;
-          if (AC) this.ctx = new AC();
-        }
-        if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume();
-      }
-      playTone(freq, dur = 0.09, type = 'sine', vol = 0.08) {
-        try {
-          this.ensure();
-          if (!this.ctx) return;
-          const now = this.ctx.currentTime;
-          const osc = this.ctx.createOscillator();
-          const gain = this.ctx.createGain();
-          osc.type = type;
-          osc.frequency.setValueAtTime(freq, now);
-          gain.gain.setValueAtTime(vol, now);
-          gain.gain.exponentialRampToValueAtTime(0.001, now + dur);
-          osc.connect(gain);
-          gain.connect(this.ctx.destination);
-          osc.start(now);
-          osc.stop(now + dur);
-        } catch (e) {}
-      }
-      playHandshakeChime() {
-        this.playTone(523.25, 0.12, 'triangle', 0.1);
-        setTimeout(() => this.playTone(659.25, 0.12, 'triangle', 0.1), 90);
-        setTimeout(() => this.playTone(1046.5, 0.22, 'triangle', 0.12), 180);
-      }
-      startIncomingRing() {
-        this.stopRing();
-        const chime = () => {
-          this.playTone(659.25, 0.15, 'sine', 0.1);
-          setTimeout(() => this.playTone(880, 0.25, 'sine', 0.1), 160);
-        };
-        chime();
-        this.ringTimer = setInterval(chime, 1800);
-      }
-      stopRing() {
-        if (this.ringTimer) {
-          clearInterval(this.ringTimer);
-          this.ringTimer = null;
-        }
-      }
-    }
-    const sfx = new SecureSoundFX();
-
-    /* ==========================================================================
-       4. SDP 強制 Opus CBR（關閉 DTX 靜音抑制，確保音訊穩定不斷流）
-       ========================================================================== */
-    function enforceOpusCbrInSdp(sdp) {
-      if (!sdp) return sdp;
-      const enableCbr = document.getElementById('cbrPaddingToggle')?.checked;
-      if (!enableCbr) return sdp;
-
-      return sdp.replace(/(a=fmtp:\d+ .*)/g, (match) => {
-        let line = match;
-        if (!line.includes('usedtx=')) line += ';usedtx=0';
-        else line = line.replace(/usedtx=\d/, 'usedtx=0');
-
-        if (!line.includes('cbr=')) line += ';cbr=1';
-        else line = line.replace(/cbr=\d/, 'cbr=1');
-
-        return line;
-      });
-    }
-
-    /* ==========================================================================
-       5. 網路中繼與自建私有信令設定
-       ========================================================================== */
-    function openNetworkConfigModal() {
-      document.getElementById('networkConfigModal').classList.remove('hidden');
-    }
-    function closeNetworkConfigModal() {
-      document.getElementById('networkConfigModal').classList.add('hidden');
-    }
-    function saveNetworkConfig() {
-      closeNetworkConfigModal();
-      initSecurePeerNode();
-      showCipherToast('🌐', '已套用私有信令與中繼跳板設定');
-    }
-    function onNetworkPolicyChanged() {
-      const forceRelay = document.getElementById('forceRelayToggle').checked;
-      const turnUrl = (document.getElementById('customTurnUrl')?.value || '').trim();
-      if (forceRelay && !turnUrl) {
-        showCipherToast('⚠️', '提醒：若公共 TURN 壅塞導致無聲，請取消勾選強制 Relay 或填入自建 TURN');
-      } else if (forceRelay) {
-        showCipherToast('🛡️', '已啟用強制 Relay：完全隔離真實 IP 位址');
-      }
-      initSecurePeerNode();
-    }
-
-    function buildRtcConfiguration() {
-      const forceRelay = document.getElementById('forceRelayToggle')?.checked || false;
-      const turnUrl = (document.getElementById('customTurnUrl')?.value || '').trim();
-      const turnUser = (document.getElementById('customTurnUser')?.value || '').trim();
-      const turnCred = (document.getElementById('customTurnCred')?.value || '').trim();
-
-      const iceServers = [
-        { urls: 'stun:stun.l.google.com:19302' },
-        { urls: 'stun:stun1.l.google.com:19302' },
-        { urls: 'stun:global.stun.twilio.com:3478' },
-        {
-          urls: 'turn:openrelay.metered.ca:80',
-          username: 'openrelayproject',
-          credential: 'openrelayproject'
-        },
-        {
-          urls: 'turn:openrelay.metered.ca:443',
-          username: 'openrelayproject',
-          credential: 'openrelayproject'
-        }
-      ];
-
-      if (turnUrl) {
-        const customEntry = { urls: turnUrl };
-        if (turnUser) customEntry.username = turnUser;
-        if (turnCred) customEntry.credential = turnCred;
-        iceServers.unshift(customEntry);
-      }
-
-      return {
-        iceServers,
-        iceTransportPolicy: forceRelay ? 'relay' : 'all',
-        iceCandidatePoolSize: 10
-      };
-    }
-
-    /* ==========================================================================
-       6. 零信令伺服器離線 SDP 人工交握
-       ========================================================================== */
-    let manualOfflinePc = null;
-    let manualOfflineDc = null;
-
-    function openZeroServerModal() {
-      document.getElementById('zeroServerModal').classList.remove('hidden');
-    }
-    function closeZeroServerModal() {
-      document.getElementById('zeroServerModal').classList.add('hidden');
-    }
-
-    async function createOfflineOffer() {
-      ensureAudioPlayback();
-      const pass = document.getElementById('sharedPassphraseInput')?.value || '';
-      if (!cryptoEngine.mlkemPub && !cryptoEngine.fallbackEcdh) {
-        await cryptoEngine.generateEphemeralKeys();
-      }
-
-      if (manualOfflinePc) {
-        try { manualOfflinePc.close(); } catch (e) {}
-      }
-
-      manualOfflinePc = new RTCPeerConnection(buildRtcConfiguration());
-      const rawStream = await captureLocalStream(false);
-      rawStream.getTracks().forEach(t => manualOfflinePc.addTrack(t, rawStream));
-
-      manualOfflineDc = manualOfflinePc.createDataChannel('pq-zero-server', { ordered: true });
-      setupRawWebRtcDataChannel(manualOfflineDc);
-
-      manualOfflinePc.ontrack = (e) => {
-        const st = (e.streams && e.streams[0]) || new MediaStream([e.track]);
-        attachRemoteMedia(st, 'audio');
-      };
-
-      const offer = await manualOfflinePc.createOffer();
-      offer.sdp = enforceOpusCbrInSdp(offer.sdp);
-      await manualOfflinePc.setLocalDescription(offer);
-
-      await new Promise(resolve => {
-        if (manualOfflinePc.iceGatheringState === 'complete') return resolve();
-        const check = () => {
-          if (manualOfflinePc.iceGatheringState === 'complete') {
-            manualOfflinePc.removeEventListener('icegatheringstatechange', check);
-            resolve();
-          }
-        };
-        manualOfflinePc.addEventListener('icegatheringstatechange', check);
-        setTimeout(resolve, 3500);
-      });
-
-      const payload = {
-        type: 'OFFER',
-        sdp: manualOfflinePc.localDescription.sdp,
-        pqBundle: cryptoEngine.getPublicHandshakeBundle(null)
-      };
-      document.getElementById('offlineSdpOut').value = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
-      showCipherToast('🛰️', '已產生零信令加密邀請碼');
-    }
-
-    function copyOfflineSdpOut() {
-      const val = document.getElementById('offlineSdpOut').value;
-      if (!val) return;
-      copyTextSafe(val);
-      showCipherToast('📋', '已複製離線加密邀請碼！');
-    }
-
-    async function processOfflineSdpIn() {
-      const rawText = (document.getElementById('offlineSdpIn').value || '').trim();
-      if (!rawText) return;
-      ensureAudioPlayback();
-
-      try {
-        const parsed = JSON.parse(decodeURIComponent(escape(atob(rawText))));
-        const pass = document.getElementById('sharedPassphraseInput')?.value || '';
-
-        if (parsed.type === 'OFFER') {
-          if (!cryptoEngine.mlkemPub && !cryptoEngine.fallbackEcdh) {
-            await cryptoEngine.generateEphemeralKeys();
-          }
-          if (manualOfflinePc) {
-            try { manualOfflinePc.close(); } catch (e) {}
-          }
-          manualOfflinePc = new RTCPeerConnection(buildRtcConfiguration());
-          const rawStream = await captureLocalStream(false);
-          rawStream.getTracks().forEach(t => manualOfflinePc.addTrack(t, rawStream));
-
-          manualOfflinePc.ondatachannel = (ev) => {
-            manualOfflineDc = ev.channel;
-            setupRawWebRtcDataChannel(manualOfflineDc);
-          };
-
-          manualOfflinePc.ontrack = (e) => {
-            const st = (e.streams && e.streams[0]) || new MediaStream([e.track]);
-            attachRemoteMedia(st, 'audio');
-          };
-
-          await manualOfflinePc.setRemoteDescription({ type: 'offer', sdp: parsed.sdp });
-          const sas = await cryptoEngine.deriveHybridSessionSecrets(parsed.pqBundle, pass);
-          updateSasDisplay(sas.sasCode, sas.sasEmojis);
-
-          const answer = await manualOfflinePc.createAnswer();
-          answer.sdp = enforceOpusCbrInSdp(answer.sdp);
-          await manualOfflinePc.setLocalDescription(answer);
-
-          await new Promise(resolve => {
-            if (manualOfflinePc.iceGatheringState === 'complete') return resolve();
-            const check = () => {
-              if (manualOfflinePc.iceGatheringState === 'complete') {
-                manualOfflinePc.removeEventListener('icegatheringstatechange', check);
-                resolve();
-              }
+            // 應用程式狀態
+            const state = {
+                selectedCountyId: 'taipei',
+                activeTab: 'combined', // 'combined' | 'tvbs' | 'ftv' | 'cec'
+                liveStore: {}
             };
-            manualOfflinePc.addEventListener('icegatheringstatechange', check);
-            setTimeout(resolve, 3500);
-          });
 
-          const ansPayload = {
-            type: 'ANSWER',
-            sdp: manualOfflinePc.localDescription.sdp,
-            pqBundle: cryptoEngine.getPublicHandshakeBundle(parsed.pqBundle)
-          };
-          document.getElementById('offlineSdpOut').value = btoa(unescape(encodeURIComponent(JSON.stringify(ansPayload))));
+            // DOM 參考
+            const liveClockEl = document.getElementById('liveClock');
+            const seatBarSourceLabelEl = document.getElementById('seatBarSourceLabel');
+            const syncedCountBadgeEl = document.getElementById('syncedCountBadge');
+            const tileMapContainerEl = document.getElementById('tileMapContainer');
+            const detailPanelEl = document.getElementById('detailPanel');
+            const resetModalEl = document.getElementById('resetModal');
+            const cancelResetBtn = document.getElementById('cancelResetBtn');
+            const confirmResetBtn = document.getElementById('confirmResetBtn');
+            const toastEl = document.getElementById('toast');
+            const toastTextEl = document.getElementById('toastText');
 
-          currentCallSession = {
-            targetInfo: { number: 'ZERO-SERVER-P2P', name: '🛰️ 零信令伺服器直連終端', avatar: '🛡️' },
-            mode: 'audio',
-            connected: true
-          };
-          openAudioOverlay(currentCallSession.targetInfo);
-          markCallEncryptedConnected();
-          startConnectionHeartbeat();
-          showCipherToast('📋', '已產生應答碼！請複製上方密文回傳給發起方');
-        } else if (parsed.type === 'ANSWER' && manualOfflinePc) {
-          await manualOfflinePc.setRemoteDescription({ type: 'answer', sdp: parsed.sdp });
-          const sas = await cryptoEngine.deriveHybridSessionSecrets(parsed.pqBundle, pass);
-          updateSasDisplay(sas.sasCode, sas.sasEmojis);
+            let toastTimer = null;
 
-          closeZeroServerModal();
-          currentCallSession = {
-            targetInfo: { number: 'ZERO-SERVER-P2P', name: '🛰️ 零信令伺服器直連終端', avatar: '🛡️' },
-            mode: 'audio',
-            connected: true
-          };
-          openAudioOverlay(currentCallSession.targetInfo);
-          markCallEncryptedConnected();
-          startConnectionHeartbeat();
-          sfx.playHandshakeChime();
-          showCipherToast('🛡️', '零信令伺服器 PQ-Hybrid 通話已接通！');
-        }
-      } catch (e) {
-        showCipherToast('⚠️', '密文格式錯誤或已過期');
-      }
-    }
+            // ==================== 工具與儲存函式 ====================
 
-    function setupRawWebRtcDataChannel(dc) {
-      dc.onopen = () => {
-        lastRemoteHeartbeatTs = Date.now();
-        activeDataConn = {
-          open: true,
-          send: (obj) => {
-            if (dc.readyState === 'open') dc.send(JSON.stringify(obj));
-          },
-          close: () => dc.close()
-        };
-      };
-      dc.onmessage = async (ev) => {
-        try {
-          const msg = JSON.parse(ev.data);
-          lastRemoteHeartbeatTs = Date.now();
-          if (msg.type === 'HEARTBEAT_PING') {
-            dc.send(JSON.stringify({ type: 'HEARTBEAT_PONG', ts: Date.now() }));
-          } else if (msg.type === 'AES_MSG' && msg.payload) {
-            const plain = await cryptoEngine.decryptText(msg.payload);
-            if (plain) appendEphemeralBubble('對方', plain, false);
-          } else if (msg.type === 'WIPE_HANGUP') {
-            showCipherToast('📴', '對方已掛斷通話');
-            terminateAndWipeCall(true);
-          }
-        } catch (e) {}
-      };
-      dc.onclose = () => {
-        if (currentCallSession) {
-          showCipherToast('📴', '對方已離線');
-          terminateAndWipeCall(true);
-        }
-      };
-    }
-
-    /* ==========================================================================
-       7. PeerJS 信令與雙向掛斷同步引擎
-       ========================================================================== */
-    let peerObj = null;
-    let isNetworkReady = false;
-    let activeMediaCall = null;
-    let activeDataConn = null;
-    let pendingIncomingCall = null;
-
-    function updateSignalBadge(online, text) {
-      isNetworkReady = online;
-      const dot = document.getElementById('p2pConnDot');
-      const tag = document.getElementById('signalStatusTag');
-      if (online) {
-        dot.className = 'w-2 h-2 rounded-full bg-emerald-400';
-        tag.className = 'text-[9px] px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-400/25';
-        tag.textContent = text || 'P2P 跨網待命';
-      } else {
-        dot.className = 'w-2 h-2 rounded-full bg-amber-400';
-        tag.className = 'text-[9px] px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 border border-amber-400/25';
-        tag.textContent = text || '信令重連中...';
-      }
-    }
-
-    function initSecurePeerNode() {
-      if (peerObj) {
-        try { peerObj.destroy(); } catch (e) {}
-        peerObj = null;
-      }
-      if (typeof Peer === 'undefined') {
-        updateSignalBadge(false, '離線模式');
-        return;
-      }
-
-      const fullPeerId = `${PEER_NS}${myAnonNumber}`;
-      const forceRelay = document.getElementById('forceRelayToggle')?.checked || false;
-      const customHost = (document.getElementById('customPeerHost')?.value || '').trim();
-      const customPort = parseInt(document.getElementById('customPeerPort')?.value || '443', 10);
-      const customPath = (document.getElementById('customPeerPath')?.value || '/').trim();
-
-      const peerOpts = {
-        debug: 0,
-        pingInterval: 5000,
-        config: buildRtcConfiguration(),
-        sdpTransform: (sdp) => enforceOpusCbrInSdp(sdp)
-      };
-
-      if (customHost) {
-        peerOpts.host = customHost;
-        peerOpts.port = customPort || 443;
-        peerOpts.path = customPath || '/';
-        peerOpts.secure = true;
-      }
-
-      try {
-        peerObj = new Peer(fullPeerId, peerOpts);
-
-        peerObj.on('open', () => {
-          const label = customHost
-            ? (forceRelay ? '私有信令 + Relay' : '私有信令 P2P')
-            : (forceRelay ? 'Relay 隔離模式' : 'P2P 雙向待命');
-          updateSignalBadge(true, label);
-        });
-
-        peerObj.on('connection', (conn) => {
-          setupEncryptedDataChannel(conn, true);
-        });
-
-        peerObj.on('call', (call) => {
-          const metaType = call.metadata && call.metadata.type;
-          if (currentCallSession && metaType === 'VIDEO_STREAM_UPGRADE') {
-            if (secondaryVideoCall) {
-              try { secondaryVideoCall.close(); } catch (e) {}
+            function loadStore() {
+                try {
+                    const raw = localStorage.getItem(STORAGE_KEY);
+                    if (raw) {
+                        const parsed = JSON.parse(raw);
+                        if (parsed && typeof parsed === 'object') {
+                            state.liveStore = parsed;
+                            return;
+                        }
+                    }
+                } catch (e) {
+                    console.warn('讀取本機快取失敗，改用預設值:', e);
+                }
+                state.liveStore = getDefaultLiveStore();
             }
-            secondaryVideoCall = call;
-            currentCallSession.mode = 'video';
-            openVideoOverlay(currentCallSession.targetInfo).then(() => {
-              const videoTracks = localMediaStream ? localMediaStream.getVideoTracks() : [];
-              call.answer(new MediaStream(videoTracks));
-              call.on('stream', (remoteStream) => attachRemoteMedia(remoteStream, 'video'));
+
+            function saveStore(showMsg) {
+                try {
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(state.liveStore));
+                    if (showMsg) showToast(showMsg);
+                } catch (e) {
+                    console.warn('儲存至本機失敗:', e);
+                }
+            }
+
+            function ensureCountyStore(countyId) {
+                if (!state.liveStore[countyId]) {
+                    state.liveStore[countyId] = { turnoutCustom: '', tvbs: {}, ftv: {}, cec: {} };
+                }
+                if (!state.liveStore[countyId].tvbs) state.liveStore[countyId].tvbs = {};
+                if (!state.liveStore[countyId].ftv) state.liveStore[countyId].ftv = {};
+                if (!state.liveStore[countyId].cec) state.liveStore[countyId].cec = {};
+                return state.liveStore[countyId];
+            }
+
+            function showToast(msg) {
+                toastTextEl.textContent = msg;
+                toastEl.classList.remove('translate-y-16', 'opacity-0');
+                clearTimeout(toastTimer);
+                toastTimer = setTimeout(() => {
+                    toastEl.classList.add('translate-y-16', 'opacity-0');
+                }, 2200);
+            }
+
+            function escapeHTML(str) {
+                return String(str || '')
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#39;');
+            }
+
+            /**
+             * 政黨視覺色票（國 #1e6bff、民 #16a34a、眾 #06b6d4、無/其他 #94a3b8）
+             */
+            function getPartyStyle(partyType) {
+                switch (partyType) {
+                    case 'kmt':
+                        return { hex: '#1e6bff', bar: 'bg-[#1e6bff]', badge: 'bg-blue-500/20 text-blue-300 border-blue-500/40', text: 'text-blue-400' };
+                    case 'dpp':
+                        return { hex: '#16a34a', bar: 'bg-[#16a34a]', badge: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40', text: 'text-emerald-400' };
+                    case 'tpp':
+                        return { hex: '#06b6d4', bar: 'bg-[#06b6d4]', badge: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40', text: 'text-cyan-300' };
+                    default:
+                        return { hex: '#94a3b8', bar: 'bg-[#94a3b8]', badge: 'bg-slate-600/30 text-slate-200 border-slate-500/40', text: 'text-slate-300' };
+                }
+            }
+
+            // ==================== 多源數據分析引擎 ====================
+
+            /**
+             * 計算單一來源（tvbs / ftv / cec）的票數與百分率
+             */
+            function computeSourceStats(county, sourceKey) {
+                const store = state.liveStore[county.id] || {};
+                const votesMap = store[sourceKey] || {};
+                let totalVotes = 0;
+                county.candidates.forEach(c => {
+                    totalVotes += Math.max(0, Number(votesMap[c.num]) || 0);
+                });
+
+                const byNum = {};
+                let leader = null;
+                let maxVotes = -1;
+                let tie = false;
+
+                county.candidates.forEach(c => {
+                    const votes = Math.max(0, Number(votesMap[c.num]) || 0);
+                    const pct = totalVotes > 0 ? (votes / totalVotes) * 100 : 0;
+                    byNum[c.num] = { votes, pct };
+                    if (totalVotes > 0) {
+                        if (votes > maxVotes) {
+                            maxVotes = votes;
+                            leader = { ...c, votes, pct };
+                            tie = false;
+                        } else if (votes === maxVotes) {
+                            tie = true;
+                        }
+                    }
+                });
+
+                return {
+                    totalVotes,
+                    byNum,
+                    leader: tie ? null : leader
+                };
+            }
+
+            /**
+             * 計算三方綜合交叉分析（加權：中選會 50%、TVBS 25%、民視 25%，依有數據來源動態正規化）
+             */
+            function computeCountyAnalysis(county) {
+                const tvbs = computeSourceStats(county, 'tvbs');
+                const ftv = computeSourceStats(county, 'ftv');
+                const cec = computeSourceStats(county, 'cec');
+
+                const hasTvbs = tvbs.totalVotes > 0;
+                const hasFtv = ftv.totalVotes > 0;
+                const hasCec = cec.totalVotes > 0;
+                const hasMediaSync = hasTvbs || hasFtv;
+                const hasAnyLive = hasTvbs || hasFtv || hasCec;
+
+                // 動態權重計算
+                const weights = {
+                    cec: hasCec ? 0.50 : 0,
+                    tvbs: hasTvbs ? 0.25 : 0,
+                    ftv: hasFtv ? 0.25 : 0
+                };
+                const weightSum = weights.cec + weights.tvbs + weights.ftv;
+
+                // 計算每位候選人綜合得票率
+                const combinedByNum = {};
+                let maxTvbsFtvDiff = 0;
+
+                county.candidates.forEach(c => {
+                    let combinedPct = 0;
+                    if (weightSum > 0) {
+                        combinedPct = (
+                            (hasCec ? cec.byNum[c.num].pct * weights.cec : 0) +
+                            (hasTvbs ? tvbs.byNum[c.num].pct * weights.tvbs : 0) +
+                            (hasFtv ? ftv.byNum[c.num].pct * weights.ftv : 0)
+                        ) / weightSum;
+                    } else {
+                        combinedPct = c.modelPct;
+                    }
+                    combinedByNum[c.num] = combinedPct;
+
+                    if (hasTvbs && hasFtv) {
+                        const diff = Math.abs(tvbs.byNum[c.num].pct - ftv.byNum[c.num].pct);
+                        if (diff > maxTvbsFtvDiff) maxTvbsFtvDiff = diff;
+                    }
+                });
+
+                // 落差警示（TVBS 與民視任一候選人落差 > 3%）
+                const hasDiscrepancy = hasTvbs && hasFtv && maxTvbsFtvDiff > 3.0;
+
+                // 排序候選人（依綜合得票率降冪）
+                const ranked = county.candidates
+                    .map(c => ({
+                        ...c,
+                        combinedPct: combinedByNum[c.num],
+                        tvbsVotes: tvbs.byNum[c.num].votes,
+                        tvbsPct: tvbs.byNum[c.num].pct,
+                        ftvVotes: ftv.byNum[c.num].votes,
+                        ftvPct: ftv.byNum[c.num].pct,
+                        cecVotes: cec.byNum[c.num].votes,
+                        cecPct: cec.byNum[c.num].pct
+                    }))
+                    .sort((a, b) => b.combinedPct - a.combinedPct);
+
+                const leader = ranked.length > 0 && ranked[0].combinedPct > 0 ? ranked[0] : null;
+                const runnerUp = ranked.length > 1 ? ranked[1] : null;
+                const leadMarginPct = leader && runnerUp ? (leader.combinedPct - runnerUp.combinedPct) : 0;
+
+                // 參考票差（優先中選會，其次 TVBS，其次民視）
+                let refVotesDiff = null;
+                let refSourceName = '';
+                if (leader && runnerUp) {
+                    if (hasCec) {
+                        refVotesDiff = leader.cecVotes - runnerUp.cecVotes;
+                        refSourceName = '中選會';
+                    } else if (hasTvbs) {
+                        refVotesDiff = leader.tvbsVotes - runnerUp.tvbsVotes;
+                        refSourceName = 'TVBS';
+                    } else if (hasFtv) {
+                        refVotesDiff = leader.ftvVotes - runnerUp.ftvVotes;
+                        refSourceName = '民視';
+                    }
+                }
+
+                // 數據一致性診斷
+                const maxTotalVotes = Math.max(tvbs.totalVotes, ftv.totalVotes, cec.totalVotes);
+                let diagnostic = {
+                    level: 'info', // 'info' | 'warn' | 'danger' | 'ok'
+                    title: '尚無即時開票數據',
+                    detail: '目前尚未登錄 TVBS、民視或中選會票數，暫以選前公開模型作為參考基準。請點選上方頁籤登錄即時票數。'
+                };
+
+                if (hasAnyLive) {
+                    if (maxTotalVotes < 1000) {
+                        diagnostic = {
+                            level: 'warn',
+                            title: '初期樣本極小・僅供參考',
+                            detail: `目前單源最高累計僅 ${maxTotalVotes.toLocaleString()} 票，極易受單一小型投開票所結構影響，切勿視為最終定局。`
+                        };
+                    } else if (hasDiscrepancy) {
+                        diagnostic = {
+                            level: 'danger',
+                            title: `偵測到各台落差達 ${maxTvbsFtvDiff.toFixed(2)}%・需防灌票風險`,
+                            detail: 'TVBS 與民視對同縣市候選人的得票率落差已超過 3% 警戒線，建議立即核對中選會官方登錄數字。'
+                        };
+                    } else if (hasTvbs && hasFtv) {
+                        diagnostic = {
+                            level: 'ok',
+                            title: `各台趨勢高度吻合（最大落差 ${maxTvbsFtvDiff.toFixed(2)}%）`,
+                            detail: 'TVBS 與民視報票得票率誤差在 3% 合理範圍內，開票趨勢具備高度一致性。'
+                        };
+                    } else {
+                        diagnostic = {
+                            level: 'info',
+                            title: `單一來源回報中（累計 ${maxTotalVotes.toLocaleString()} 票）`,
+                            detail: '目前已登錄單一數據源，建議同步輸入另一家電視台或中選會數據，以啟用自動落差交叉檢核。'
+                        };
+                    }
+                }
+
+                return {
+                    tvbs, ftv, cec,
+                    hasTvbs, hasFtv, hasCec, hasMediaSync, hasAnyLive,
+                    hasDiscrepancy, maxTvbsFtvDiff,
+                    ranked, leader, runnerUp, leadMarginPct,
+                    refVotesDiff, refSourceName,
+                    diagnostic
+                };
+            }
+
+            /**
+             * 取得縣市在目前作用中頁籤的領先者資訊（用於席次條與左側矩陣）
+             */
+            function getActiveLeaderForCounty(county) {
+                const ana = computeCountyAnalysis(county);
+                if (state.activeTab === 'tvbs') {
+                    return {
+                        leader: ana.tvbs.leader,
+                        pct: ana.tvbs.leader ? ana.tvbs.leader.pct : 0,
+                        isLive: ana.hasTvbs,
+                        ana
+                    };
+                }
+                if (state.activeTab === 'ftv') {
+                    return {
+                        leader: ana.ftv.leader,
+                        pct: ana.ftv.leader ? ana.ftv.leader.pct : 0,
+                        isLive: ana.hasFtv,
+                        ana
+                    };
+                }
+                if (state.activeTab === 'cec') {
+                    return {
+                        leader: ana.cec.leader,
+                        pct: ana.cec.leader ? ana.cec.leader.pct : 0,
+                        isLive: ana.hasCec,
+                        ana
+                    };
+                }
+                // combined 模式
+                return {
+                    leader: ana.leader,
+                    pct: ana.leader ? ana.leader.combinedPct : 0,
+                    isLive: ana.hasAnyLive,
+                    ana
+                };
+            }
+
+            // ==================== 畫面渲染函式 ====================
+
+            function updateClock() {
+                const now = new Date();
+                const utc8 = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Taipei' }));
+                const hh = String(utc8.getHours()).padStart(2, '0');
+                const mm = String(utc8.getMinutes()).padStart(2, '0');
+                const ss = String(utc8.getSeconds()).padStart(2, '0');
+                liveClockEl.textContent = `UTC+8 ${hh}:${mm}:${ss}`;
+            }
+
+            /**
+             * 渲染頂部 22 縣市席次版圖條
+             */
+            function renderSeatBar() {
+                const counts = { kmt: 0, dpp: 0, tpp: 0, ind: 0, pending: 0 };
+                let syncedCount = 0;
+
+                countiesData.forEach(c => {
+                    const info = getActiveLeaderForCounty(c);
+                    if (info.ana.hasAnyLive) syncedCount++;
+
+                    if (!info.leader) {
+                        counts.pending++;
+                    } else {
+                        const pt = info.leader.partyType;
+                        if (pt === 'kmt') counts.kmt++;
+                        else if (pt === 'dpp') counts.dpp++;
+                        else if (pt === 'tpp') counts.tpp++;
+                        else counts.ind++;
+                    }
+                });
+
+                const tabNames = {
+                    combined: '綜合交叉分析（無即時票處採選前模型）',
+                    tvbs: 'TVBS 即時報票',
+                    ftv: '民視 即時報票',
+                    cec: '中選會官方登錄'
+                };
+                seatBarSourceLabelEl.textContent = `全台 22 縣市版圖即時席次（${tabNames[state.activeTab]}）`;
+                syncedCountBadgeEl.textContent = `已同步 ${syncedCount}/22 縣市`;
+
+                const total = countiesData.length;
+                document.getElementById('countKmt').textContent = counts.kmt;
+                document.getElementById('countDpp').textContent = counts.dpp;
+                document.getElementById('countTpp').textContent = counts.tpp;
+                document.getElementById('countInd').textContent = counts.ind;
+                document.getElementById('countPending').textContent = counts.pending;
+
+                document.getElementById('barKmt').style.width = `${(counts.kmt / total) * 100}%`;
+                document.getElementById('barDpp').style.width = `${(counts.dpp / total) * 100}%`;
+                document.getElementById('barTpp').style.width = `${(counts.tpp / total) * 100}%`;
+                document.getElementById('barInd').style.width = `${(counts.ind / total) * 100}%`;
+                document.getElementById('barPending').style.width = `${(counts.pending / total) * 100}%`;
+            }
+
+            /**
+             * 渲染左側全台 22 縣市戰情矩陣
+             */
+            function renderTileMap() {
+                tileMapContainerEl.innerHTML = REGION_ORDER.map(region => {
+                    const list = countiesData.filter(c => c.region === region);
+                    return `
+                        <div>
+                            <div class="flex items-center justify-between mb-2">
+                                <h3 class="text-xs font-bold tracking-wider text-slate-400">${escapeHTML(region)}</h3>
+                                <span class="text-[11px] font-mono text-slate-500">${list.length} 縣市</span>
+                            </div>
+                            <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                                ${list.map(c => {
+                                    const isSelected = c.id === state.selectedCountyId;
+                                    const info = getActiveLeaderForCounty(c);
+                                    const pStyle = info.leader ? getPartyStyle(info.leader.partyType) : { bar: 'bg-amber-500', text: 'text-amber-400' };
+                                    const leaderName = info.leader ? info.leader.name : '待開票';
+                                    const pctText = info.leader ? `${info.pct.toFixed(1)}%` : '--%';
+
+                                    let statusBadges = '';
+                                    if (info.ana.hasDiscrepancy) {
+                                        statusBadges = `<span class="px-1.5 py-0.5 rounded bg-orange-500/20 text-orange-300 border border-orange-500/40 text-[9px] font-bold leading-none">⚠️ 落差警示</span>`;
+                                    } else if (info.ana.hasMediaSync || info.ana.hasCec) {
+                                        statusBadges = `<span class="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[9px] font-bold leading-none">已同步</span>`;
+                                    }
+
+                                    return `
+                                        <button
+                                            type="button"
+                                            data-county-id="${escapeHTML(c.id)}"
+                                            class="relative text-left rounded-xl p-2.5 bg-[#162032] hover:bg-slate-800/90 border transition-all cursor-pointer overflow-hidden ${isSelected ? 'border-sky-400 tile-active bg-slate-800' : 'border-slate-800 hover:border-slate-700'}"
+                                        >
+                                            <span class="absolute left-0 top-0 bottom-0 w-1.5 ${pStyle.bar}"></span>
+                                            <div class="pl-2 space-y-1">
+                                                <div class="flex items-center justify-between gap-1">
+                                                    <span class="text-sm font-bold ${isSelected ? 'text-sky-300' : 'text-white'} truncate">${escapeHTML(c.name)}</span>
+                                                    ${statusBadges}
+                                                </div>
+                                                <div class="flex items-center justify-between gap-1 text-[11px]">
+                                                    <span class="text-slate-300 truncate max-w-[66px]" title="${escapeHTML(leaderName)}">${escapeHTML(leaderName)}</span>
+                                                    <span class="font-mono font-bold ${info.isLive ? pStyle.text : 'text-slate-400'}">${pctText}</span>
+                                                </div>
+                                            </div>
+                                        </button>
+                                    `;
+                                }).join('')}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            /**
+             * 渲染右側縣市深度戰情分析面板
+             */
+            function renderDetailPanel() {
+                const county = countiesData.find(c => c.id === state.selectedCountyId) || countiesData[0];
+                const ana = computeCountyAnalysis(county);
+                const cStore = ensureCountyStore(county.id);
+
+                // 診斷卡片樣式
+                const diagStyles = {
+                    ok: 'bg-emerald-500/10 border-emerald-500/35 text-emerald-300',
+                    warn: 'bg-amber-500/10 border-amber-500/35 text-amber-300',
+                    danger: 'bg-orange-500/15 border-orange-500/50 text-orange-300',
+                    info: 'bg-sky-500/10 border-sky-500/30 text-sky-300'
+                };
+                const diagClass = diagStyles[ana.diagnostic.level] || diagStyles.info;
+
+                // 四大頁籤按鈕設定
+                const tabs = [
+                    { key: 'combined', label: '⚖️ 綜合交叉分析' },
+                    { key: 'tvbs', label: '📺 TVBS 即時報票', count: ana.tvbs.totalVotes },
+                    { key: 'ftv', label: '📺 民視 即時報票', count: ana.ftv.totalVotes },
+                    { key: 'cec', label: '🏛️ 中選會官方登錄', count: ana.cec.totalVotes }
+                ];
+
+                // 依照目前頁籤產生主內容區
+                let tabBodyHTML = '';
+                if (state.activeTab === 'combined') {
+                    tabBodyHTML = renderCombinedTabHTML(county, ana, diagClass);
+                } else {
+                    tabBodyHTML = renderSourceEditorTabHTML(county, state.activeTab, ana);
+                }
+
+                detailPanelEl.innerHTML = `
+                    <div class="space-y-5">
+                        <!-- 縣市標頭與重置按鈕 -->
+                        <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-3 border-b border-slate-800 pb-4">
+                            <div>
+                                <div class="flex items-center flex-wrap gap-2">
+                                    <h2 class="text-2xl sm:text-3xl font-black text-white tracking-tight">${escapeHTML(county.name)}</h2>
+                                    <span class="px-2.5 py-0.5 rounded-md bg-slate-800 text-slate-300 text-xs font-bold border border-slate-700">${escapeHTML(county.region)}</span>
+                                    <span class="px-2.5 py-0.5 rounded-md bg-slate-900 text-slate-400 text-xs font-mono border border-slate-800">${county.candidates.length} 位候選人</span>
+                                    ${ana.hasDiscrepancy ? '<span class="px-2.5 py-0.5 rounded-md bg-orange-500/20 text-orange-300 border border-orange-500/40 text-xs font-bold">⚠️ TVBS／民視落差警示</span>' : ''}
+                                </div>
+                                <div class="flex flex-wrap gap-1.5 mt-2">
+                                    ${county.tags.map(t => `<span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-sky-500/15 text-sky-300 border border-sky-500/30">${escapeHTML(t)}</span>`).join('')}
+                                </div>
+                            </div>
+                            <button id="openResetModalBtn" type="button" class="self-start px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-rose-500/20 text-slate-300 hover:text-rose-300 border border-slate-700 hover:border-rose-500/40 text-xs font-bold transition-colors cursor-pointer shrink-0">
+                                ↺ 重置為 16:15 預設快訊
+                            </button>
+                        </div>
+
+                        <!-- 投票率即時追蹤儀表卡 -->
+                        <div class="grid grid-cols-1 md:grid-cols-12 gap-3">
+                            <div class="md:col-span-6 bg-[#162032] border border-slate-800 rounded-xl p-3.5">
+                                <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">今日最新回報投票率（來源與時間）</div>
+                                <div class="mt-1 text-base font-mono font-bold text-sky-300">${escapeHTML(cStore.turnoutCustom ? `手動更新：${cStore.turnoutCustom}%` : county.turnoutDefault)}</div>
+                                <div class="mt-1 text-[11px] text-slate-400 leading-snug">${escapeHTML(county.turnoutDetail)}</div>
+                            </div>
+                            <div class="md:col-span-3 bg-[#162032] border border-slate-800 rounded-xl p-3.5 flex flex-col justify-between">
+                                <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">2022 歷史投票率</div>
+                                <div class="mt-1.5 text-xl font-mono font-bold text-slate-200">${escapeHTML(county.turnout2022)}</div>
+                            </div>
+                            <div class="md:col-span-3 bg-[#162032] border border-sky-500/30 rounded-xl p-3.5 flex flex-col justify-between">
+                                <label for="customTurnoutInput" class="text-[11px] font-bold text-sky-400 uppercase tracking-wider">手動更新投票率</label>
+                                <div class="mt-1.5 flex items-center gap-1.5">
+                                    <input
+                                        id="customTurnoutInput"
+                                        type="number"
+                                        step="0.01"
+                                        min="0"
+                                        max="100"
+                                        value="${escapeHTML(cStore.turnoutCustom || '')}"
+                                        placeholder="如 65.4"
+                                        class="w-full bg-slate-900 border border-slate-700 focus:border-sky-400 rounded-lg px-2 py-1 text-sm font-mono font-bold text-white focus:outline-none"
+                                    >
+                                    <span class="text-xs font-mono text-slate-400">%</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 四大模式頁籤列 -->
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5 p-1 rounded-xl bg-slate-900 border border-slate-800" role="tablist">
+                            ${tabs.map(t => {
+                                const isActive = state.activeTab === t.key;
+                                const activeCls = isActive
+                                    ? 'bg-sky-500 text-slate-950 shadow-md'
+                                    : 'text-slate-400 hover:text-white hover:bg-slate-800/70';
+                                return `
+                                    <button
+                                        type="button"
+                                        data-tab="${t.key}"
+                                        role="tab"
+                                        aria-selected="${isActive}"
+                                        class="px-2.5 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${activeCls}"
+                                    >
+                                        <span>${t.label}</span>
+                                        ${t.count > 0 ? `<span class="px-1.5 py-0.5 rounded text-[10px] font-mono ${isActive ? 'bg-slate-950/20 text-slate-950' : 'bg-emerald-500/20 text-emerald-300'}">${t.count.toLocaleString()}</span>` : ''}
+                                    </button>
+                                `;
+                            }).join('')}
+                        </div>
+
+                        <!-- 頁籤主要內容 -->
+                        <div id="tabBodyContainer">
+                            ${tabBodyHTML}
+                        </div>
+
+                        <!-- 戰情重點分析 -->
+                        <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-4 space-y-1.5">
+                            <div class="flex flex-wrap items-center justify-between gap-2">
+                                <h3 class="text-xs font-bold text-sky-400 uppercase tracking-wider">縣市選情與選前參考</h3>
+                                <span class="text-[11px] font-mono text-slate-400">${escapeHTML(county.modelNote)}</span>
+                            </div>
+                            <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">${escapeHTML(county.analysis)}</p>
+                        </div>
+                    </div>
+                `;
+
+                bindDetailPanelEvents(county);
+            }
+
+            /**
+             * (A) 綜合交叉分析頁籤 HTML
+             */
+            function renderCombinedTabHTML(county, ana, diagClass) {
+                const leadSummary = ana.leader && ana.runnerUp
+                    ? `目前領先：<strong class="text-white">${escapeHTML(ana.leader.name)}</strong>（領先 ${escapeHTML(ana.runnerUp.name)} <strong class="font-mono text-amber-400">+${ana.leadMarginPct.toFixed(2)}%</strong>${ana.refVotesDiff !== null ? ` ／ ${ana.refSourceName}票差 <strong class="font-mono text-amber-400">+${ana.refVotesDiff.toLocaleString()}</strong> 票` : ''}）`
+                    : '等待開票數據登錄中';
+
+                return `
+                    <div class="space-y-4">
+                        <!-- 數據一致性診斷卡 -->
+                        <div class="rounded-xl border p-3.5 ${diagClass}">
+                            <div class="text-xs sm:text-sm font-bold">${escapeHTML(ana.diagnostic.title)}</div>
+                            <p class="text-xs mt-1 opacity-90 leading-relaxed">${escapeHTML(ana.diagnostic.detail)}</p>
+                        </div>
+
+                        <!-- 綜合領先摘要列 -->
+                        <div class="flex flex-wrap items-center justify-between gap-2 px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-xs text-slate-300">
+                            <div>${leadSummary}</div>
+                            <div class="font-mono text-[11px] text-slate-400">
+                                權重：中選會 50%・TVBS 25%・民視 25%（依有數據源正規化）
+                            </div>
+                        </div>
+
+                        <!-- 候選人綜合百分率動態長條圖 + 四源並排對照 -->
+                        <div class="space-y-3">
+                            ${ana.ranked.map(c => {
+                                const pStyle = getPartyStyle(c.partyType);
+                                return `
+                                    <div class="bg-[#162032] border border-slate-800 rounded-xl p-3.5 space-y-2.5">
+                                        <div class="flex flex-wrap items-center justify-between gap-2">
+                                            <div class="flex items-center gap-2 min-w-0">
+                                                <span class="w-6 h-6 rounded-md bg-slate-900 border border-slate-700 text-slate-200 font-mono text-xs font-bold flex items-center justify-center shrink-0">${c.num}</span>
+                                                <span class="text-base font-bold text-white truncate" title="${escapeHTML(c.name)}">${escapeHTML(c.name)}</span>
+                                                <span class="px-2 py-0.5 rounded border text-[11px] font-bold shrink-0 ${pStyle.badge}">${escapeHTML(c.party)}</span>
+                                                ${c.incumbent ? '<span class="px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[10px] font-bold shrink-0">現任</span>' : ''}
+                                            </div>
+                                            <div class="text-right">
+                                                <span class="text-[11px] text-slate-400 mr-1.5">${ana.hasAnyLive ? '綜合加權' : '選前參考'}</span>
+                                                <span class="text-xl sm:text-2xl font-mono font-bold ${c.combinedPct > 0 ? pStyle.text : 'text-slate-500'}">${c.combinedPct.toFixed(2)}%</span>
+                                            </div>
+                                        </div>
+
+                                        <!-- 動畫百分率長條圖 -->
+                                        <div class="w-full h-3 rounded-full bg-slate-900 overflow-hidden border border-slate-800">
+                                            <div class="h-full rounded-full transition-all duration-500 ${pStyle.bar}" style="width: ${Math.min(100, Math.max(0, c.combinedPct))}%"></div>
+                                        </div>
+
+                                        <!-- 四方數據並排對照格 -->
+                                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 text-[11px] font-mono">
+                                            <div class="bg-slate-900/90 border border-slate-800 rounded-lg px-2.5 py-1.5">
+                                                <div class="text-slate-400">📺 TVBS 報票</div>
+                                                <div class="mt-0.5 font-bold ${ana.hasTvbs ? 'text-blue-300' : 'text-slate-500'}">
+                                                    ${ana.hasTvbs ? `${c.tvbsPct.toFixed(2)}% (${c.tvbsVotes.toLocaleString()})` : '待登錄'}
+                                                </div>
+                                            </div>
+                                            <div class="bg-slate-900/90 border border-slate-800 rounded-lg px-2.5 py-1.5">
+                                                <div class="text-slate-400">📺 民視 報票</div>
+                                                <div class="mt-0.5 font-bold ${ana.hasFtv ? 'text-emerald-300' : 'text-slate-500'}">
+                                                    ${ana.hasFtv ? `${c.ftvPct.toFixed(2)}% (${c.ftvVotes.toLocaleString()})` : '待登錄'}
+                                                </div>
+                                            </div>
+                                            <div class="bg-slate-900/90 border border-slate-800 rounded-lg px-2.5 py-1.5">
+                                                <div class="text-slate-400">🏛️ 中選會官方</div>
+                                                <div class="mt-0.5 font-bold ${ana.hasCec ? 'text-sky-300' : 'text-slate-500'}">
+                                                    ${ana.hasCec ? `${c.cecPct.toFixed(2)}% (${c.cecVotes.toLocaleString()})` : '待登錄'}
+                                                </div>
+                                            </div>
+                                            <div class="bg-slate-900/90 border border-slate-800 rounded-lg px-2.5 py-1.5">
+                                                <div class="text-slate-400">📊 選前模型</div>
+                                                <div class="mt-0.5 font-bold text-slate-300">
+                                                    ${c.modelPct.toFixed(1)}%
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+
+            /**
+             * (B/C/D) 單一數據源即時登錄編輯頁籤 HTML
+             */
+            function renderSourceEditorTabHTML(county, sourceKey, ana) {
+                const meta = {
+                    tvbs: { name: 'TVBS 即時報票', color: 'text-blue-300', border: 'border-blue-500/30', stats: ana.tvbs },
+                    ftv: { name: '民視 即時報票', color: 'text-emerald-300', border: 'border-emerald-500/30', stats: ana.ftv },
+                    cec: { name: '中選會官方登錄', color: 'text-sky-300', border: 'border-sky-500/30', stats: ana.cec }
+                }[sourceKey];
+
+                return `
+                    <div class="space-y-3.5">
+                        <div class="flex flex-wrap items-center justify-between gap-2 px-3.5 py-2.5 rounded-xl bg-slate-900 border ${meta.border} text-xs">
+                            <div class="font-bold ${meta.color}">
+                                正在登錄「${meta.name}」— 輸入票數立即自動換算百分率並同步至交叉分析
+                            </div>
+                            <div class="font-mono text-slate-300">
+                                累計總票數：<strong id="sourceTotalVotes" class="text-white text-sm">${meta.stats.totalVotes.toLocaleString()}</strong> 票
+                            </div>
+                        </div>
+
+                        <div class="space-y-2.5">
+                            ${county.candidates.map(c => {
+                                const pStyle = getPartyStyle(c.partyType);
+                                const vObj = meta.stats.byNum[c.num];
+                                return `
+                                    <div class="source-cand-row bg-[#162032] border border-slate-800 rounded-xl p-3.5 space-y-2.5" data-cand-num="${c.num}">
+                                        <div class="flex flex-wrap items-center justify-between gap-2">
+                                            <div class="flex items-center gap-2 min-w-0">
+                                                <span class="w-6 h-6 rounded-md bg-slate-900 border border-slate-700 text-slate-200 font-mono text-xs font-bold flex items-center justify-center shrink-0">${c.num}</span>
+                                                <span class="text-base font-bold text-white truncate" title="${escapeHTML(c.name)}">${escapeHTML(c.name)}</span>
+                                                <span class="px-2 py-0.5 rounded border text-[11px] font-bold shrink-0 ${pStyle.badge}">${escapeHTML(c.party)}</span>
+                                                ${c.incumbent ? '<span class="px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[10px] font-bold shrink-0">現任</span>' : ''}
+                                            </div>
+                                            <div class="flex items-center gap-3 ml-auto">
+                                                <div class="flex items-center gap-1.5">
+                                                    <input
+                                                        type="number"
+                                                        min="0"
+                                                        step="1"
+                                                        data-source="${sourceKey}"
+                                                        data-cand-num="${c.num}"
+                                                        value="${vObj.votes > 0 ? vObj.votes : ''}"
+                                                        placeholder="輸入票數"
+                                                        class="source-vote-input w-28 sm:w-32 bg-slate-900 border border-slate-700 focus:border-sky-400 rounded-lg px-2.5 py-1.5 text-right font-mono text-sm font-bold text-white focus:outline-none"
+                                                    >
+                                                    <span class="text-xs text-slate-400">票</span>
+                                                </div>
+                                                <div class="text-right min-w-[78px]">
+                                                    <span class="cand-pct-text text-xl font-mono font-bold ${vObj.pct > 0 ? pStyle.text : 'text-slate-500'}">${vObj.pct.toFixed(2)}%</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="w-full h-3 rounded-full bg-slate-900 overflow-hidden border border-slate-800">
+                                            <div class="cand-pct-bar h-full rounded-full transition-all duration-300 ${pStyle.bar}" style="width: ${Math.min(100, Math.max(0, vObj.pct))}%"></div>
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+
+            /**
+             * 綁定右側詳情面板內的互動事件（保持輸入焦點流暢）
+             */
+            function bindDetailPanelEvents(county) {
+                // 頁籤切換
+                detailPanelEl.querySelectorAll('button[data-tab]').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        state.activeTab = btn.getAttribute('data-tab');
+                        renderAll();
+                    });
+                });
+
+                // 手動投票率更新
+                const turnoutInput = document.getElementById('customTurnoutInput');
+                if (turnoutInput) {
+                    turnoutInput.addEventListener('input', e => {
+                        const cStore = ensureCountyStore(county.id);
+                        cStore.turnoutCustom = e.target.value;
+                        saveStore();
+                    });
+                    turnoutInput.addEventListener('change', () => {
+                        saveStore('投票率已儲存');
+                        renderDetailPanel();
+                    });
+                }
+
+                // 單源票數輸入（就地更新 DOM 不中斷游標焦點）
+                detailPanelEl.querySelectorAll('.source-vote-input').forEach(input => {
+                    input.addEventListener('input', e => {
+                        const sourceKey = e.target.getAttribute('data-source');
+                        const candNum = Number(e.target.getAttribute('data-cand-num'));
+                        const val = Math.max(0, parseInt(e.target.value, 10) || 0);
+
+                        const cStore = ensureCountyStore(county.id);
+                        cStore[sourceKey][candNum] = val;
+                        saveStore();
+
+                        // 局部更新本頁籤百分比、總票數，以及左側矩陣與頂部席次條
+                        const stats = computeSourceStats(county, sourceKey);
+                        const totalEl = document.getElementById('sourceTotalVotes');
+                        if (totalEl) totalEl.textContent = stats.totalVotes.toLocaleString();
+
+                        detailPanelEl.querySelectorAll('.source-cand-row').forEach(row => {
+                            const num = Number(row.getAttribute('data-cand-num'));
+                            const cObj = county.candidates.find(x => x.num === num);
+                            const pStyle = getPartyStyle(cObj.partyType);
+                            const pct = stats.byNum[num].pct;
+                            const pctEl = row.querySelector('.cand-pct-text');
+                            const barEl = row.querySelector('.cand-pct-bar');
+                            if (pctEl) {
+                                pctEl.textContent = `${pct.toFixed(2)}%`;
+                                pctEl.className = `cand-pct-text text-xl font-mono font-bold ${pct > 0 ? pStyle.text : 'text-slate-500'}`;
+                            }
+                            if (barEl) barEl.style.width = `${Math.min(100, Math.max(0, pct))}%`;
+                        });
+
+                        renderSeatBar();
+                        renderTileMap();
+                    });
+
+                    input.addEventListener('change', () => {
+                        saveStore('開票票數已同步儲存');
+                    });
+                });
+
+                // 重置按鈕開啟自訂 Modal
+                const openResetBtn = document.getElementById('openResetModalBtn');
+                if (openResetBtn) {
+                    openResetBtn.addEventListener('click', () => {
+                        resetModalEl.classList.remove('hidden');
+                        resetModalEl.classList.add('flex');
+                    });
+                }
+            }
+
+            function renderAll() {
+                renderSeatBar();
+                renderTileMap();
+                renderDetailPanel();
+            }
+
+            // ==================== 全域事件綁定 ====================
+
+            tileMapContainerEl.addEventListener('click', e => {
+                const btn = e.target.closest('button[data-county-id]');
+                if (!btn) return;
+                state.selectedCountyId = btn.getAttribute('data-county-id');
+                renderTileMap();
+                renderDetailPanel();
+                if (window.innerWidth < 1024) {
+                    detailPanelEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
             });
-            return;
-          }
 
-          if (currentCallSession || pendingIncomingCall) {
-            call.close();
-            return;
-          }
-          pendingIncomingCall = call;
-          const callerId = String(call.peer || '').replace(PEER_NS, '') || '匿名端點';
-          const mode = (call.metadata && call.metadata.mode) || 'audio';
-
-          const mainPass = document.getElementById('sharedPassphraseInput');
-          const incPass = document.getElementById('incomingPassphraseInput');
-          if (mainPass && incPass) incPass.value = mainPass.value;
-
-          sfx.startIncomingRing();
-          document.getElementById('incomingCallerIdText').textContent = callerId;
-          document.getElementById('incomingCallTypeTag').textContent =
-            mode === 'video' ? '📹 PQ-Hybrid 加密視訊來電' : '📞 PQ-Hybrid 加密語音來電';
-          document.getElementById('incomingCallModal').classList.remove('hidden');
-
-          // 監聽來電方在響鈴期間或通話期間直接掛斷
-          call.on('close', () => {
-            if (pendingIncomingCall === call) {
-              sfx.stopRing();
-              pendingIncomingCall = null;
-              document.getElementById('incomingCallModal').classList.add('hidden');
-              showCipherToast('📴', '對方已取消呼叫');
-            } else if (currentCallSession && activeMediaCall === call) {
-              showCipherToast('📴', '對方已結束通話');
-              terminateAndWipeCall(true);
-            }
-          });
-        });
-
-        peerObj.on('error', (err) => {
-          if (err && err.type === 'peer-unavailable') {
-            showCipherToast('📵', '對方目前離線或識別碼有誤');
-            if (currentCallSession && !currentCallSession.connected) {
-              terminateAndWipeCall(true);
-            }
-          } else {
-            updateSignalBadge(false, '信令重連中...');
-            setTimeout(() => {
-              if (peerObj && peerObj.disconnected && !peerObj.destroyed) {
-                try { peerObj.reconnect(); } catch (e) {}
-              }
-            }, 2500);
-          }
-        });
-
-        peerObj.on('disconnected', () => {
-          updateSignalBadge(false, '自動重連中...');
-          setTimeout(() => {
-            if (peerObj && peerObj.disconnected && !peerObj.destroyed) {
-              try { peerObj.reconnect(); } catch (e) {}
-            }
-          }, 2000);
-        });
-      } catch (e) {
-        updateSignalBadge(false, '離線模式');
-      }
-    }
-
-    /* ==========================================================================
-       8. 加密資料通道 + 8 秒看門狗心跳（徹底解決對方關閉網頁後我方未掛斷問題）
-       ========================================================================== */
-    let heartbeatInterval = null;
-    let lastRemoteHeartbeatTs = 0;
-
-    function startConnectionHeartbeat() {
-      stopConnectionHeartbeat();
-      lastRemoteHeartbeatTs = Date.now();
-      heartbeatInterval = setInterval(() => {
-        if (!currentCallSession) return;
-
-        // 1. 發送心跳包給對方
-        if (activeDataConn && activeDataConn.open) {
-          try {
-            activeDataConn.send({ type: 'HEARTBEAT_PING', ts: Date.now() });
-          } catch (e) {}
-
-          // 2. 檢查對方是否超過 8 秒無任何回應（例如對方直接關閉瀏覽器分頁或強制滑掉 App）
-          if (currentCallSession.connected && Date.now() - lastRemoteHeartbeatTs > 8500) {
-            showCipherToast('📴', '對方已離線或關閉程式，通話自動結束');
-            terminateAndWipeCall(true);
-            return;
-          }
-        }
-
-        // 3. 持續確保遠端音訊未被系統暫停
-        const remoteAudio = document.getElementById('remoteAudioEl');
-        if (remoteAudio && remoteAudio.srcObject && remoteAudio.paused) {
-          remoteAudio.muted = false;
-          remoteAudio.volume = remoteSpeakerVolume;
-          remoteAudio.play().catch(() => {});
-        }
-      }, 2500);
-    }
-
-    function stopConnectionHeartbeat() {
-      if (heartbeatInterval) {
-        clearInterval(heartbeatInterval);
-        heartbeatInterval = null;
-      }
-    }
-
-    function setupEncryptedDataChannel(conn, isResponder = false) {
-      if (!conn) return;
-      activeDataConn = conn;
-
-      conn.on('open', async () => {
-        lastRemoteHeartbeatTs = Date.now();
-        startConnectionHeartbeat();
-        if (!isResponder) {
-          const offerBundle = cryptoEngine.getPublicHandshakeBundle(null);
-          try { conn.send({ type: 'PQ_HANDSHAKE_OFFER', bundle: offerBundle }); } catch (e) {}
-        }
-      });
-
-      conn.on('close', () => {
-        if (currentCallSession) {
-          showCipherToast('📴', '對方已結束通話');
-          terminateAndWipeCall(true);
-        }
-      });
-
-      conn.on('data', async (msg) => {
-        if (!msg || typeof msg !== 'object') return;
-        lastRemoteHeartbeatTs = Date.now();
-
-        if (msg.type === 'HEARTBEAT_PING') {
-          try { conn.send({ type: 'HEARTBEAT_PONG', ts: Date.now() }); } catch (e) {}
-          return;
-        }
-        if (msg.type === 'HEARTBEAT_PONG') return;
-
-        if (msg.type === 'PQ_HANDSHAKE_OFFER' && msg.bundle) {
-          const pass = document.getElementById('sharedPassphraseInput')?.value || '';
-          const answerBundle = cryptoEngine.getPublicHandshakeBundle(msg.bundle);
-          try { conn.send({ type: 'PQ_HANDSHAKE_ANSWER', bundle: answerBundle }); } catch (e) {}
-
-          const sas = await cryptoEngine.deriveHybridSessionSecrets(msg.bundle, pass);
-          updateSasDisplay(sas.sasCode, sas.sasEmojis);
-          sfx.playHandshakeChime();
-          if (currentCallSession) {
-            clearTimeout(simulatedAnswerTimer);
-            currentCallSession.connected = true;
-            markCallEncryptedConnected();
-          }
-        } else if (msg.type === 'PQ_HANDSHAKE_ANSWER' && msg.bundle) {
-          clearTimeout(simulatedAnswerTimer);
-          if (currentCallSession) currentCallSession.connected = true;
-
-          const pass = document.getElementById('sharedPassphraseInput')?.value || '';
-          const sas = await cryptoEngine.deriveHybridSessionSecrets(msg.bundle, pass);
-          updateSasDisplay(sas.sasCode, sas.sasEmojis);
-          sfx.playHandshakeChime();
-          if (currentCallSession) markCallEncryptedConnected();
-        } else if (msg.type === 'AES_MSG' && msg.payload) {
-          const plain = await cryptoEngine.decryptText(msg.payload);
-          if (plain) appendEphemeralBubble('對方', plain, false);
-        } else if (msg.type === 'UPGRADE_VIDEO') {
-          upgradeToEncryptedVideo(true);
-        } else if (msg.type === 'DOWNGRADE_AUDIO') {
-          downgradeToEncryptedAudio(true);
-        } else if (msg.type === 'WIPE_HANGUP') {
-          showCipherToast('📴', '對方已掛斷通話');
-          terminateAndWipeCall(true);
-        }
-      });
-    }
-
-    async function renegotiatePassphrase() {
-      if (!cryptoEngine.remoteBundle) {
-        showCipherToast('⚠️', '尚未取得對方混合公鑰');
-        return;
-      }
-      const newPass = window.prompt('請輸入雙方約定的實體預共享暗號：', '');
-      if (newPass === null) return;
-      const passEl = document.getElementById('sharedPassphraseInput');
-      if (passEl) passEl.value = newPass;
-      const sas = await cryptoEngine.deriveHybridSessionSecrets(cryptoEngine.remoteBundle, newPass);
-      updateSasDisplay(sas.sasCode, sas.sasEmojis);
-      showCipherToast('🔑', '已更新實體暗號並重新派生後量子金鑰');
-    }
-
-    function updateSasDisplay(sasCode, sasEmojis) {
-      const emojiEl = document.getElementById('audioSasEmoji');
-      const hexEl = document.getElementById('audioSasHex');
-      const miniEl = document.getElementById('videoSasMini');
-      const auditEl = document.getElementById('auditSasFull');
-      if (emojiEl) emojiEl.textContent = sasEmojis;
-      if (hexEl) hexEl.textContent = sasCode;
-      if (miniEl) miniEl.textContent = `${sasEmojis} ${sasCode}`;
-      if (auditEl) auditEl.textContent = `${sasEmojis}  ${sasCode}`;
-    }
-
-    function markCallEncryptedConnected() {
-      const dot = document.getElementById('audioCallDot');
-      const island = document.getElementById('islandLabel');
-      if (dot) dot.className = 'w-2 h-2 rounded-full bg-emerald-400';
-      if (island) island.textContent = 'PQ-E2EE 加密通話中';
-
-      if (!timerInterval) {
-        timerInterval = setInterval(() => {
-          callDurationSec++;
-          const mm = String(Math.floor(callDurationSec / 60)).padStart(2, '0');
-          const ss = String(callDurationSec % 60).padStart(2, '0');
-          const fmt = `${mm}:${ss}`;
-          const aTimer = document.getElementById('audioCallTimerText');
-          const vTimer = document.getElementById('videoTimerText');
-          if (aTimer) aTimer.textContent = `PQ 加密通話 · ${fmt}`;
-          if (vTimer) vTimer.textContent = fmt;
-        }, 1000);
-      }
-    }
-
-    /* ==========================================================================
-       9. 通話建立、雙向音訊播放與掛斷清理
-       ========================================================================== */
-    let currentCallSession = null;
-    let secondaryVideoCall = null;
-    let callDurationSec = 0;
-    let timerInterval = null;
-    let simulatedAnswerTimer = null;
-    let isMuted = false;
-    let isCamHidden = false;
-    let isBlurMaskOn = false;
-    let pipCorner = 0;
-    let localMediaStream = null;
-    let videoLoopId = null;
-    let remoteAudioCtx = null;
-    let remoteMonitorInterval = null;
-    let demoLoopInterval = null;
-    let remoteSpeakerVolume = 0.50;
-
-    function setRemoteSpeakerVolume(val) {
-      const v = Math.max(0.1, Math.min(1.0, parseFloat(val) || 0.50));
-      remoteSpeakerVolume = v;
-      const pctText = `${Math.round(v * 100)}%`;
-      const remoteAudio = document.getElementById('remoteAudioEl');
-      if (remoteAudio) remoteAudio.volume = v;
-      const aSlider = document.getElementById('audioVolumeSlider');
-      const vSlider = document.getElementById('videoVolumeSlider');
-      const aLabel = document.getElementById('audioVolumeLabel');
-      const vLabel = document.getElementById('videoVolumeLabel');
-      if (aSlider) aSlider.value = v;
-      if (vSlider) vSlider.value = v;
-      if (aLabel) aLabel.textContent = pctText;
-      if (vLabel) vLabel.textContent = pctText;
-    }
-
-    function ensureAudioPlayback() {
-      sfx.ensure();
-      const remoteAudio = document.getElementById('remoteAudioEl');
-      if (remoteAudio) {
-        remoteAudio.muted = false;
-        remoteAudio.volume = remoteSpeakerVolume;
-        if (remoteAudio.srcObject) {
-          remoteAudio.play().catch(() => {});
-        }
-      }
-    }
-
-    function refreshDialUI() {
-      const inputEl = document.getElementById('dialDisplayInput');
-      const hintEl = document.getElementById('dialStatusHint');
-      const val = (inputEl?.value || '').trim();
-      if (!hintEl) return;
-      if (val.length === 0) hintEl.textContent = 'RAM-Only 揮發識別碼已就緒';
-      else if (val === 'DEMO_ECHO_888888888888') hintEl.textContent = '🎧 已選擇 ML-KEM-1024 測試專線';
-      else if (/^[1-9A-HJ-NP-Za-km-z]{22}$/.test(val)) hintEl.textContent = '✅ 有效的 128-bit Base58 識別碼';
-      else hintEl.textContent = `輸入中 (${val.length}/22 字元)`;
-    }
-
-    async function pasteTargetId() {
-      try {
-        const text = await navigator.clipboard.readText();
-        if (text) {
-          document.getElementById('dialDisplayInput').value = text.trim();
-          refreshDialUI();
-        }
-      } catch (e) {
-        showCipherToast('⚠️', '請長按輸入框手動貼上');
-      }
-    }
-
-    function clearTargetId() {
-      document.getElementById('dialDisplayInput').value = '';
-      refreshDialUI();
-    }
-
-    function quickDial(targetId, mode) {
-      document.getElementById('dialDisplayInput').value = targetId;
-      refreshDialUI();
-      initiateEncryptedCall(mode);
-    }
-
-    async function initiateEncryptedCall(mode) {
-      ensureAudioPlayback();
-      const targetId = (document.getElementById('dialDisplayInput')?.value || '').trim();
-      if (!targetId) {
-        showCipherToast('⚠️', '請先輸入或貼上對方的 128-bit Base58 識別碼');
-        return;
-      }
-      if (targetId === myAnonNumber) {
-        showCipherToast('⚠️', '無法撥打給自己的識別碼');
-        return;
-      }
-
-      const targetInfo = {
-        number: targetId,
-        name: targetId === 'DEMO_ECHO_888888888888' ? '🎧 ML-KEM-1024 測試台' : `終端 ${targetId.slice(0, 6)}...${targetId.slice(-4)}`,
-        avatar: '🛡️'
-      };
-
-      currentCallSession = { targetInfo, mode, connected: false };
-      callDurationSec = 0;
-      isMuted = false;
-      isCamHidden = false;
-      updateMuteButtonUI();
-
-      const island = document.getElementById('dynamicIsland');
-      island.classList.add('expanded');
-      document.getElementById('islandLabel').textContent = 'PQ 混合交握中...';
-
-      const stream = await captureLocalStream(mode === 'video');
-      if (mode === 'audio') openAudioOverlay(targetInfo);
-      else openVideoOverlay(targetInfo);
-
-      if (targetId === 'DEMO_ECHO_888888888888') {
-        clearTimeout(simulatedAnswerTimer);
-        simulatedAnswerTimer = setTimeout(async () => {
-          if (!currentCallSession) return;
-          currentCallSession.connected = true;
-          updateSasDisplay('MLKEM1024', '🛡️🧬⚡🔐');
-          sfx.playHandshakeChime();
-          markCallEncryptedConnected();
-          startDemoAudioExperience();
-          showCipherToast('🎧', 'ML-KEM-1024 + X25519 測試專線已接通');
-        }, 900);
-        return;
-      }
-
-      if (peerObj && isNetworkReady) {
-        try {
-          const remotePeerId = `${PEER_NS}${targetId}`;
-          const conn = peerObj.connect(remotePeerId, { reliable: true });
-          setupEncryptedDataChannel(conn, false);
-
-          const call = peerObj.call(remotePeerId, stream, {
-            metadata: { mode, callerId: myAnonNumber }
-          });
-
-          if (call) {
-            activeMediaCall = call;
-            bindPeerConnectionTrackListeners(call);
-
-            call.on('stream', (remoteStream) => {
-              clearTimeout(simulatedAnswerTimer);
-              sfx.stopRing();
-              currentCallSession.connected = true;
-              startConnectionHeartbeat();
-              attachRemoteMedia(remoteStream, currentCallSession.mode);
-              markCallEncryptedConnected();
+            cancelResetBtn.addEventListener('click', () => {
+                resetModalEl.classList.add('hidden');
+                resetModalEl.classList.remove('flex');
             });
 
-            call.on('close', () => {
-              if (currentCallSession && activeMediaCall === call) {
-                showCipherToast('📴', currentCallSession.connected ? '對方已結束通話' : '對方未接聽');
-                terminateAndWipeCall(true);
-              }
+            confirmResetBtn.addEventListener('click', () => {
+                state.liveStore = getDefaultLiveStore();
+                saveStore('已重置為 16:15 預設快訊');
+                resetModalEl.classList.add('hidden');
+                resetModalEl.classList.remove('flex');
+                renderAll();
             });
 
-            clearTimeout(simulatedAnswerTimer);
-            simulatedAnswerTimer = setTimeout(() => {
-              if (currentCallSession && !currentCallSession.connected) {
-                showCipherToast('⏰', '對方超過 60 秒未接聽');
-                terminateAndWipeCall(false);
-              }
-            }, 60000);
-          }
-        } catch (e) {}
-      } else {
-        showCipherToast('⚠️', '信令尚未就緒，或可使用「無伺服器直連」');
-      }
-    }
-
-    async function acceptIncomingCall() {
-      if (!pendingIncomingCall) return;
-      ensureAudioPlayback();
-      sfx.stopRing();
-      document.getElementById('incomingCallModal').classList.add('hidden');
-
-      const incPass = document.getElementById('incomingPassphraseInput');
-      const mainPass = document.getElementById('sharedPassphraseInput');
-      if (incPass && mainPass) mainPass.value = incPass.value;
-
-      const call = pendingIncomingCall;
-      pendingIncomingCall = null;
-      const callerId = String(call.peer || '').replace(PEER_NS, '') || '匿名端點';
-      const mode = (call.metadata && call.metadata.mode) || 'audio';
-
-      const targetInfo = {
-        number: callerId,
-        name: `終端 ${callerId.slice(0, 6)}...${callerId.slice(-4)}`,
-        avatar: '🛡️'
-      };
-
-      currentCallSession = { targetInfo, mode, connected: true };
-      activeMediaCall = call;
-      callDurationSec = 0;
-      isMuted = false;
-      isCamHidden = false;
-      updateMuteButtonUI();
-
-      // 接聽端也綁定 close 事件，確保發起方掛斷時接聽端立刻同步結束
-      call.on('close', () => {
-        if (currentCallSession && activeMediaCall === call) {
-          showCipherToast('📴', '對方已結束通話');
-          terminateAndWipeCall(true);
-        }
-      });
-
-      const stream = await captureLocalStream(mode === 'video');
-      if (mode === 'audio') openAudioOverlay(targetInfo);
-      else openVideoOverlay(targetInfo);
-      markCallEncryptedConnected();
-      startConnectionHeartbeat();
-
-      call.answer(stream);
-      bindPeerConnectionTrackListeners(call);
-      call.on('stream', (remoteStream) => {
-        attachRemoteMedia(remoteStream, currentCallSession ? currentCallSession.mode : mode);
-      });
-    }
-
-    function rejectIncomingCall() {
-      sfx.stopRing();
-      document.getElementById('incomingCallModal').classList.add('hidden');
-      if (pendingIncomingCall) {
-        try { pendingIncomingCall.close(); } catch (e) {}
-        pendingIncomingCall = null;
-      }
-      if (activeDataConn && activeDataConn.open) {
-        activeDataConn.send({ type: 'WIPE_HANGUP' });
-      }
-    }
-
-    function bindPeerConnectionTrackListeners(call) {
-      if (!call || !call.peerConnection) return;
-      const pc = call.peerConnection;
-      pc.ontrack = (event) => {
-        const stream = (event.streams && event.streams[0]) || new MediaStream([event.track]);
-        if (event.track && event.track.kind === 'video' && currentCallSession) {
-          currentCallSession.mode = 'video';
-          openVideoOverlay(currentCallSession.targetInfo);
-        }
-        attachRemoteMedia(stream, currentCallSession ? currentCallSession.mode : 'video');
-      };
-      pc.oniceconnectionstatechange = () => {
-        const state = pc.iceConnectionState;
-        if (state === 'disconnected' || state === 'failed' || state === 'closed') {
-          if (currentCallSession) {
-            showCipherToast('📴', '對方已斷線或結束通話');
-            terminateAndWipeCall(true);
-          }
-        }
-      };
-      pc.onconnectionstatechange = () => {
-        const state = pc.connectionState;
-        if (state === 'disconnected' || state === 'failed' || state === 'closed') {
-          if (currentCallSession) {
-            showCipherToast('📴', '通話連線已終止');
-            terminateAndWipeCall(true);
-          }
-        }
-      };
-    }
-
-    function openAudioOverlay(targetInfo) {
-      document.getElementById('videoCallOverlay').classList.add('hidden');
-      document.getElementById('audioCallOverlay').classList.remove('hidden');
-      document.getElementById('audioPeerTitle').textContent = targetInfo.name;
-      document.getElementById('audioCallTimerText').textContent = '正在建立雙層加密通道...';
-      document.getElementById('audioCallDot').className = 'w-2 h-2 rounded-full bg-amber-400 animate-pulse';
-    }
-
-    async function upgradeToEncryptedVideo(fromRemote = false) {
-      if (!currentCallSession) return;
-      currentCallSession.mode = 'video';
-      currentCallSession.connected = true;
-      await openVideoOverlay(currentCallSession.targetInfo);
-      markCallEncryptedConnected();
-
-      if (!fromRemote && activeDataConn && activeDataConn.open) {
-        activeDataConn.send({ type: 'UPGRADE_VIDEO' });
-      }
-
-      if (peerObj && isNetworkReady && currentCallSession.targetInfo && localMediaStream) {
-        const videoTracks = localMediaStream.getVideoTracks();
-        if (videoTracks.length > 0 && !fromRemote) {
-          try {
-            if (secondaryVideoCall) {
-              try { secondaryVideoCall.close(); } catch (e) {}
-            }
-            const remotePeerId = `${PEER_NS}${currentCallSession.targetInfo.number}`;
-            const vCall = peerObj.call(remotePeerId, new MediaStream(videoTracks), {
-              metadata: { type: 'VIDEO_STREAM_UPGRADE', mode: 'video', callerId: myAnonNumber }
-            });
-            if (vCall) {
-              secondaryVideoCall = vCall;
-              vCall.on('stream', (remoteStream) => attachRemoteMedia(remoteStream, 'video'));
-            }
-          } catch (e) {}
-        }
-      }
-    }
-
-    function downgradeToEncryptedAudio(fromRemote = false) {
-      if (!currentCallSession) return;
-      currentCallSession.mode = 'audio';
-      if (!fromRemote && activeDataConn && activeDataConn.open) {
-        activeDataConn.send({ type: 'DOWNGRADE_AUDIO' });
-      }
-      if (secondaryVideoCall) {
-        try { secondaryVideoCall.close(); } catch (e) {}
-        secondaryVideoCall = null;
-      }
-      if (localMediaStream) {
-        localMediaStream.getVideoTracks().forEach(t => {
-          t.stop();
-          localMediaStream.removeTrack(t);
-        });
-      }
-      stopVideoLoop();
-      const rv = document.getElementById('remoteVideoEl');
-      if (rv) {
-        rv.srcObject = null;
-        rv.classList.add('hidden');
-      }
-      openAudioOverlay(currentCallSession.targetInfo);
-      markCallEncryptedConnected();
-    }
-
-    async function sendEphemeralMessage() {
-      const inp = document.getElementById('ephemeralMsgInput');
-      const text = inp.value.trim();
-      if (!text) return;
-      inp.value = '';
-
-      if (!cryptoEngine.sharedAesKey) {
-        showCipherToast('⚠️', '請等待加密交握完成');
-        return;
-      }
-
-      appendEphemeralBubble('我方', text, false);
-      if (activeDataConn && activeDataConn.open) {
-        const encryptedPayload = await cryptoEngine.encryptText(text);
-        activeDataConn.send({ type: 'AES_MSG', payload: encryptedPayload });
-      }
-    }
-
-    function appendEphemeralBubble(sender, text, isSys) {
-      const feed = document.getElementById('ephemeralChatFeed');
-      if (!feed) return;
-      const row = document.createElement('div');
-      row.className = isSys
-        ? 'text-emerald-400/90 text-[10px]'
-        : 'flex items-center justify-between bg-white/5 rounded-lg px-2 py-1 text-slate-200 transition-opacity duration-500';
-      if (isSys) {
-        row.textContent = `🛡️ ${text}`;
-      } else {
-        row.innerHTML = `<span class="truncate"><strong class="text-emerald-300">${sender}：</strong>${escapeHtml(text)}</span><span class="text-[9px] text-amber-400 shrink-0 ml-1">🔥10s</span>`;
-        setTimeout(() => {
-          row.style.opacity = '0';
-          setTimeout(() => row.remove(), 500);
-        }, 10000);
-      }
-      feed.appendChild(row);
-      feed.scrollTop = feed.scrollHeight;
-    }
-
-    function escapeHtml(str) {
-      return str.replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
-    }
-
-    async function terminateAndWipeCall(fromRemote = false) {
-      sfx.stopRing();
-      stopConnectionHeartbeat();
-      clearInterval(timerInterval);
-      clearTimeout(simulatedAnswerTimer);
-      stopDemoAudioLoop();
-      stopMicLevelMonitor();
-      stopRemoteAudioBridge();
-      timerInterval = null;
-      currentCallSession = null;
-
-      if (!fromRemote && activeDataConn && activeDataConn.open) {
-        try { activeDataConn.send({ type: 'WIPE_HANGUP' }); } catch (e) {}
-      }
-      if (activeDataConn) {
-        try { activeDataConn.close(); } catch (e) {}
-        activeDataConn = null;
-      }
-      if (activeMediaCall) {
-        try { activeMediaCall.close(); } catch (e) {}
-        activeMediaCall = null;
-      }
-      if (secondaryVideoCall) {
-        try { secondaryVideoCall.close(); } catch (e) {}
-        secondaryVideoCall = null;
-      }
-      if (manualOfflinePc) {
-        try { manualOfflinePc.close(); } catch (e) {}
-        manualOfflinePc = null;
-      }
-
-      releaseMediaTracks();
-      stopVideoLoop();
-
-      cryptoEngine.wipeKeys();
-      await cryptoEngine.generateEphemeralKeys();
-
-      const remoteAudio = document.getElementById('remoteAudioEl');
-      if (remoteAudio) {
-        remoteAudio.pause();
-        remoteAudio.srcObject = null;
-      }
-      const remoteVid = document.getElementById('remoteVideoEl');
-      if (remoteVid) {
-        remoteVid.srcObject = null;
-        remoteVid.classList.add('hidden');
-      }
-      const remoteCanvas = document.getElementById('remoteVideoCanvas');
-      if (remoteCanvas) remoteCanvas.classList.remove('hidden');
-
-      document.getElementById('incomingCallModal').classList.add('hidden');
-      document.getElementById('audioCallOverlay').classList.add('hidden');
-      document.getElementById('videoCallOverlay').classList.add('hidden');
-      document.getElementById('dynamicIsland').classList.remove('expanded');
-      document.getElementById('islandLabel').textContent = 'ML-KEM-1024';
-
-      if (!fromRemote) showCipherToast('📴', '通話已掛斷並覆寫金鑰緩衝區');
-    }
-
-    function stopDemoAudioLoop() {
-      if (demoLoopInterval) {
-        clearInterval(demoLoopInterval);
-        demoLoopInterval = null;
-      }
-    }
-
-    function startDemoAudioExperience() {
-      stopDemoAudioLoop();
-      sfx.ensure();
-      const statusPill = document.getElementById('audioTrackStatusPill');
-      if (statusPill) statusPill.textContent = '🎧 演示模式：ML-KEM-1024 雙層測試';
-      const playDemoVoiceTone = () => {
-        if (!currentCallSession || currentCallSession.targetInfo.number !== 'DEMO_ECHO_888888888888') return;
-        const vol = 0.12 * remoteSpeakerVolume;
-        sfx.playTone(523.25, 0.16, 'sine', vol);
-        setTimeout(() => sfx.playTone(659.25, 0.16, 'sine', vol), 170);
-        setTimeout(() => sfx.playTone(783.99, 0.24, 'sine', vol), 340);
-      };
-      playDemoVoiceTone();
-      demoLoopInterval = setInterval(playDemoVoiceTone, 3200);
-    }
-
-    function stopRemoteAudioBridge() {
-      if (remoteMonitorInterval) {
-        clearInterval(remoteMonitorInterval);
-        remoteMonitorInterval = null;
-      }
-      if (remoteAudioCtx) {
-        try { remoteAudioCtx.close(); } catch (e) {}
-        remoteAudioCtx = null;
-      }
-      const rBar = document.getElementById('remoteLevelBar');
-      if (rBar) rBar.style.width = '0%';
-    }
-
-    let micMonitorInterval = null;
-    let micAnalyserCtx = null;
-
-    function startMicLevelMonitor(stream) {
-      stopMicLevelMonitor();
-      if (!stream || stream.getAudioTracks().length === 0) return;
-      try {
-        const AC = window.AudioContext || window.webkitAudioContext;
-        if (!AC) return;
-        micAnalyserCtx = new AC();
-        const src = micAnalyserCtx.createMediaStreamSource(stream);
-        const analyser = micAnalyserCtx.createAnalyser();
-        analyser.fftSize = 64;
-        src.connect(analyser);
-        const data = new Uint8Array(analyser.frequencyBinCount);
-        micMonitorInterval = setInterval(() => {
-          analyser.getByteFrequencyData(data);
-          let sum = 0;
-          for (let i = 0; i < data.length; i++) sum += data[i];
-          const avg = sum / data.length;
-          const pct = Math.min(100, Math.round((avg / 90) * 100));
-          const bar = document.getElementById('micLevelBar');
-          if (bar) bar.style.width = `${isMuted ? 0 : pct}%`;
-        }, 80);
-      } catch (e) {}
-    }
-
-    function stopMicLevelMonitor() {
-      if (micMonitorInterval) {
-        clearInterval(micMonitorInterval);
-        micMonitorInterval = null;
-      }
-      if (micAnalyserCtx) {
-        try { micAnalyserCtx.close(); } catch (e) {}
-        micAnalyserCtx = null;
-      }
-      const bar = document.getElementById('micLevelBar');
-      if (bar) bar.style.width = '0%';
-    }
-
-    async function captureLocalStream(withVideo) {
-      releaseMediaTracks();
-      const statusPill = document.getElementById('audioTrackStatusPill');
-      try {
-        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-          localMediaStream = await navigator.mediaDevices.getUserMedia({
-            video: withVideo ? { facingMode: 'user', width: { ideal: 480 }, height: { ideal: 640 } } : false,
-            audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
-          });
-          localMediaStream.getAudioTracks().forEach(t => (t.enabled = !isMuted));
-          startMicLevelMonitor(localMediaStream);
-          if (statusPill) statusPill.textContent = '🎙️ 麥克風收音正常';
-          return localMediaStream;
-        }
-      } catch (e) {
-        if (statusPill) statusPill.textContent = '⚠️ 無法取得麥克風權限';
-      }
-      const canvas = document.getElementById('localVirtualCanvas');
-      if (canvas && canvas.captureStream) {
-        localMediaStream = canvas.captureStream(24);
-        return localMediaStream;
-      }
-      return new MediaStream();
-    }
-
-    function releaseMediaTracks() {
-      if (localMediaStream) {
-        localMediaStream.getTracks().forEach(t => t.stop());
-        localMediaStream = null;
-      }
-    }
-
-    function attachRemoteMedia(stream, mode) {
-      if (!stream) return;
-      const audioTracks = stream.getAudioTracks();
-      const statusPill = document.getElementById('audioTrackStatusPill');
-      if (audioTracks.length > 0) {
-        audioTracks.forEach(t => (t.enabled = true));
-        const audioOnlyStream = new MediaStream(audioTracks);
-        const remoteAudio = document.getElementById('remoteAudioEl');
-        if (remoteAudio) {
-          remoteAudio.srcObject = audioOnlyStream;
-          remoteAudio.muted = false;
-          remoteAudio.volume = remoteSpeakerVolume;
-          const tryPlay = () => {
-            remoteAudio.play().then(() => {
-              if (statusPill) statusPill.textContent = '🔊 雙向語音已接通';
-            }).catch(() => {
-              if (statusPill) statusPill.textContent = '⚠️ 請點擊畫面啟用聲音播放';
-            });
-          };
-          tryPlay();
-          setTimeout(tryPlay, 300);
-          setTimeout(tryPlay, 1000);
-        }
-        stopRemoteAudioBridge();
-        try {
-          const AC = window.AudioContext || window.webkitAudioContext;
-          if (AC) {
-            remoteAudioCtx = new AC();
-            if (remoteAudioCtx.state === 'suspended') remoteAudioCtx.resume().catch(() => {});
-            const source = remoteAudioCtx.createMediaStreamSource(audioOnlyStream);
-            const analyser = remoteAudioCtx.createAnalyser();
-            analyser.fftSize = 64;
-            const freqData = new Uint8Array(analyser.frequencyBinCount);
-            source.connect(analyser);
-            remoteMonitorInterval = setInterval(() => {
-              analyser.getByteFrequencyData(freqData);
-              let sum = 0;
-              for (let i = 0; i < freqData.length; i++) sum += freqData[i];
-              const pct = Math.min(100, Math.round(((sum / freqData.length) / 45) * 100));
-              const rBar = document.getElementById('remoteLevelBar');
-              if (rBar) rBar.style.width = `${pct}%`;
-            }, 80);
-          }
-        } catch (e) {}
-      }
-
-      if (stream.getVideoTracks().length > 0) {
-        if (currentCallSession && currentCallSession.mode !== 'video') {
-          currentCallSession.mode = 'video';
-          openVideoOverlay(currentCallSession.targetInfo);
-        }
-        const rv = document.getElementById('remoteVideoEl');
-        rv.srcObject = stream;
-        rv.muted = true;
-        rv.play().catch(() => {});
-        rv.classList.remove('hidden');
-        document.getElementById('remoteVideoCanvas').classList.add('hidden');
-      }
-    }
-
-    async function openVideoOverlay(targetInfo) {
-      document.getElementById('audioCallOverlay').classList.add('hidden');
-      document.getElementById('videoCallOverlay').classList.remove('hidden');
-      document.getElementById('videoPeerTitle').textContent = targetInfo.name;
-      startVideoLoop(targetInfo);
-      const videoEl = document.getElementById('localVideoEl');
-      const vCanvas = document.getElementById('localVirtualCanvas');
-      if (localMediaStream && localMediaStream.getVideoTracks().length > 0) {
-        videoEl.srcObject = localMediaStream;
-        videoEl.classList.remove('hidden');
-        vCanvas.classList.add('hidden');
-        return;
-      }
-      try {
-        const cam = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false });
-        if (!localMediaStream) localMediaStream = cam;
-        else cam.getVideoTracks().forEach(t => localMediaStream.addTrack(t));
-        videoEl.srcObject = localMediaStream;
-        videoEl.classList.remove('hidden');
-        vCanvas.classList.add('hidden');
-      } catch (e) {
-        videoEl.classList.add('hidden');
-        vCanvas.classList.remove('hidden');
-      }
-    }
-
-    function updateMuteButtonUI() {
-      const btn = document.getElementById('audioMuteBtn');
-      const txt = document.getElementById('audioMuteBtnText');
-      if (btn && txt) {
-        if (isMuted) {
-          btn.classList.add('!bg-amber-500/30', '!border-amber-400/50', '!text-amber-200');
-          txt.textContent = '已靜音';
-        } else {
-          btn.classList.remove('!bg-amber-500/30', '!border-amber-400/50', '!text-amber-200');
-          txt.textContent = '靜音';
-        }
-      }
-    }
-
-    function toggleMuteAudio() {
-      isMuted = !isMuted;
-      if (localMediaStream) localMediaStream.getAudioTracks().forEach(t => (t.enabled = !isMuted));
-      updateMuteButtonUI();
-      showCipherToast('🎙️', isMuted ? '麥克風已靜音' : '麥克風已恢復');
-    }
-
-    function toggleVideoVisibility() {
-      isCamHidden = !isCamHidden;
-      const mask = document.getElementById('pipMaskedOverlay');
-      if (localMediaStream) localMediaStream.getVideoTracks().forEach(t => (t.enabled = !isCamHidden));
-      mask.classList.toggle('hidden', !isCamHidden);
-    }
-
-    function togglePrivacyBlurMask() {
-      isBlurMaskOn = !isBlurMaskOn;
-      document.getElementById('localVideoEl').classList.toggle('filter-privacy-blur', isBlurMaskOn);
-      document.getElementById('localVirtualCanvas').classList.toggle('filter-privacy-blur', isBlurMaskOn);
-    }
-
-    function cyclePipCorner() {
-      const pip = document.getElementById('pipBox');
-      pipCorner = (pipCorner + 1) % 4;
-      pip.classList.remove('bottom-24', 'top-16', 'right-4', 'left-4');
-      if (pipCorner === 0) pip.classList.add('bottom-24', 'right-4');
-      if (pipCorner === 1) pip.classList.add('top-16', 'right-4');
-      if (pipCorner === 2) pip.classList.add('top-16', 'left-4');
-      if (pipCorner === 3) pip.classList.add('bottom-24', 'left-4');
-    }
-
-    function startVideoLoop(targetInfo) {
-      stopVideoLoop();
-      const rCanvas = document.getElementById('remoteVideoCanvas');
-      const lCanvas = document.getElementById('localVirtualCanvas');
-      const rCtx = rCanvas.getContext('2d');
-      const lCtx = lCanvas.getContext('2d');
-      let phase = 0;
-      function render() {
-        phase += 0.03;
-        rCanvas.width = rCanvas.clientWidth || 380;
-        rCanvas.height = rCanvas.clientHeight || 800;
-        lCanvas.width = lCanvas.clientWidth || 112;
-        lCanvas.height = lCanvas.clientHeight || 160;
-        rCtx.fillStyle = '#040d14';
-        rCtx.fillRect(0, 0, rCanvas.width, rCanvas.height);
-        rCtx.font = '56px sans-serif';
-        rCtx.textAlign = 'center';
-        rCtx.textBaseline = 'middle';
-        rCtx.fillText(targetInfo.avatar || '🛡️', rCanvas.width / 2, rCanvas.height * 0.43);
-        lCtx.fillStyle = '#091520';
-        lCtx.fillRect(0, 0, lCanvas.width, lCanvas.height);
-        lCtx.font = '32px sans-serif';
-        lCtx.textAlign = 'center';
-        lCtx.textBaseline = 'middle';
-        lCtx.fillText('🕵️', lCanvas.width / 2, lCanvas.height * 0.45);
-        videoLoopId = requestAnimationFrame(render);
-      }
-      render();
-    }
-
-    function stopVideoLoop() {
-      if (videoLoopId) {
-        cancelAnimationFrame(videoLoopId);
-        videoLoopId = null;
-      }
-    }
-
-    function copyTextSafe(text) {
-      const ta = document.createElement('textarea');
-      ta.value = text;
-      ta.style.position = 'fixed';
-      ta.style.opacity = '0';
-      document.body.appendChild(ta);
-      ta.select();
-      try { document.execCommand('copy'); } catch (e) {}
-      document.body.removeChild(ta);
-    }
-
-    function copyAnonNumber() {
-      copyTextSafe(myAnonNumber);
-      showCipherToast('📋', '已複製揮發 128-bit Base58 識別碼');
-    }
-
-    function togglePassphraseVisibility() {
-      const inp = document.getElementById('sharedPassphraseInput');
-      inp.type = inp.type === 'password' ? 'text' : 'password';
-    }
-
-    function toggleFullScreenMode() {
-      const docEl = document.documentElement;
-      const isFs = document.fullscreenElement || document.webkitFullscreenElement || document.body.classList.contains('is-fullscreen');
-      if (!isFs) {
-        document.body.classList.add('is-fullscreen');
-        if (docEl.requestFullscreen) docEl.requestFullscreen().catch(() => {});
-      } else {
-        document.body.classList.remove('is-fullscreen');
-        if (document.exitFullscreen && document.fullscreenElement) document.exitFullscreen().catch(() => {});
-      }
-    }
-
-    let toastTimer = null;
-    function showCipherToast(icon, msg) {
-      const el = document.getElementById('cipherToast');
-      document.getElementById('cipherToastIcon').textContent = icon;
-      document.getElementById('cipherToastMsg').textContent = msg;
-      el.classList.remove('opacity-0', '-translate-y-2');
-      el.classList.add('opacity-100', 'translate-y-0');
-      clearTimeout(toastTimer);
-      toastTimer = setTimeout(() => {
-        el.classList.add('opacity-0', '-translate-y-2');
-        el.classList.remove('opacity-100', 'translate-y-0');
-      }, 2500);
-    }
-
-    let calcCurrent = '0', calcPrev = null, calcOp = null, calcResetNext = false;
-    function activateStealthScreen() { document.getElementById('stealthCalculatorOverlay').classList.remove('hidden'); }
-    function deactivateStealthScreen() { document.getElementById('stealthCalculatorOverlay').classList.add('hidden'); }
-    function calcInput(val) {
-      const disp = document.getElementById('calcDisplayText');
-      const hist = document.getElementById('calcHistoryText');
-      if (val === 'C') { calcCurrent = '0'; calcPrev = null; calcOp = null; calcResetNext = false; hist.textContent = '0'; }
-      else if (val === '+/-') calcCurrent = String(parseFloat(calcCurrent) * -1);
-      else if (val === '%') calcCurrent = String(parseFloat(calcCurrent) / 100);
-      else if (['+', '-', '*', '/'].includes(val)) { calcPrev = parseFloat(calcCurrent); calcOp = val; calcResetNext = true; hist.textContent = `${calcPrev} ${val}`; }
-      else if (val === '=') {
-        if (calcCurrent === '1337') { deactivateStealthScreen(); return; }
-        if (calcOp && calcPrev !== null) {
-          const cur = parseFloat(calcCurrent);
-          let res = cur;
-          if (calcOp === '+') res = calcPrev + cur;
-          if (calcOp === '-') res = calcPrev - cur;
-          if (calcOp === '*') res = calcPrev * cur;
-          if (calcOp === '/') res = cur !== 0 ? calcPrev / cur : 0;
-          hist.textContent = `${calcPrev} ${calcOp} ${cur} =`;
-          calcCurrent = String(Number(res.toFixed(8)));
-          calcOp = null; calcPrev = null; calcResetNext = true;
-        }
-      } else {
-        if (calcResetNext) { calcCurrent = val === '.' ? '0.' : val; calcResetNext = false; }
-        else {
-          if (val === '.' && calcCurrent.includes('.')) return;
-          calcCurrent = calcCurrent === '0' && val !== '.' ? val : calcCurrent + val;
-        }
-      }
-      disp.textContent = calcCurrent;
-    }
-
-    function updateClock() {
-      const d = new Date();
-      document.getElementById('sysClock').textContent = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
-    }
-    setInterval(updateClock, 1000);
-    updateClock();
-
-    window.addEventListener('DOMContentLoaded', async () => {
-      initVolatileIdentity();
-      await cryptoEngine.generateEphemeralKeys();
-      initSecurePeerNode();
-    });
-  </script>
+            // ==================== 初始化 ====================
+            loadStore();
+            updateClock();
+            setInterval(updateClock, 1000);
+            renderAll();
+        })();
+    </script>
 </body>
 </html>
