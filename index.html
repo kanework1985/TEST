@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2026 九合一大選・多源即時開票戰情室（TVBS × 民視 × 中選會）</title>
-    <!-- 載入字體：Noto Sans TC、Inter、JetBrains Mono -->
+    <title>2026 九合一大選・全自動輪詢開票戰情室（TVBS × 民視 × 中選會）</title>
+    <!-- 載入 Noto Sans TC、Inter 與 JetBrains Mono 字體 -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
@@ -24,135 +24,183 @@
         }
     </script>
     <style>
-        /* 深色戰情室專屬微調樣式 */
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #0b1120;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #334155;
-            border-radius: 9999px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #475569;
-        }
+        /* 深色戰情室自訂捲軸與霓虹特效 */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #020617; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 9999px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+        .tabular-nums { font-variant-numeric: tabular-nums; }
         .tile-active {
-            box-shadow: 0 0 0 2px #38bdf8, 0 0 20px rgba(56, 189, 248, 0.35);
+            box-shadow: 0 0 0 2px #38bdf8, 0 0 22px rgba(56, 189, 248, 0.35);
         }
-        .neon-panel {
-            background: linear-gradient(180deg, rgba(17, 24, 39, 0.96) 0%, rgba(11, 17, 32, 0.98) 100%);
+        .warroom-card {
+            background: linear-gradient(180deg, rgba(15, 23, 42, 0.96) 0%, rgba(2, 6, 23, 0.98) 100%);
         }
-        /* 移除數字輸入框預設箭頭 */
+        @keyframes valueFlash {
+            0% { background-color: rgba(16, 185, 129, 0.35); transform: scale(1.04); }
+            100% { background-color: transparent; transform: scale(1); }
+        }
+        .flash-update {
+            animation: valueFlash 0.9s ease-out;
+        }
         input[type=number]::-webkit-inner-spin-button,
         input[type=number]::-webkit-outer-spin-button {
             -webkit-appearance: none;
             margin: 0;
         }
-        input[type=number] {
-            -moz-appearance: textfield;
-        }
+        input[type=number] { -moz-appearance: textfield; }
     </style>
 </head>
-<body class="bg-[#0b1120] text-slate-100 antialiased min-h-screen flex flex-col selection:bg-sky-500/30 selection:text-sky-200">
+<body class="bg-slate-950 text-slate-100 antialiased min-h-screen flex flex-col selection:bg-sky-500/30 selection:text-sky-200">
 
-    <!-- ==================== 1. 頂部戰情列 (War Room Header) ==================== -->
-    <header class="sticky top-0 z-30 bg-[#0b1120]/95 backdrop-blur-md border-b border-sky-500/20 shadow-2xl">
-        <div class="max-w-[1480px] mx-auto px-4 sm:px-6 py-3 space-y-2.5">
+    <!-- ==================== 1. 頂部戰情列與全自動更新控制台 ==================== -->
+    <header class="sticky top-0 z-30 bg-slate-950/95 backdrop-blur-md border-b border-sky-500/20 shadow-2xl">
+        <div class="max-w-[1520px] mx-auto px-4 sm:px-6 py-3 space-y-2.5">
 
-            <!-- 第一列：標題、LIVE 紅燈、UTC+8 時鐘、媒體傳送門 -->
+            <!-- 第一列：戰情室標題、即時時鐘、工具按鈕、媒體官方傳送門 -->
             <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-2.5">
                 <div class="flex items-center flex-wrap gap-2.5">
                     <div class="flex items-center gap-2.5">
                         <span class="relative flex h-3 w-3 shrink-0">
-                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-500 opacity-80"></span>
-                            <span class="relative inline-flex rounded-full h-3 w-3 bg-rose-500"></span>
+                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-80"></span>
+                            <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
                         </span>
                         <h1 class="text-base sm:text-xl font-black tracking-tight text-white">
-                            2026 九合一大選・多源即時開票戰情室
+                            2026 九合一大選・全自動輪詢開票戰情室
                         </h1>
                     </div>
-                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-rose-500/20 text-rose-400 border border-rose-500/40 tracking-wider">
-                        LIVE 開票監測中
+                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500/15 text-emerald-300 border border-emerald-500/40 tracking-wider">
+                        AUTO-POLLING LIVE
                     </span>
-                    <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-900/90 border border-slate-700/80 text-xs font-mono text-sky-300">
+                    <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-700/80 text-xs font-mono tabular-nums text-sky-300">
                         <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                         <span id="liveClock">UTC+8 --:--:--</span>
                     </div>
                 </div>
 
-                <!-- 官方與媒體即時傳送門 -->
-                <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
-                    <span class="text-[11px] font-bold text-slate-400 hidden sm:inline">即時傳送門：</span>
-                    <a href="https://news.tvbs.com.tw/events/2026election" target="_blank" rel="noopener noreferrer"
-                       class="px-2.5 py-1.5 rounded-lg bg-blue-500/15 hover:bg-blue-500/30 text-blue-300 border border-blue-500/35 text-xs font-bold transition-colors">
-                        TVBS 開票專區 ↗
-                    </a>
-                    <a href="https://topic.ftvnews.com.tw/2026election/" target="_blank" rel="noopener noreferrer"
-                       class="px-2.5 py-1.5 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/35 text-xs font-bold transition-colors">
-                        民視 2026 大選專區 ↗
-                    </a>
+                <!-- 官方與媒體即時傳送門 + 匯出/資料源按鈕 -->
+                <div class="flex flex-wrap items-center gap-1.5">
                     <a href="https://www.cec.gov.tw/" target="_blank" rel="noopener noreferrer"
                        class="px-2.5 py-1.5 rounded-lg bg-sky-500/15 hover:bg-sky-500/30 text-sky-300 border border-sky-500/35 text-xs font-bold transition-colors">
-                        中選會官網 ↗
+                        中選會 ↗
                     </a>
-                    <a href="https://www.youtube.com/@TVBSNEWS01" target="_blank" rel="noopener noreferrer"
-                       class="px-2.5 py-1.5 rounded-lg bg-rose-500/15 hover:bg-rose-500/30 text-rose-300 border border-rose-500/35 text-xs font-bold transition-colors">
-                        TVBS YouTube 直播 ↗
+                    <a href="https://news.tvbs.com.tw/events/2026election" target="_blank" rel="noopener noreferrer"
+                       class="px-2.5 py-1.5 rounded-lg bg-blue-600/15 hover:bg-blue-600/30 text-blue-300 border border-blue-500/35 text-xs font-bold transition-colors">
+                        TVBS ↗
                     </a>
+                    <a href="https://topic.ftvnews.com.tw/2026election/" target="_blank" rel="noopener noreferrer"
+                       class="px-2.5 py-1.5 rounded-lg bg-emerald-600/15 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/35 text-xs font-bold transition-colors">
+                        民視 ↗
+                    </a>
+                    <a href="https://www.gvm.com.tw/" target="_blank" rel="noopener noreferrer"
+                       class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 text-xs font-bold transition-colors">
+                        遠見 ↗
+                    </a>
+                    <a href="https://www.cw.com.tw/" target="_blank" rel="noopener noreferrer"
+                       class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 text-xs font-bold transition-colors">
+                        天下 ↗
+                    </a>
+                    <span class="hidden sm:inline-block w-px h-5 bg-slate-800 mx-0.5"></span>
+                    <button id="openApiModalBtn" type="button"
+                            class="px-2.5 py-1.5 rounded-lg bg-indigo-500/20 hover:bg-indigo-500/35 text-indigo-200 border border-indigo-400/40 text-xs font-bold transition-colors cursor-pointer">
+                        ⚙️ 串接自動更新資料源
+                    </button>
+                    <button id="exportJsonBtn" type="button"
+                            class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-bold transition-colors cursor-pointer">
+                        ⬇ 匯出 JSON 快照
+                    </button>
                 </div>
             </div>
 
-            <!-- 第二列：全台 22 縣市版圖即時席次條 -->
-            <div class="bg-slate-900/90 border border-slate-800 rounded-xl px-3.5 py-2.5">
+            <!-- 第二列：全自動輪詢控制台 (Auto-Refresh Engine Bar) -->
+            <div class="bg-slate-900/95 border border-emerald-500/25 rounded-xl px-3.5 py-2 space-y-2">
+                <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-2 text-xs">
+                    <!-- 左側：連線狀態燈號 + 最後同步時間 + 倒數秒數 -->
+                    <div class="flex flex-wrap items-center gap-2.5">
+                        <div class="flex items-center gap-1.5">
+                            <span id="connStatusDot" class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shrink-0"></span>
+                            <span id="connStatusText" class="font-bold text-emerald-300">自動輪詢啟動中...</span>
+                        </div>
+                        <span class="text-slate-600 hidden sm:inline">|</span>
+                        <span class="font-mono tabular-nums text-slate-300">
+                            最後同步：<strong id="lastSyncTime" class="text-white">--:--:--</strong>
+                        </span>
+                        <span class="text-slate-600 hidden sm:inline">|</span>
+                        <span id="countdownLabel" class="font-mono tabular-nums text-sky-300 font-bold">
+                            下次自動更新：30 秒
+                        </span>
+                    </div>
+
+                    <!-- 右側：頻率選擇 + 立即強制同步 -->
+                    <div class="flex flex-wrap items-center gap-2">
+                        <div class="inline-flex items-center bg-slate-950 border border-slate-800 rounded-lg p-0.5 text-[11px] font-bold" role="group" aria-label="自動更新頻率">
+                            <button type="button" data-interval="15" class="interval-btn px-2 py-1 rounded-md text-slate-400 hover:text-white cursor-pointer transition-colors">15秒</button>
+                            <button type="button" data-interval="30" class="interval-btn px-2 py-1 rounded-md bg-emerald-500 text-slate-950 cursor-pointer transition-colors">30秒</button>
+                            <button type="button" data-interval="60" class="interval-btn px-2 py-1 rounded-md text-slate-400 hover:text-white cursor-pointer transition-colors">60秒</button>
+                            <button type="button" data-interval="0"  class="interval-btn px-2 py-1 rounded-md text-slate-400 hover:text-white cursor-pointer transition-colors">暫停</button>
+                        </div>
+                        <button id="forceSyncBtn" type="button"
+                                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition-colors cursor-pointer shadow-sm">
+                            <svg id="syncSpinnerIcon" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                            立即強制同步
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 倒數進度條 + 優雅連線模式提示 -->
+                <div class="space-y-1.5">
+                    <div class="w-full h-1.5 rounded-full bg-slate-800 overflow-hidden">
+                        <div id="countdownProgressBar" class="h-full bg-gradient-to-r from-emerald-500 via-sky-400 to-cyan-300 transition-all duration-1000 ease-linear" style="width: 100%"></div>
+                    </div>
+                    <div id="syncModeBanner" class="text-[11px] text-slate-400 flex flex-wrap items-center justify-between gap-2">
+                        <span>本機快取＋即時監控模式（瀏覽器 CORS 保護：已自動保持畫面與內嵌直播同步，並啟用跨分頁 BroadcastChannel 即時連動）</span>
+                        <span id="bcSyncBadge" class="font-mono text-[10px] text-sky-400">跨分頁同步：待命中</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 第三列：全台 22 縣市版圖即時席次儀表條 -->
+            <div class="bg-slate-900/90 border border-slate-800 rounded-xl px-3.5 py-2">
                 <div class="flex flex-wrap items-center justify-between gap-2 mb-1.5 text-xs">
                     <div class="flex items-center gap-2">
                         <span id="seatBarSourceLabel" class="font-bold text-slate-200">全台 22 縣市版圖即時席次（綜合交叉分析）</span>
-                        <span id="syncedCountBadge" class="px-2 py-0.5 rounded-md bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 font-mono text-[11px] font-bold">
-                            已同步 1/22 縣市
+                        <span id="syncedCountBadge" class="px-2 py-0.5 rounded-md bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 font-mono tabular-nums text-[11px] font-bold">
+                            已同步 3/22 縣市
                         </span>
                     </div>
-                    <div class="flex flex-wrap items-center gap-3 sm:gap-4 font-mono">
-                        <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-[#1e6bff]"></span>藍 <strong id="countKmt" class="text-blue-400 text-sm">0</strong></span>
-                        <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-[#16a34a]"></span>綠 <strong id="countDpp" class="text-emerald-400 text-sm">0</strong></span>
-                        <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-[#06b6d4]"></span>白 <strong id="countTpp" class="text-cyan-300 text-sm">0</strong></span>
-                        <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-[#94a3b8]"></span>無黨 <strong id="countInd" class="text-slate-300 text-sm">0</strong></span>
+                    <div class="flex flex-wrap items-center gap-3 sm:gap-4 font-mono tabular-nums">
+                        <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-[#2563EB]"></span>藍 <strong id="countKmt" class="text-blue-400 text-sm">0</strong></span>
+                        <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-[#16A34A]"></span>綠 <strong id="countDpp" class="text-emerald-400 text-sm">0</strong></span>
+                        <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-[#0891B2]"></span>白 <strong id="countTpp" class="text-cyan-300 text-sm">0</strong></span>
+                        <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-[#64748B]"></span>無黨 <strong id="countInd" class="text-slate-300 text-sm">0</strong></span>
                         <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-amber-500"></span>待開/平手 <strong id="countPending" class="text-amber-400 text-sm">0</strong></span>
                     </div>
                 </div>
                 <div class="w-full h-2.5 rounded-full bg-slate-800 overflow-hidden flex gap-0.5">
-                    <div id="barKmt" class="h-full bg-[#1e6bff] transition-all duration-500" style="width: 0%"></div>
-                    <div id="barDpp" class="h-full bg-[#16a34a] transition-all duration-500" style="width: 0%"></div>
-                    <div id="barTpp" class="h-full bg-[#06b6d4] transition-all duration-500" style="width: 0%"></div>
-                    <div id="barInd" class="h-full bg-[#94a3b8] transition-all duration-500" style="width: 0%"></div>
+                    <div id="barKmt" class="h-full bg-[#2563EB] transition-all duration-500" style="width: 0%"></div>
+                    <div id="barDpp" class="h-full bg-[#16A34A] transition-all duration-500" style="width: 0%"></div>
+                    <div id="barTpp" class="h-full bg-[#0891B2] transition-all duration-500" style="width: 0%"></div>
+                    <div id="barInd" class="h-full bg-[#64748B] transition-all duration-500" style="width: 0%"></div>
                     <div id="barPending" class="h-full bg-amber-500/80 transition-all duration-500" style="width: 0%"></div>
                 </div>
-            </div>
-
-            <!-- 第三列：CORS 跨域技術說明 -->
-            <div class="flex items-center gap-2 text-[11px] sm:text-xs text-slate-400 bg-sky-950/30 border border-sky-500/20 rounded-lg px-3 py-1.5 leading-relaxed">
-                <span class="text-sky-400 font-bold shrink-0">ⓘ 系統說明：</span>
-                <span>受限於瀏覽器跨域安全機制（CORS），網頁無法直接自動抓取電視台內部 API；本戰情室已預載 16:15 最新初期快訊，您可隨時點選各台專區並於右側快速同步登錄三方票數，系統將自動計算綜合得票率與各台落差分析。</span>
             </div>
         </div>
     </header>
 
     <!-- ==================== 主戰情雙欄佈局 ==================== -->
-    <main class="flex-1 max-w-[1480px] w-full mx-auto px-4 sm:px-6 py-5 grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+    <main class="flex-1 max-w-[1520px] w-full mx-auto px-4 sm:px-6 py-5 grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
 
         <!-- ==================== 2. 左側：全台 22 縣市戰情矩陣 ==================== -->
-        <section class="lg:col-span-5 neon-panel border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xl space-y-4">
+        <section class="lg:col-span-5 warroom-card border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xl space-y-4">
             <div class="flex items-center justify-between gap-2 border-b border-slate-800 pb-3">
                 <div>
                     <h2 class="text-base sm:text-lg font-bold text-white flex items-center gap-2">
                         <span class="w-1.5 h-5 rounded-full bg-sky-400"></span>
                         全台 22 縣市戰情矩陣
                     </h2>
-                    <p class="text-xs text-slate-400 mt-0.5">點擊任一縣市，右側即時檢視三方數據與百分率長條圖</p>
+                    <p class="text-xs text-slate-400 mt-0.5">點擊縣市即刻檢視百分率、投票率與三方交叉分析</p>
                 </div>
-                <span class="text-[11px] font-mono px-2 py-1 rounded-md bg-slate-900 border border-slate-700 text-slate-300 shrink-0">
+                <span class="text-[11px] font-mono tabular-nums px-2 py-1 rounded-md bg-slate-900 border border-slate-700 text-slate-300 shrink-0">
                     22 縣市 / 81 人
                 </span>
             </div>
@@ -163,26 +211,87 @@
             </div>
         </section>
 
-        <!-- ==================== 3. 右側：縣市深度戰情分析面板 ==================== -->
-        <section id="detailPanel" class="lg:col-span-7 neon-panel border border-sky-500/20 rounded-2xl p-4 sm:p-6 shadow-2xl lg:sticky lg:top-[182px]">
-            <!-- JS 動態渲染所選縣市完整深度分析 -->
+        <!-- ==================== 3. 右側：縣市深度戰情分析與直播牆面板 ==================== -->
+        <section id="detailPanel" class="lg:col-span-7 warroom-card border border-sky-500/20 rounded-2xl p-4 sm:p-6 shadow-2xl lg:sticky lg:top-[226px]">
+            <!-- JS 動態渲染 -->
         </section>
     </main>
 
-    <!-- 自訂確認重置對話框 (取代 confirm) -->
-    <div id="resetModal" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm items-center justify-center p-4">
-        <div class="bg-[#111827] border border-slate-700 rounded-2xl max-w-md w-full p-5 shadow-2xl space-y-4">
+    <!-- ==================== 彈出視窗 1：⚙️ 串接自動更新資料源設定 ==================== -->
+    <div id="apiModal" class="hidden fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-sm items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-2xl w-full p-5 sm:p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <h3 class="text-base sm:text-lg font-bold text-white flex items-center gap-2">
+                    <span>⚙️</span> 串接自動更新即時資料源（JSON / Google Sheets CSV / Proxy）
+                </h3>
+                <button id="closeApiModalBtn" type="button" class="text-slate-400 hover:text-white p-1 cursor-pointer">✕</button>
+            </div>
+
+            <div class="space-y-3 text-xs sm:text-sm text-slate-300">
+                <p class="leading-relaxed">
+                    輸入支援 CORS 的公開 <strong>JSON API 網址</strong> 或 <strong>Google Sheets 發布的 CSV 連結</strong>，戰情室每次開啟或倒數歸零時將自動以 <code class="px-1.5 py-0.5 rounded bg-slate-950 text-sky-300 font-mono">fetch(url, { cache: 'no-store' })</code> 抓取最新票數並無縫更新畫面。
+                </p>
+
+                <div class="space-y-1.5">
+                    <label for="apiUrlInput" class="block text-xs font-bold text-sky-300">資料源網址 (URL)</label>
+                    <input id="apiUrlInput" type="url" placeholder="https://your-proxy.example.com/election2026.json 或 Google Sheets CSV 連結"
+                           class="w-full bg-slate-950 border border-slate-700 focus:border-sky-400 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-mono text-white focus:outline-none">
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                    <div class="bg-slate-950 border border-slate-800 rounded-xl p-3 space-y-1.5">
+                        <div class="text-[11px] font-bold text-emerald-400">支援格式 A：JSON 結構範例</div>
+                        <pre class="text-[10px] font-mono text-slate-400 overflow-x-auto leading-relaxed">{
+  "taipei": {
+    "turnoutCustom": "69.2",
+    "tvbs": { "5": 10250, "3": 9820 },
+    "ftv":  { "5": 10110, "3": 9905 },
+    "cec":  { "5": 4200,  "3": 4120 }
+  }
+}</pre>
+                    </div>
+                    <div class="bg-slate-950 border border-slate-800 rounded-xl p-3 space-y-1.5">
+                        <div class="text-[11px] font-bold text-sky-400">支援格式 B：Google Sheets CSV 欄位</div>
+                        <pre class="text-[10px] font-mono text-slate-400 overflow-x-auto leading-relaxed">countyId,source,candNum,votes,turnout
+taipei,tvbs,5,10250,69.2
+taipei,tvbs,3,9820,69.2
+new-taipei,ftv,3,1520,66.1</pre>
+                    </div>
+                </div>
+
+                <div id="apiTestResult" class="hidden rounded-xl p-3 text-xs font-mono border"></div>
+            </div>
+
+            <div class="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-slate-800">
+                <button id="clearApiUrlBtn" type="button" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-rose-500/20 text-slate-300 hover:text-rose-300 border border-slate-700 text-xs font-bold cursor-pointer transition-colors">
+                    清除資料源（改回本機模式）
+                </button>
+                <div class="flex items-center gap-2">
+                    <button id="cancelApiModalBtn" type="button" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold cursor-pointer">
+                        取消
+                    </button>
+                    <button id="saveAndSyncApiBtn" type="button" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold cursor-pointer shadow-sm">
+                        儲存並立即同步
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== 彈出視窗 2：重置確認 Modal ==================== -->
+    <div id="resetModal" class="hidden fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-sm items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-md w-full p-5 shadow-2xl space-y-4">
             <h3 class="text-base font-bold text-white flex items-center gap-2">
-                <span class="text-amber-400">⚠️</span> 重置為 16:15 預設快訊？
+                <span class="text-amber-400">⚠️</span> 重置回 16:25 初期開票基準？
             </h3>
             <p class="text-sm text-slate-300 leading-relaxed">
-                此操作將清除您在本機儲存的所有手動輸入票數與投票率，並還原為系統預載的 2026/11/28 16:15 最新初期快訊（含臺北市 TVBS 初期報票）。
+                此操作將清除您在本機輸入的票數與投票率，還原為 2026/11/28 16:25 公開初期快訊基準（含臺北市、新北市、臺中市初期票數與高雄/雲林/臺南投票率）。
             </p>
             <div class="flex items-center justify-end gap-2.5 pt-2">
-                <button id="cancelResetBtn" type="button" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold transition-colors cursor-pointer">
+                <button id="cancelResetBtn" type="button" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold cursor-pointer">
                     取消
                 </button>
-                <button id="confirmResetBtn" type="button" class="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold transition-colors cursor-pointer">
+                <button id="confirmResetBtn" type="button" class="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold cursor-pointer">
                     確認重置
                 </button>
             </div>
@@ -190,33 +299,37 @@
     </div>
 
     <!-- 輕量提示 Toast -->
-    <div id="toast" class="fixed bottom-5 right-5 z-50 transform translate-y-16 opacity-0 transition-all duration-300 pointer-events-none bg-slate-900 border border-sky-500/50 text-sky-200 px-4 py-2.5 rounded-xl shadow-2xl text-xs font-bold flex items-center gap-2">
-        <span class="w-2 h-2 rounded-full bg-sky-400"></span>
-        <span id="toastText">已自動儲存</span>
+    <div id="toast" class="fixed bottom-5 right-5 z-50 transform translate-y-16 opacity-0 transition-all duration-300 pointer-events-none bg-slate-900 border border-emerald-500/50 text-emerald-200 px-4 py-2.5 rounded-xl shadow-2xl text-xs font-bold flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+        <span id="toastText">已自動同步</span>
     </div>
 
-    <!-- ==================== 核心資料與戰情室邏輯 ==================== -->
+    <!-- ==================== 核心戰情室腳本 ==================== -->
     <script>
         (function () {
             'use strict';
 
-            const STORAGE_KEY = 'tw_election_2026_multisource_warroom_v1';
+            const STORAGE_KEY = 'tw_election_2026_autopoll_warroom_v2';
+            const API_URL_KEY = 'tw_election_2026_custom_api_url_v2';
+            const INTERVAL_KEY = 'tw_election_2026_poll_interval_v2';
+            const BC_CHANNEL_NAME = 'tw_election_2026_warroom_sync';
             const REGION_ORDER = ['六都', '北台灣', '中台灣', '南台灣', '東台灣', '離島'];
 
             /**
-             * 全台 22 縣市、81 位候選人完整戰情資料
-             * modelPct 為選前公開模型／封關民調參考基準 (%)
+             * 全台 22 縣市、81 位候選人完整名單與 2026/11/28 16:25 基準
+             * 政黨色碼：國藍 #2563EB、民綠 #16A34A、眾青 #0891B2、無黨灰 #64748B
              */
             const countiesData = [
                 // ==================== 六都 (23人) ====================
                 {
                     id: 'taipei', name: '臺北市', region: '六都',
                     tags: ['極度五五波', '現任拚連任', '藍白整合'],
-                    turnoutDefault: '15:00 達 63%（TVBS 地方報票）',
-                    turnoutDetail: '12:00 達 34%（民視，中山區 40.3% 最高、北投區 26.7% 最低）',
+                    turnoutShort: '15:30 近69%',
+                    turnoutDefault: '15:30 近 69%（南港區最踴躍）',
+                    turnoutDetail: '16:20 知新聞/TVBS 初期快訊 蔣 336 vs 沈 334；16:23 台媒快報蔣萬安已先破 1 萬票領先',
                     turnout2022: '67.70%',
-                    modelNote: 'PollTrack 沈 62% / 蔣 38%；TVBS 封關民調 蔣 46% vs 沈 44%',
-                    analysis: '連任保衛戰 vs. 空戰奇兵。TVBS 16:15 首波初期開票率先跳出蔣萬安 168 票、沈伯洋 139 票，屬極小型票所初期樣本；北市 15:00 地方報票投票率已達 63%，高投票率下的年輕與中間選票流向將決定勝負。',
+                    modelNote: 'PollTrack 沈 62% / 蔣 38%；TVBS 封關 蔣 46% vs 沈 44%',
+                    analysis: '連任保衛戰 vs. 空戰奇兵。15:30 北市投票率已近 69%（南港區最踴躍），超越上屆水準；16:20 初期快訊蔣萬安 336 票、沈伯洋 334 票極度膠著，16:23 台媒快報蔣萬安率先破萬票領先，後續持續關注各行政區開票曲線。',
                     candidates: [
                         { num: 1, name: '郭璽', party: '麻將最大黨', partyType: 'other', incumbent: false, modelPct: 0.5 },
                         { num: 2, name: '林志成', party: '無', partyType: 'ind', incumbent: false, modelPct: 0.5 },
@@ -229,11 +342,12 @@
                 {
                     id: 'new-taipei', name: '新北市', region: '六都',
                     tags: ['極度五五波', '藍白整合'],
-                    turnoutDefault: '開票統計中（預估 65%+）',
-                    turnoutDetail: '上午多處投開票所大排長龍',
+                    turnoutShort: '開票統計中',
+                    turnoutDefault: '開票統計中（預估破 65%）',
+                    turnoutDetail: '16:20 初期開票快訊：李四川 609 票 vs. 蘇巧慧 589 票',
                     turnout2022: '56.60%',
-                    modelNote: 'PollTrack 蘇 62% / 李 38%；TVBS 封關民調 蘇 43% vs 李 42.4%',
-                    analysis: '全台最大票倉接班戰。蘇巧慧與李四川在 TVBS 封關民調差距僅 0.6%，屬全台最緊繃激戰區，雙方陸戰組織與藍白整合轉移率將直接定生死。',
+                    modelNote: 'PollTrack 蘇 62% / 李 38%；TPOC 蘇 50.21% vs 李 49.79%',
+                    analysis: '全台最大票倉接班戰。初期快訊李四川 609 票暫時微幅領先蘇巧慧 589 票，雙方差距僅 20 票，印證選前最緊繃激戰區態勢。',
                     candidates: [
                         { num: 1, name: '蘇巧慧', party: '民', partyType: 'dpp', incumbent: false, modelPct: 50.3 },
                         { num: 2, name: '蘇輝湟', party: '無', partyType: 'ind', incumbent: false, modelPct: 0.0 },
@@ -243,11 +357,12 @@
                 {
                     id: 'taoyuan', name: '桃園市', region: '六都',
                     tags: ['現任拚連任'],
-                    turnoutDefault: '開票統計中（預估 65%+）',
+                    turnoutShort: '開票統計中',
+                    turnoutDefault: '開票統計中',
                     turnoutDetail: '一對一正面交鋒，無第三勢力分票',
                     turnout2022: '59.46%',
                     modelNote: 'PollTrack 張善政勝率 74% / 黃世杰 26%',
-                    analysis: '張善政握有現任市政優勢與穩固基本盤；民進黨由前法務部政次黃世杰挑戰，純粹檢驗藍綠基本盤與施政滿意度。',
+                    analysis: '張善政握有現任市政優勢與穩固基本盤；前法務部政次黃世杰代表綠營挑戰，純粹檢驗藍綠基本盤與施政滿意度。',
                     candidates: [
                         { num: 1, name: '黃世杰', party: '民', partyType: 'dpp', incumbent: false, modelPct: 26.0 },
                         { num: 2, name: '張善政', party: '國', partyType: 'kmt', incumbent: true, modelPct: 74.0 }
@@ -256,11 +371,12 @@
                 {
                     id: 'taichung', name: '臺中市', region: '六都',
                     tags: ['激戰五五波', '藍白整合'],
-                    turnoutDefault: '開票統計中（預估 65%+）',
-                    turnoutDetail: '傳統搖擺指標區，中間選民成關鍵',
+                    turnoutShort: '開票統計中',
+                    turnoutDefault: '開票統計中',
+                    turnoutDetail: '16:20 初期開票快訊：何欣純 96 票 vs. 江啟臣 89 票',
                     turnout2022: '60.01%',
                     modelNote: '封關民調互有領先，江啟臣微幅占優',
-                    analysis: '盧秀燕接班之戰。立法院副院長江啟臣獲藍白整合奧援，對決基層實力雄厚的資深立委何欣純，屯區與都會區開票曲線是觀戰指標。',
+                    analysis: '盧秀燕接班之戰。16:20 初期快訊何欣純 96 票微幅領先江啟臣 89 票，目前仍屬極初期小型票所樣本，需待屯區與市區大票倉陸續開出。',
                     candidates: [
                         { num: 1, name: '何欣純', party: '民', partyType: 'dpp', incumbent: false, modelPct: 46.5 },
                         { num: 2, name: '洪麗華', party: '司法正義黨', partyType: 'other', incumbent: false, modelPct: 1.0 },
@@ -270,11 +386,12 @@
                 {
                     id: 'tainan', name: '臺南市', region: '六都',
                     tags: ['綠營優勢'],
-                    turnoutDefault: '12:00 約 35%（地方回報）',
+                    turnoutShort: '12:00 約35%',
+                    turnoutDefault: '12:00 投票率約 35%',
                     turnoutDetail: '投票踴躍，有望突破上屆 58.68%',
                     turnout2022: '58.68%',
                     modelNote: 'TPOC 預估陳亭妃 55.23% vs 謝龍介 44.77%',
-                    analysis: '綠營本命區攻防。陳亭妃基本盤深厚；謝龍介憑藉全國高知名度再度挑戰，觀察能否在市區縮小藍綠差距。',
+                    analysis: '綠營本命區攻防。陳亭妃基本盤深厚；謝龍介憑藉全國高知名度再度挑戰，觀察能否在都會區縮小差距。',
                     candidates: [
                         { num: 1, name: '蕭燐洪', party: '台灣SoR無法黨', partyType: 'other', incumbent: false, modelPct: 0.0 },
                         { num: 2, name: '謝龍介', party: '國', partyType: 'kmt', incumbent: false, modelPct: 44.8 },
@@ -285,11 +402,12 @@
                 {
                     id: 'kaohsiung', name: '高雄市', region: '六都',
                     tags: ['激戰五五波'],
-                    turnoutDefault: '12:00 達 35.13%（選委會回報）',
-                    turnoutDetail: '藍綠動員積極，中午投票率破 35%',
+                    turnoutShort: '12:00 35.13%',
+                    turnoutDefault: '12:00 投票率 35.13%',
+                    turnoutDetail: '藍綠動員積極，中午投票率已破 35%',
                     turnout2022: '58.61%',
                     modelNote: 'TPOC 預估賴瑞隆 55% vs 柯志恩 45%',
-                    analysis: '南台灣焦點激戰。賴瑞隆承接陳其邁執政路線，柯志恩深耕四年二度披掛上陣，雙方催票力道強勁。',
+                    analysis: '南台灣焦點激戰。賴瑞隆承接陳其邁執政路線，柯志恩深耕四年二度披掛上陣，高投票率下雙方動員力道受矚目。',
                     candidates: [
                         { num: 1, name: '張靜', party: '司法改革黨', partyType: 'other', incumbent: false, modelPct: 0.0 },
                         { num: 2, name: '王肇民', party: '無', partyType: 'ind', incumbent: false, modelPct: 0.0 },
@@ -303,11 +421,12 @@
                 {
                     id: 'keelung', name: '基隆市', region: '北台灣',
                     tags: ['激戰五五波', '現任拚連任'],
+                    turnoutShort: '待回報',
                     turnoutDefault: '開票統計中',
                     turnoutDetail: '府會首長正面交鋒',
                     turnout2022: '60.16%',
                     modelNote: 'PollTrack 評估童子瑋勝率 65% / 謝國樑 35%',
-                    analysis: '現任市長謝國樑迎戰現任議長童子瑋，兩人皆具在地政治世家深厚基層，競爭白熱化。',
+                    analysis: '現任市長謝國樑迎戰現任議長童子瑋，兩人皆具深厚在地政治世家背景。',
                     candidates: [
                         { num: 1, name: '童子瑋', party: '民', partyType: 'dpp', incumbent: false, modelPct: 65.0 },
                         { num: 2, name: '魏造文', party: '無', partyType: 'ind', incumbent: false, modelPct: 0.0 },
@@ -317,6 +436,7 @@
                 {
                     id: 'hsinchu-city', name: '新竹市', region: '北台灣',
                     tags: ['現任拚連任', '藍白整合'],
+                    turnoutShort: '待回報',
                     turnoutDefault: '開票統計中',
                     turnoutDetail: '國民黨禮讓現任無黨籍高虹安',
                     turnout2022: '64.87%',
@@ -331,6 +451,7 @@
                 {
                     id: 'hsinchu-county', name: '新竹縣', region: '北台灣',
                     tags: ['激戰五五波'],
+                    turnoutShort: '待回報',
                     turnoutDefault: '開票統計中',
                     turnoutDetail: '竹北高人氣正面對決藍營傳統盤',
                     turnout2022: '60.88%',
@@ -345,11 +466,12 @@
                 {
                     id: 'miaoli', name: '苗栗縣', region: '北台灣',
                     tags: ['現任拚連任'],
+                    turnoutShort: '待回報',
                     turnoutDefault: '開票統計中',
                     turnoutDetail: '現任首長整合派系守城',
                     turnout2022: '67.35%',
                     modelNote: '選前評估鍾東錦勝算極高',
-                    analysis: '鍾東錦恢復國民黨籍尋求連任；民進黨由縣議員陳品安主打世代交替挑戰。',
+                    analysis: '鍾東錦恢復國民黨籍尋求連任；民進黨縣議員陳品安主打世代交替挑戰。',
                     candidates: [
                         { num: 1, name: '陳品安', party: '民', partyType: 'dpp', incumbent: false, modelPct: 20.0 },
                         { num: 2, name: '鍾東錦', party: '國', partyType: 'kmt', incumbent: true, modelPct: 80.0 }
@@ -360,11 +482,12 @@
                 {
                     id: 'changhua', name: '彰化縣', region: '中台灣',
                     tags: ['政黨分裂'],
+                    turnoutShort: '待回報',
                     turnoutDefault: '開票統計中',
                     turnoutDetail: '泛綠分裂多角混戰',
                     turnout2022: '64.60%',
                     modelNote: '泛綠分裂拉高國民黨魏平政勝算',
-                    analysis: '民進黨提名立委陳素月，但前彰化市長邱建富脫黨無黨參選，分票效應左右彰化版圖。',
+                    analysis: '民進黨提名立委陳素月，前彰化市長邱建富無黨參選，分票效應左右彰化版圖。',
                     candidates: [
                         { num: 1, name: '陳素月', party: '民', partyType: 'dpp', incumbent: false, modelPct: 30.0 },
                         { num: 2, name: '魏平政', party: '國', partyType: 'kmt', incumbent: false, modelPct: 58.0 },
@@ -375,6 +498,7 @@
                 {
                     id: 'nantou', name: '南投縣', region: '中台灣',
                     tags: ['現任拚連任', '藍白整合'],
+                    turnoutShort: '待回報',
                     turnoutDefault: '開票統計中',
                     turnoutDetail: '一對一正面對決',
                     turnout2022: '67.96%',
@@ -388,7 +512,8 @@
                 {
                     id: 'yunlin', name: '雲林縣', region: '中台灣',
                     tags: ['激戰五五波'],
-                    turnoutDefault: '上午達 35.4%（地方回報）',
+                    turnoutShort: '12:00 35.4%',
+                    turnoutDefault: '12:00 投票率 35.4%',
                     turnoutDetail: '選委會預估 17:30 左右完成縣長開票',
                     turnout2022: '67.44%',
                     modelNote: '張家資源雄厚 vs 劉建國基層強勁，藍略占優',
@@ -405,6 +530,7 @@
                 {
                     id: 'chiayi-city', name: '嘉義市', region: '南台灣',
                     tags: ['激戰五五波', '藍白整合'],
+                    turnoutShort: '待回報',
                     turnoutDefault: '開票統計中',
                     turnoutDetail: '全台唯一民眾黨主戰場',
                     turnout2022: '43.99% (延後投票)',
@@ -421,6 +547,7 @@
                 {
                     id: 'chiayi-county', name: '嘉義縣', region: '南台灣',
                     tags: ['綠營優勢'],
+                    turnoutShort: '待回報',
                     turnoutDefault: '開票統計中',
                     turnoutDetail: '一對一對決',
                     turnout2022: '66.96%',
@@ -434,6 +561,7 @@
                 {
                     id: 'pingtung', name: '屏東縣', region: '南台灣',
                     tags: ['激戰五五波', '現任拚連任'],
+                    turnoutShort: '待回報',
                     turnoutDefault: '開票統計中',
                     turnoutDetail: '2022 激戰重演',
                     turnout2022: '66.43%',
@@ -449,6 +577,7 @@
                 {
                     id: 'yilan', name: '宜蘭縣', region: '東台灣',
                     tags: ['激戰五五波', '藍白整合'],
+                    turnoutShort: '待回報',
                     turnoutDefault: '開票統計中',
                     turnoutDetail: '藍白合檢驗區',
                     turnout2022: '64.68%',
@@ -465,6 +594,7 @@
                 {
                     id: 'hualien', name: '花蓮縣', region: '東台灣',
                     tags: ['政黨分裂'],
+                    turnoutShort: '待回報',
                     turnoutDefault: '開票統計中',
                     turnoutDetail: '泛藍三強鼎立、綠營結盟',
                     turnout2022: '58.47%',
@@ -480,6 +610,7 @@
                 {
                     id: 'taitung', name: '臺東縣', region: '東台灣',
                     tags: ['藍營優勢'],
+                    turnoutShort: '待回報',
                     turnoutDefault: '開票統計中',
                     turnoutDetail: '雙女將對決',
                     turnout2022: '64.08%',
@@ -497,6 +628,7 @@
                 {
                     id: 'penghu', name: '澎湖縣', region: '離島',
                     tags: ['政黨分裂'],
+                    turnoutShort: '待回報',
                     turnoutDefault: '開票統計中',
                     turnoutDetail: '六強混戰票源分散',
                     turnout2022: '56.18%',
@@ -514,6 +646,7 @@
                 {
                     id: 'kinmen', name: '金門縣', region: '離島',
                     tags: ['政黨分裂', '藍營優勢'],
+                    turnoutShort: '待回報',
                     turnoutDefault: '開票統計中',
                     turnoutDetail: '全台參選人數最多（7人）',
                     turnout2022: '39.81%',
@@ -532,6 +665,7 @@
                 {
                     id: 'lienchiang', name: '連江縣', region: '離島',
                     tags: ['現任拚連任', '藍營優勢'],
+                    turnoutShort: '待回報',
                     turnoutDefault: '開票統計中',
                     turnoutDetail: '馬祖在地對決',
                     turnout2022: '72.18%',
@@ -545,85 +679,111 @@
             ];
 
             /**
-             * 16:15 預設快訊資料（含臺北市 TVBS 初期開票：蔣萬安 168 票、沈伯洋 139 票）
+             * 預載 2026/11/28 16:25 最新公開初期快訊基準（絕不虛構未開出縣市票數）
              */
             function getDefaultLiveStore() {
                 return {
                     taipei: {
                         turnoutCustom: '',
-                        tvbs: { 5: 168, 3: 139 },
+                        tvbs: { 5: 336, 3: 334 }, // 知新聞/TVBS 16:20 初期快訊
+                        ftv: {},
+                        cec: {}
+                    },
+                    'new-taipei': {
+                        turnoutCustom: '',
+                        tvbs: { 3: 609, 1: 589 }, // 16:20 初期快訊
+                        ftv: {},
+                        cec: {}
+                    },
+                    taichung: {
+                        turnoutCustom: '',
+                        tvbs: { 1: 96, 3: 89 },   // 16:20 初期快訊
                         ftv: {},
                         cec: {}
                     }
                 };
             }
 
-            // 應用程式狀態
-            const state = {
-                selectedCountyId: 'taipei',
-                activeTab: 'combined', // 'combined' | 'tvbs' | 'ftv' | 'cec'
-                liveStore: {}
+            /**
+             * 免手動即時開票直播牆清單
+             */
+            const liveWallChannels = {
+                tvbs: {
+                    name: 'TVBS 新聞 55 頻道即時開票直播',
+                    embedUrl: 'https://www.youtube.com/embed/m_dhMSvgjWk?autoplay=0&mute=1',
+                    directUrl: 'https://www.youtube.com/@TVBSNEWS01/live',
+                    type: 'youtube',
+                    desc: 'YouTube 官方直播串流（若直播影片 ID 異動，可點擊右上方「開新視窗／子母窗開啟」）'
+                },
+                ftv: {
+                    name: '民視新聞 FTV 即時開票直播',
+                    embedUrl: 'https://www.youtube.com/embed/ylYJSBUgaMA?autoplay=0&mute=1',
+                    directUrl: 'https://www.youtube.com/@FTV_News/live',
+                    type: 'youtube',
+                    desc: '民視新聞官方 YouTube 直播串流，即時掌握南台灣與全台報票進度'
+                },
+                cec: {
+                    name: '中選會官方開票查詢網頁',
+                    embedUrl: 'https://www.cec.gov.tw/',
+                    directUrl: 'https://www.cec.gov.tw/',
+                    type: 'web',
+                    desc: '部分政府官網可能啟用 X-Frame-Options 安全防護禁止內嵌，若畫面空白請點擊「開新視窗監控」'
+                }
             };
 
-            // DOM 參考
+            // 全域狀態
+            const state = {
+                selectedCountyId: 'taipei',
+                activeTab: 'combined', // 'combined' | 'tvbs' | 'ftv' | 'cec' | 'livewall'
+                liveWallSource: 'tvbs',
+                autoReloadEmbed: false,
+                pollIntervalSec: 30,
+                secondsLeft: 30,
+                customApiUrl: '',
+                lastSyncAt: null,
+                syncMode: 'local', // 'api-ok' | 'api-cors' | 'local'
+                liveStore: {},
+                prevSnapshot: {} // 記錄前一次同步票數以計算差值 (+Δ)
+            };
+
+            let bcChannel = null;
+            let toastTimer = null;
+
+            // DOM 元素
             const liveClockEl = document.getElementById('liveClock');
+            const connStatusDotEl = document.getElementById('connStatusDot');
+            const connStatusTextEl = document.getElementById('connStatusText');
+            const lastSyncTimeEl = document.getElementById('lastSyncTime');
+            const countdownLabelEl = document.getElementById('countdownLabel');
+            const countdownProgressBarEl = document.getElementById('countdownProgressBar');
+            const syncModeBannerEl = document.getElementById('syncModeBanner');
+            const bcSyncBadgeEl = document.getElementById('bcSyncBadge');
+            const forceSyncBtn = document.getElementById('forceSyncBtn');
+            const syncSpinnerIcon = document.getElementById('syncSpinnerIcon');
             const seatBarSourceLabelEl = document.getElementById('seatBarSourceLabel');
             const syncedCountBadgeEl = document.getElementById('syncedCountBadge');
             const tileMapContainerEl = document.getElementById('tileMapContainer');
             const detailPanelEl = document.getElementById('detailPanel');
+
+            // Modal 元素
+            const apiModalEl = document.getElementById('apiModal');
+            const openApiModalBtn = document.getElementById('openApiModalBtn');
+            const closeApiModalBtn = document.getElementById('closeApiModalBtn');
+            const cancelApiModalBtn = document.getElementById('cancelApiModalBtn');
+            const clearApiUrlBtn = document.getElementById('clearApiUrlBtn');
+            const saveAndSyncApiBtn = document.getElementById('saveAndSyncApiBtn');
+            const apiUrlInput = document.getElementById('apiUrlInput');
+            const apiTestResultEl = document.getElementById('apiTestResult');
+
             const resetModalEl = document.getElementById('resetModal');
             const cancelResetBtn = document.getElementById('cancelResetBtn');
             const confirmResetBtn = document.getElementById('confirmResetBtn');
+            const exportJsonBtn = document.getElementById('exportJsonBtn');
+
             const toastEl = document.getElementById('toast');
             const toastTextEl = document.getElementById('toastText');
 
-            let toastTimer = null;
-
-            // ==================== 工具與儲存函式 ====================
-
-            function loadStore() {
-                try {
-                    const raw = localStorage.getItem(STORAGE_KEY);
-                    if (raw) {
-                        const parsed = JSON.parse(raw);
-                        if (parsed && typeof parsed === 'object') {
-                            state.liveStore = parsed;
-                            return;
-                        }
-                    }
-                } catch (e) {
-                    console.warn('讀取本機快取失敗，改用預設值:', e);
-                }
-                state.liveStore = getDefaultLiveStore();
-            }
-
-            function saveStore(showMsg) {
-                try {
-                    localStorage.setItem(STORAGE_KEY, JSON.stringify(state.liveStore));
-                    if (showMsg) showToast(showMsg);
-                } catch (e) {
-                    console.warn('儲存至本機失敗:', e);
-                }
-            }
-
-            function ensureCountyStore(countyId) {
-                if (!state.liveStore[countyId]) {
-                    state.liveStore[countyId] = { turnoutCustom: '', tvbs: {}, ftv: {}, cec: {} };
-                }
-                if (!state.liveStore[countyId].tvbs) state.liveStore[countyId].tvbs = {};
-                if (!state.liveStore[countyId].ftv) state.liveStore[countyId].ftv = {};
-                if (!state.liveStore[countyId].cec) state.liveStore[countyId].cec = {};
-                return state.liveStore[countyId];
-            }
-
-            function showToast(msg) {
-                toastTextEl.textContent = msg;
-                toastEl.classList.remove('translate-y-16', 'opacity-0');
-                clearTimeout(toastTimer);
-                toastTimer = setTimeout(() => {
-                    toastEl.classList.add('translate-y-16', 'opacity-0');
-                }, 2200);
-            }
+            // ==================== 工具、儲存與 BroadcastChannel ====================
 
             function escapeHTML(str) {
                 return String(str || '')
@@ -634,30 +794,302 @@
                     .replace(/'/g, '&#39;');
             }
 
+            function formatTaipeiTime(dateObj) {
+                const d = dateObj || new Date();
+                const utc8 = new Date(d.toLocaleString('en-US', { timeZone: 'Asia/Taipei' }));
+                return [
+                    String(utc8.getHours()).padStart(2, '0'),
+                    String(utc8.getMinutes()).padStart(2, '0'),
+                    String(utc8.getSeconds()).padStart(2, '0')
+                ].join(':');
+            }
+
+            function showToast(msg) {
+                toastTextEl.textContent = msg;
+                toastEl.classList.remove('translate-y-16', 'opacity-0');
+                clearTimeout(toastTimer);
+                toastTimer = setTimeout(() => {
+                    toastEl.classList.add('translate-y-16', 'opacity-0');
+                }, 2400);
+            }
+
+            function loadSettingsAndStore() {
+                try {
+                    const savedUrl = localStorage.getItem(API_URL_KEY);
+                    if (savedUrl) state.customApiUrl = savedUrl;
+
+                    const savedInterval = localStorage.getItem(INTERVAL_KEY);
+                    if (savedInterval !== null && !isNaN(Number(savedInterval))) {
+                        state.pollIntervalSec = Number(savedInterval);
+                        state.secondsLeft = state.pollIntervalSec;
+                    }
+
+                    const raw = localStorage.getItem(STORAGE_KEY);
+                    if (raw) {
+                        const parsed = JSON.parse(raw);
+                        if (parsed && typeof parsed === 'object') {
+                            state.liveStore = parsed;
+                            state.prevSnapshot = JSON.parse(JSON.stringify(parsed));
+                            return;
+                        }
+                    }
+                } catch (e) {
+                    console.warn('讀取本機設定失敗，改用預設基準:', e);
+                }
+                state.liveStore = getDefaultLiveStore();
+                state.prevSnapshot = JSON.parse(JSON.stringify(state.liveStore));
+            }
+
+            function saveStore(broadcast = true, toastMsg = '') {
+                try {
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(state.liveStore));
+                    if (broadcast && bcChannel) {
+                        bcChannel.postMessage({
+                            type: 'SYNC_STORE',
+                            payload: state.liveStore,
+                            time: formatTaipeiTime()
+                        });
+                    }
+                    if (toastMsg) showToast(toastMsg);
+                } catch (e) {
+                    console.warn('寫入本機儲存失敗:', e);
+                }
+            }
+
+            function initBroadcastChannel() {
+                try {
+                    if (typeof BroadcastChannel !== 'undefined') {
+                        bcChannel = new BroadcastChannel(BC_CHANNEL_NAME);
+                        bcSyncBadgeEl.textContent = '跨分頁同步：已連線';
+                        bcChannel.onmessage = (event) => {
+                            if (event.data && event.data.type === 'SYNC_STORE' && event.data.payload) {
+                                state.prevSnapshot = JSON.parse(JSON.stringify(state.liveStore));
+                                state.liveStore = event.data.payload;
+                                bcSyncBadgeEl.textContent = `跨分頁同步：已於 ${event.data.time} 連動`;
+                                renderAll(true);
+                                showToast('已接收其他分頁即時更新');
+                            }
+                        };
+                    } else {
+                        bcSyncBadgeEl.textContent = '跨分頁同步：瀏覽器不支援';
+                    }
+                } catch (e) {
+                    bcSyncBadgeEl.textContent = '跨分頁同步：沙盒限制';
+                }
+            }
+
+            function ensureCountyStore(countyId) {
+                if (!state.liveStore[countyId]) {
+                    state.liveStore[countyId] = { turnoutCustom: '', tvbs: {}, ftv: {}, cec: {} };
+                }
+                ['tvbs', 'ftv', 'cec'].forEach(k => {
+                    if (!state.liveStore[countyId][k]) state.liveStore[countyId][k] = {};
+                });
+                return state.liveStore[countyId];
+            }
+
             /**
-             * 政黨視覺色票（國 #1e6bff、民 #16a34a、眾 #06b6d4、無/其他 #94a3b8）
+             * 政黨視覺色票（嚴格對應 國藍 #2563EB、民綠 #16A34A、眾青 #0891B2、無黨灰 #64748B）
              */
             function getPartyStyle(partyType) {
                 switch (partyType) {
                     case 'kmt':
-                        return { hex: '#1e6bff', bar: 'bg-[#1e6bff]', badge: 'bg-blue-500/20 text-blue-300 border-blue-500/40', text: 'text-blue-400' };
+                        return { hex: '#2563EB', bar: 'bg-[#2563EB]', badge: 'bg-blue-600/20 text-blue-300 border-blue-500/40', text: 'text-blue-400' };
                     case 'dpp':
-                        return { hex: '#16a34a', bar: 'bg-[#16a34a]', badge: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40', text: 'text-emerald-400' };
+                        return { hex: '#16A34A', bar: 'bg-[#16A34A]', badge: 'bg-emerald-600/20 text-emerald-300 border-emerald-500/40', text: 'text-emerald-400' };
                     case 'tpp':
-                        return { hex: '#06b6d4', bar: 'bg-[#06b6d4]', badge: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40', text: 'text-cyan-300' };
+                        return { hex: '#0891B2', bar: 'bg-[#0891B2]', badge: 'bg-cyan-600/20 text-cyan-300 border-cyan-500/40', text: 'text-cyan-300' };
+                    case 'ind':
+                        return { hex: '#64748B', bar: 'bg-[#64748B]', badge: 'bg-slate-600/30 text-slate-200 border-slate-500/40', text: 'text-slate-300' };
                     default:
-                        return { hex: '#94a3b8', bar: 'bg-[#94a3b8]', badge: 'bg-slate-600/30 text-slate-200 border-slate-500/40', text: 'text-slate-300' };
+                        return { hex: '#9333EA', bar: 'bg-purple-600', badge: 'bg-purple-600/20 text-purple-300 border-purple-500/40', text: 'text-purple-300' };
                 }
             }
 
-            // ==================== 多源數據分析引擎 ====================
+            // ==================== 自動輪詢與外部 JSON/CSV 解析引擎 ====================
 
             /**
-             * 計算單一來源（tvbs / ftv / cec）的票數與百分率
+             * 簡易 CSV 解析器：支援 countyId,source,candNum,votes,turnout
              */
+            function parseElectionCSV(csvText) {
+                const lines = csvText.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+                if (lines.length < 2) return null;
+                const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+                const idxCounty = headers.findIndex(h => h.includes('county'));
+                const idxSource = headers.findIndex(h => h.includes('source'));
+                const idxCand = headers.findIndex(h => h.includes('cand') || h.includes('num'));
+                const idxVotes = headers.findIndex(h => h.includes('vote'));
+                const idxTurnout = headers.findIndex(h => h.includes('turnout'));
+                if (idxCounty < 0 || idxSource < 0 || idxCand < 0 || idxVotes < 0) return null;
+
+                const result = {};
+                for (let i = 1; i < lines.length; i++) {
+                    const cols = lines[i].split(',').map(c => c.trim());
+                    const cid = cols[idxCounty];
+                    const src = (cols[idxSource] || '').toLowerCase();
+                    const num = Number(cols[idxCand]);
+                    const votes = Math.max(0, parseInt(cols[idxVotes], 10) || 0);
+                    if (!cid || !['tvbs', 'ftv', 'cec'].includes(src) || isNaN(num)) continue;
+
+                    if (!result[cid]) result[cid] = { turnoutCustom: '', tvbs: {}, ftv: {}, cec: {} };
+                    result[cid][src][num] = votes;
+                    if (idxTurnout >= 0 && cols[idxTurnout]) {
+                        result[cid].turnoutCustom = cols[idxTurnout].replace('%', '');
+                    }
+                }
+                return result;
+            }
+
+            /**
+             * 將外部抓回的資料無縫合併至 liveStore，並計算變化
+             */
+            function mergeExternalData(incoming) {
+                if (!incoming || typeof incoming !== 'object') return false;
+                state.prevSnapshot = JSON.parse(JSON.stringify(state.liveStore));
+                let updatedCount = 0;
+
+                Object.keys(incoming).forEach(cid => {
+                    const entry = incoming[cid];
+                    if (!entry || typeof entry !== 'object') return;
+                    const target = ensureCountyStore(cid);
+                    if (entry.turnoutCustom !== undefined && entry.turnoutCustom !== '') {
+                        target.turnoutCustom = String(entry.turnoutCustom);
+                    }
+                    ['tvbs', 'ftv', 'cec'].forEach(src => {
+                        if (entry[src] && typeof entry[src] === 'object') {
+                            Object.keys(entry[src]).forEach(numKey => {
+                                const val = Math.max(0, parseInt(entry[src][numKey], 10) || 0);
+                                if (target[src][numKey] !== val) {
+                                    target[src][numKey] = val;
+                                    updatedCount++;
+                                }
+                            });
+                        }
+                    });
+                });
+
+                saveStore(true);
+                return updatedCount;
+            }
+
+            /**
+             * 核心自動同步函式（開頁自動呼叫、倒數歸零自動呼叫、手動強制同步呼叫）
+             */
+            async function runAutoSync(reason = 'auto') {
+                syncSpinnerIcon.classList.add('animate-spin');
+                const nowStr = formatTaipeiTime();
+                state.lastSyncAt = nowStr;
+                lastSyncTimeEl.textContent = nowStr;
+
+                // 若在直播牆且開啟自動重新整理嵌入頁，則刷新 iframe
+                if (state.activeTab === 'livewall' && state.autoReloadEmbed && reason !== 'init') {
+                    const iframe = document.getElementById('liveWallIframe');
+                    if (iframe && iframe.src) {
+                        const base = iframe.getAttribute('data-base-src') || iframe.src;
+                        const sep = base.includes('?') ? '&' : '?';
+                        iframe.src = `${base}${sep}_t=${Date.now()}`;
+                    }
+                }
+
+                // 嘗試向自訂 API 抓取
+                if (state.customApiUrl) {
+                    try {
+                        const resp = await fetch(state.customApiUrl, { cache: 'no-store' });
+                        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+                        const text = await resp.text();
+                        let parsed = null;
+                        try {
+                            parsed = JSON.parse(text);
+                        } catch {
+                            parsed = parseElectionCSV(text);
+                        }
+
+                        if (parsed) {
+                            const changed = mergeExternalData(parsed);
+                            state.syncMode = 'api-ok';
+                            updateSyncStatusUI('api-ok', `遠端資料源自動同步成功（更新 ${changed} 筆數值）`);
+                            renderAll(changed > 0);
+                            if (reason === 'manual') showToast(`強制同步完成（更新 ${changed} 筆）`);
+                        } else {
+                            throw new Error('回傳格式無法解析為 JSON 或 CSV');
+                        }
+                    } catch (err) {
+                        state.syncMode = 'api-cors';
+                        updateSyncStatusUI('api-cors', `遠端連線受限（CORS 或網路異常：${err.message}），已優雅維持本機快取＋即時監控模式`);
+                        if (reason === 'manual') showToast('遠端連線受限，已保持本機快取同步');
+                    }
+                } else {
+                    // 純本機／沙盒模式：重新同步 localStorage（支援多視窗／外掛寫入）
+                    try {
+                        const raw = localStorage.getItem(STORAGE_KEY);
+                        if (raw) {
+                            const diskData = JSON.parse(raw);
+                            state.liveStore = diskData;
+                        }
+                    } catch (e) { /* ignore */ }
+                    state.syncMode = 'local';
+                    updateSyncStatusUI('local');
+                    renderAll(false);
+                    if (reason === 'manual') showToast('已完成本機快取與介面同步');
+                }
+
+                // 重置倒數計時
+                if (state.pollIntervalSec > 0) {
+                    state.secondsLeft = state.pollIntervalSec;
+                }
+                updateCountdownUI();
+                setTimeout(() => syncSpinnerIcon.classList.remove('animate-spin'), 450);
+            }
+
+            function updateSyncStatusUI(mode, customMsg) {
+                if (mode === 'api-ok') {
+                    connStatusDotEl.className = 'w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shrink-0';
+                    connStatusTextEl.className = 'font-bold text-emerald-300';
+                    connStatusTextEl.textContent = 'API 自動輪詢連線正常';
+                    syncModeBannerEl.firstElementChild.textContent = customMsg || `已串接外部資料源（${state.customApiUrl}），系統自動輪詢更新中。`;
+                } else if (mode === 'api-cors') {
+                    connStatusDotEl.className = 'w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse shrink-0';
+                    connStatusTextEl.className = 'font-bold text-amber-300';
+                    connStatusTextEl.textContent = 'CORS 保護・本機快取運作中';
+                    syncModeBannerEl.firstElementChild.textContent = customMsg;
+                } else {
+                    connStatusDotEl.className = 'w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shrink-0';
+                    connStatusTextEl.className = 'font-bold text-emerald-300';
+                    connStatusTextEl.textContent = state.pollIntervalSec > 0 ? '自動監控運作中（本機快取）' : '自動輪詢已暫停';
+                    syncModeBannerEl.firstElementChild.textContent = '本機快取＋即時監控模式（瀏覽器 CORS 保護：已自動保持畫面與內嵌直播同步；如需自動抓外部票數可點右上角「⚙️ 串接自動更新資料源」）';
+                }
+            }
+
+            function updateCountdownUI() {
+                if (state.pollIntervalSec <= 0) {
+                    countdownLabelEl.textContent = '自動更新：已暫停';
+                    countdownProgressBarEl.style.width = '0%';
+                    return;
+                }
+                countdownLabelEl.textContent = `下次自動更新：${state.secondsLeft} 秒`;
+                const pct = (state.secondsLeft / state.pollIntervalSec) * 100;
+                countdownProgressBarEl.style.width = `${Math.max(0, Math.min(100, pct))}%`;
+            }
+
+            function updateIntervalButtonsUI() {
+                document.querySelectorAll('.interval-btn').forEach(btn => {
+                    const val = Number(btn.getAttribute('data-interval'));
+                    if (val === state.pollIntervalSec) {
+                        btn.className = 'interval-btn px-2 py-1 rounded-md bg-emerald-500 text-slate-950 cursor-pointer transition-colors';
+                    } else {
+                        btn.className = 'interval-btn px-2 py-1 rounded-md text-slate-400 hover:text-white cursor-pointer transition-colors';
+                    }
+                });
+            }
+
+            // ==================== 多源數據交叉分析引擎 ====================
+
             function computeSourceStats(county, sourceKey) {
                 const store = state.liveStore[county.id] || {};
+                const prevStore = state.prevSnapshot[county.id] || {};
                 const votesMap = store[sourceKey] || {};
+                const prevVotesMap = prevStore[sourceKey] || {};
+
                 let totalVotes = 0;
                 county.candidates.forEach(c => {
                     totalVotes += Math.max(0, Number(votesMap[c.num]) || 0);
@@ -670,8 +1102,11 @@
 
                 county.candidates.forEach(c => {
                     const votes = Math.max(0, Number(votesMap[c.num]) || 0);
+                    const prevVotes = Math.max(0, Number(prevVotesMap[c.num]) || 0);
+                    const delta = votes - prevVotes;
                     const pct = totalVotes > 0 ? (votes / totalVotes) * 100 : 0;
-                    byNum[c.num] = { votes, pct };
+                    byNum[c.num] = { votes, pct, delta };
+
                     if (totalVotes > 0) {
                         if (votes > maxVotes) {
                             maxVotes = votes;
@@ -683,16 +1118,9 @@
                     }
                 });
 
-                return {
-                    totalVotes,
-                    byNum,
-                    leader: tie ? null : leader
-                };
+                return { totalVotes, byNum, leader: tie ? null : leader };
             }
 
-            /**
-             * 計算三方綜合交叉分析（加權：中選會 50%、TVBS 25%、民視 25%，依有數據來源動態正規化）
-             */
             function computeCountyAnalysis(county) {
                 const tvbs = computeSourceStats(county, 'tvbs');
                 const ftv = computeSourceStats(county, 'ftv');
@@ -701,10 +1129,9 @@
                 const hasTvbs = tvbs.totalVotes > 0;
                 const hasFtv = ftv.totalVotes > 0;
                 const hasCec = cec.totalVotes > 0;
-                const hasMediaSync = hasTvbs || hasFtv;
                 const hasAnyLive = hasTvbs || hasFtv || hasCec;
 
-                // 動態權重計算
+                // 加權比例：中選會 50%、TVBS 25%、民視 25%（依有數據源正規化）
                 const weights = {
                     cec: hasCec ? 0.50 : 0,
                     tvbs: hasTvbs ? 0.25 : 0,
@@ -712,20 +1139,17 @@
                 };
                 const weightSum = weights.cec + weights.tvbs + weights.ftv;
 
-                // 計算每位候選人綜合得票率
                 const combinedByNum = {};
                 let maxTvbsFtvDiff = 0;
 
                 county.candidates.forEach(c => {
-                    let combinedPct = 0;
+                    let combinedPct = c.modelPct;
                     if (weightSum > 0) {
                         combinedPct = (
                             (hasCec ? cec.byNum[c.num].pct * weights.cec : 0) +
                             (hasTvbs ? tvbs.byNum[c.num].pct * weights.tvbs : 0) +
                             (hasFtv ? ftv.byNum[c.num].pct * weights.ftv : 0)
                         ) / weightSum;
-                    } else {
-                        combinedPct = c.modelPct;
                     }
                     combinedByNum[c.num] = combinedPct;
 
@@ -735,20 +1159,21 @@
                     }
                 });
 
-                // 落差警示（TVBS 與民視任一候選人落差 > 3%）
                 const hasDiscrepancy = hasTvbs && hasFtv && maxTvbsFtvDiff > 3.0;
 
-                // 排序候選人（依綜合得票率降冪）
                 const ranked = county.candidates
                     .map(c => ({
                         ...c,
                         combinedPct: combinedByNum[c.num],
                         tvbsVotes: tvbs.byNum[c.num].votes,
                         tvbsPct: tvbs.byNum[c.num].pct,
+                        tvbsDelta: tvbs.byNum[c.num].delta,
                         ftvVotes: ftv.byNum[c.num].votes,
                         ftvPct: ftv.byNum[c.num].pct,
+                        ftvDelta: ftv.byNum[c.num].delta,
                         cecVotes: cec.byNum[c.num].votes,
-                        cecPct: cec.byNum[c.num].pct
+                        cecPct: cec.byNum[c.num].pct,
+                        cecDelta: cec.byNum[c.num].delta
                     }))
                     .sort((a, b) => b.combinedPct - a.combinedPct);
 
@@ -756,120 +1181,69 @@
                 const runnerUp = ranked.length > 1 ? ranked[1] : null;
                 const leadMarginPct = leader && runnerUp ? (leader.combinedPct - runnerUp.combinedPct) : 0;
 
-                // 參考票差（優先中選會，其次 TVBS，其次民視）
                 let refVotesDiff = null;
                 let refSourceName = '';
                 if (leader && runnerUp) {
-                    if (hasCec) {
-                        refVotesDiff = leader.cecVotes - runnerUp.cecVotes;
-                        refSourceName = '中選會';
-                    } else if (hasTvbs) {
-                        refVotesDiff = leader.tvbsVotes - runnerUp.tvbsVotes;
-                        refSourceName = 'TVBS';
-                    } else if (hasFtv) {
-                        refVotesDiff = leader.ftvVotes - runnerUp.ftvVotes;
-                        refSourceName = '民視';
-                    }
+                    if (hasCec) { refVotesDiff = leader.cecVotes - runnerUp.cecVotes; refSourceName = '中選會'; }
+                    else if (hasTvbs) { refVotesDiff = leader.tvbsVotes - runnerUp.tvbsVotes; refSourceName = 'TVBS'; }
+                    else if (hasFtv) { refVotesDiff = leader.ftvVotes - runnerUp.ftvVotes; refSourceName = '民視'; }
                 }
 
                 // 數據一致性診斷
                 const maxTotalVotes = Math.max(tvbs.totalVotes, ftv.totalVotes, cec.totalVotes);
                 let diagnostic = {
-                    level: 'info', // 'info' | 'warn' | 'danger' | 'ok'
-                    title: '尚無即時開票數據',
-                    detail: '目前尚未登錄 TVBS、民視或中選會票數，暫以選前公開模型作為參考基準。請點選上方頁籤登錄即時票數。'
+                    level: 'info',
+                    title: '待開票中・暫以選前模型為基準',
+                    detail: '尚未登錄即時開票數據，系統維持 0 票待開狀態並顯示 PollTrack / TPOC 選前參考。'
                 };
 
                 if (hasAnyLive) {
                     if (maxTotalVotes < 1000) {
                         diagnostic = {
                             level: 'warn',
-                            title: '初期樣本極小・僅供參考',
-                            detail: `目前單源最高累計僅 ${maxTotalVotes.toLocaleString()} 票，極易受單一小型投開票所結構影響，切勿視為最終定局。`
+                            title: `極小樣本警告（累計 ${maxTotalVotes.toLocaleString()} 票）・僅供初期參考`,
+                            detail: '目前開票樣本數低於 1,000 票，受單一村里票匭結構影響極大，切勿視為最終結果。'
                         };
                     } else if (hasDiscrepancy) {
                         diagnostic = {
                             level: 'danger',
-                            title: `偵測到各台落差達 ${maxTvbsFtvDiff.toFixed(2)}%・需防灌票風險`,
-                            detail: 'TVBS 與民視對同縣市候選人的得票率落差已超過 3% 警戒線，建議立即核對中選會官方登錄數字。'
+                            title: `⚠️ 各台落差警示：TVBS 與民視相差達 ${maxTvbsFtvDiff.toFixed(2)}%`,
+                            detail: '兩大商業台對同縣市候選人得票率落差超過 3% 警戒線，請優先核對中選會官方數字。'
                         };
                     } else if (hasTvbs && hasFtv) {
                         diagnostic = {
                             level: 'ok',
-                            title: `各台趨勢高度吻合（最大落差 ${maxTvbsFtvDiff.toFixed(2)}%）`,
-                            detail: 'TVBS 與民視報票得票率誤差在 3% 合理範圍內，開票趨勢具備高度一致性。'
+                            title: `各台趨勢高度一致（最大落差 ${maxTvbsFtvDiff.toFixed(2)}%）`,
+                            detail: 'TVBS 與民視報票得票率誤差在 3% 合理範圍內，開票趨勢穩定可信。'
                         };
                     } else {
                         diagnostic = {
                             level: 'info',
-                            title: `單一來源回報中（累計 ${maxTotalVotes.toLocaleString()} 票）`,
-                            detail: '目前已登錄單一數據源，建議同步輸入另一家電視台或中選會數據，以啟用自動落差交叉檢核。'
+                            title: `單源回報中（累計 ${maxTotalVotes.toLocaleString()} 票）`,
+                            detail: '已同步單一數據源；串接或補齊另一家電視台／中選會數據後將自動啟動三方交叉檢核。'
                         };
                     }
                 }
 
                 return {
                     tvbs, ftv, cec,
-                    hasTvbs, hasFtv, hasCec, hasMediaSync, hasAnyLive,
+                    hasTvbs, hasFtv, hasCec, hasAnyLive,
                     hasDiscrepancy, maxTvbsFtvDiff,
                     ranked, leader, runnerUp, leadMarginPct,
-                    refVotesDiff, refSourceName,
-                    diagnostic
+                    refVotesDiff, refSourceName, diagnostic
                 };
             }
 
-            /**
-             * 取得縣市在目前作用中頁籤的領先者資訊（用於席次條與左側矩陣）
-             */
             function getActiveLeaderForCounty(county) {
                 const ana = computeCountyAnalysis(county);
-                if (state.activeTab === 'tvbs') {
-                    return {
-                        leader: ana.tvbs.leader,
-                        pct: ana.tvbs.leader ? ana.tvbs.leader.pct : 0,
-                        isLive: ana.hasTvbs,
-                        ana
-                    };
-                }
-                if (state.activeTab === 'ftv') {
-                    return {
-                        leader: ana.ftv.leader,
-                        pct: ana.ftv.leader ? ana.ftv.leader.pct : 0,
-                        isLive: ana.hasFtv,
-                        ana
-                    };
-                }
-                if (state.activeTab === 'cec') {
-                    return {
-                        leader: ana.cec.leader,
-                        pct: ana.cec.leader ? ana.cec.leader.pct : 0,
-                        isLive: ana.hasCec,
-                        ana
-                    };
-                }
-                // combined 模式
-                return {
-                    leader: ana.leader,
-                    pct: ana.leader ? ana.leader.combinedPct : 0,
-                    isLive: ana.hasAnyLive,
-                    ana
-                };
+                if (state.activeTab === 'tvbs') return { leader: ana.tvbs.leader, pct: ana.tvbs.leader ? ana.tvbs.leader.pct : 0, isLive: ana.hasTvbs, ana };
+                if (state.activeTab === 'ftv') return { leader: ana.ftv.leader, pct: ana.ftv.leader ? ana.ftv.leader.pct : 0, isLive: ana.hasFtv, ana };
+                if (state.activeTab === 'cec') return { leader: ana.cec.leader, pct: ana.cec.leader ? ana.cec.leader.pct : 0, isLive: ana.hasCec, ana };
+                return { leader: ana.leader, pct: ana.leader ? ana.leader.combinedPct : 0, isLive: ana.hasAnyLive, ana };
             }
 
-            // ==================== 畫面渲染函式 ====================
+            // ==================== 畫面渲染 ====================
 
-            function updateClock() {
-                const now = new Date();
-                const utc8 = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Taipei' }));
-                const hh = String(utc8.getHours()).padStart(2, '0');
-                const mm = String(utc8.getMinutes()).padStart(2, '0');
-                const ss = String(utc8.getSeconds()).padStart(2, '0');
-                liveClockEl.textContent = `UTC+8 ${hh}:${mm}:${ss}`;
-            }
-
-            /**
-             * 渲染頂部 22 縣市席次版圖條
-             */
             function renderSeatBar() {
                 const counts = { kmt: 0, dpp: 0, tpp: 0, ind: 0, pending: 0 };
                 let syncedCount = 0;
@@ -877,7 +1251,6 @@
                 countiesData.forEach(c => {
                     const info = getActiveLeaderForCounty(c);
                     if (info.ana.hasAnyLive) syncedCount++;
-
                     if (!info.leader) {
                         counts.pending++;
                     } else {
@@ -889,13 +1262,14 @@
                     }
                 });
 
-                const tabNames = {
-                    combined: '綜合交叉分析（無即時票處採選前模型）',
+                const tabLabelMap = {
+                    combined: '綜合交叉分析（待開處採選前基準）',
                     tvbs: 'TVBS 即時報票',
                     ftv: '民視 即時報票',
-                    cec: '中選會官方登錄'
+                    cec: '中選會官方登錄',
+                    livewall: '綜合交叉分析'
                 };
-                seatBarSourceLabelEl.textContent = `全台 22 縣市版圖即時席次（${tabNames[state.activeTab]}）`;
+                seatBarSourceLabelEl.textContent = `全台 22 縣市版圖即時席次（${tabLabelMap[state.activeTab]}）`;
                 syncedCountBadgeEl.textContent = `已同步 ${syncedCount}/22 縣市`;
 
                 const total = countiesData.length;
@@ -912,48 +1286,50 @@
                 document.getElementById('barPending').style.width = `${(counts.pending / total) * 100}%`;
             }
 
-            /**
-             * 渲染左側全台 22 縣市戰情矩陣
-             */
-            function renderTileMap() {
+            function renderTileMap(flash = false) {
                 tileMapContainerEl.innerHTML = REGION_ORDER.map(region => {
                     const list = countiesData.filter(c => c.region === region);
                     return `
                         <div>
                             <div class="flex items-center justify-between mb-2">
                                 <h3 class="text-xs font-bold tracking-wider text-slate-400">${escapeHTML(region)}</h3>
-                                <span class="text-[11px] font-mono text-slate-500">${list.length} 縣市</span>
+                                <span class="text-[11px] font-mono tabular-nums text-slate-500">${list.length} 縣市</span>
                             </div>
                             <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
                                 ${list.map(c => {
                                     const isSelected = c.id === state.selectedCountyId;
                                     const info = getActiveLeaderForCounty(c);
+                                    const cStore = state.liveStore[c.id] || {};
                                     const pStyle = info.leader ? getPartyStyle(info.leader.partyType) : { bar: 'bg-amber-500', text: 'text-amber-400' };
                                     const leaderName = info.leader ? info.leader.name : '待開票';
                                     const pctText = info.leader ? `${info.pct.toFixed(1)}%` : '--%';
+                                    const turnoutTag = cStore.turnoutCustom ? `投 ${cStore.turnoutCustom}%` : c.turnoutShort;
 
-                                    let statusBadges = '';
+                                    let statusBadge = '';
                                     if (info.ana.hasDiscrepancy) {
-                                        statusBadges = `<span class="px-1.5 py-0.5 rounded bg-orange-500/20 text-orange-300 border border-orange-500/40 text-[9px] font-bold leading-none">⚠️ 落差警示</span>`;
-                                    } else if (info.ana.hasMediaSync || info.ana.hasCec) {
-                                        statusBadges = `<span class="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[9px] font-bold leading-none">已同步</span>`;
+                                        statusBadge = `<span class="px-1 py-0.5 rounded bg-orange-500/20 text-orange-300 border border-orange-500/40 text-[9px] font-bold">⚠️落差</span>`;
+                                    } else if (info.ana.hasAnyLive) {
+                                        statusBadge = `<span class="px-1 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[9px] font-bold">LIVE</span>`;
                                     }
 
                                     return `
                                         <button
                                             type="button"
                                             data-county-id="${escapeHTML(c.id)}"
-                                            class="relative text-left rounded-xl p-2.5 bg-[#162032] hover:bg-slate-800/90 border transition-all cursor-pointer overflow-hidden ${isSelected ? 'border-sky-400 tile-active bg-slate-800' : 'border-slate-800 hover:border-slate-700'}"
+                                            class="relative text-left rounded-xl p-2.5 bg-slate-900/90 hover:bg-slate-800 border transition-all cursor-pointer overflow-hidden ${isSelected ? 'border-sky-400 tile-active bg-slate-800' : 'border-slate-800 hover:border-slate-700'} ${flash && info.ana.hasAnyLive ? 'flash-update' : ''}"
                                         >
                                             <span class="absolute left-0 top-0 bottom-0 w-1.5 ${pStyle.bar}"></span>
                                             <div class="pl-2 space-y-1">
                                                 <div class="flex items-center justify-between gap-1">
                                                     <span class="text-sm font-bold ${isSelected ? 'text-sky-300' : 'text-white'} truncate">${escapeHTML(c.name)}</span>
-                                                    ${statusBadges}
+                                                    ${statusBadge}
                                                 </div>
                                                 <div class="flex items-center justify-between gap-1 text-[11px]">
-                                                    <span class="text-slate-300 truncate max-w-[66px]" title="${escapeHTML(leaderName)}">${escapeHTML(leaderName)}</span>
-                                                    <span class="font-mono font-bold ${info.isLive ? pStyle.text : 'text-slate-400'}">${pctText}</span>
+                                                    <span class="text-slate-300 truncate max-w-[66px]">${escapeHTML(leaderName)}</span>
+                                                    <span class="font-mono tabular-nums font-bold ${info.isLive ? pStyle.text : 'text-slate-400'}">${pctText}</span>
+                                                </div>
+                                                <div class="text-[10px] font-mono tabular-nums text-slate-400 truncate">
+                                                    ${escapeHTML(turnoutTag)}
                                                 </div>
                                             </div>
                                         </button>
@@ -965,119 +1341,96 @@
                 }).join('');
             }
 
-            /**
-             * 渲染右側縣市深度戰情分析面板
-             */
-            function renderDetailPanel() {
+            function renderDetailPanel(flash = false) {
                 const county = countiesData.find(c => c.id === state.selectedCountyId) || countiesData[0];
                 const ana = computeCountyAnalysis(county);
                 const cStore = ensureCountyStore(county.id);
 
-                // 診斷卡片樣式
-                const diagStyles = {
-                    ok: 'bg-emerald-500/10 border-emerald-500/35 text-emerald-300',
-                    warn: 'bg-amber-500/10 border-amber-500/35 text-amber-300',
-                    danger: 'bg-orange-500/15 border-orange-500/50 text-orange-300',
-                    info: 'bg-sky-500/10 border-sky-500/30 text-sky-300'
-                };
-                const diagClass = diagStyles[ana.diagnostic.level] || diagStyles.info;
-
-                // 四大頁籤按鈕設定
                 const tabs = [
                     { key: 'combined', label: '⚖️ 綜合交叉分析' },
-                    { key: 'tvbs', label: '📺 TVBS 即時報票', count: ana.tvbs.totalVotes },
-                    { key: 'ftv', label: '📺 民視 即時報票', count: ana.ftv.totalVotes },
-                    { key: 'cec', label: '🏛️ 中選會官方登錄', count: ana.cec.totalVotes }
+                    { key: 'tvbs', label: '📺 TVBS 報票', count: ana.tvbs.totalVotes },
+                    { key: 'ftv', label: '📺 民視 報票', count: ana.ftv.totalVotes },
+                    { key: 'cec', label: '🏛️ 中選會官方', count: ana.cec.totalVotes },
+                    { key: 'livewall', label: '📡 免手動直播牆' }
                 ];
 
-                // 依照目前頁籤產生主內容區
                 let tabBodyHTML = '';
                 if (state.activeTab === 'combined') {
-                    tabBodyHTML = renderCombinedTabHTML(county, ana, diagClass);
+                    tabBodyHTML = renderCombinedTabHTML(county, ana, flash);
+                } else if (state.activeTab === 'livewall') {
+                    tabBodyHTML = renderLiveWallTabHTML();
                 } else {
                     tabBodyHTML = renderSourceEditorTabHTML(county, state.activeTab, ana);
                 }
 
                 detailPanelEl.innerHTML = `
                     <div class="space-y-5">
-                        <!-- 縣市標頭與重置按鈕 -->
+                        <!-- 縣市標頭與重置 -->
                         <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-3 border-b border-slate-800 pb-4">
                             <div>
                                 <div class="flex items-center flex-wrap gap-2">
                                     <h2 class="text-2xl sm:text-3xl font-black text-white tracking-tight">${escapeHTML(county.name)}</h2>
                                     <span class="px-2.5 py-0.5 rounded-md bg-slate-800 text-slate-300 text-xs font-bold border border-slate-700">${escapeHTML(county.region)}</span>
-                                    <span class="px-2.5 py-0.5 rounded-md bg-slate-900 text-slate-400 text-xs font-mono border border-slate-800">${county.candidates.length} 位候選人</span>
-                                    ${ana.hasDiscrepancy ? '<span class="px-2.5 py-0.5 rounded-md bg-orange-500/20 text-orange-300 border border-orange-500/40 text-xs font-bold">⚠️ TVBS／民視落差警示</span>' : ''}
+                                    <span class="px-2.5 py-0.5 rounded-md bg-slate-950 text-slate-400 text-xs font-mono tabular-nums border border-slate-800">${county.candidates.length} 位候選人</span>
+                                    ${ana.hasDiscrepancy ? '<span class="px-2.5 py-0.5 rounded-md bg-orange-500/20 text-orange-300 border border-orange-500/40 text-xs font-bold">⚠️ 各台落差 >3%</span>' : ''}
                                 </div>
                                 <div class="flex flex-wrap gap-1.5 mt-2">
                                     ${county.tags.map(t => `<span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-sky-500/15 text-sky-300 border border-sky-500/30">${escapeHTML(t)}</span>`).join('')}
                                 </div>
                             </div>
                             <button id="openResetModalBtn" type="button" class="self-start px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-rose-500/20 text-slate-300 hover:text-rose-300 border border-slate-700 hover:border-rose-500/40 text-xs font-bold transition-colors cursor-pointer shrink-0">
-                                ↺ 重置為 16:15 預設快訊
+                                ↺ 重置回 16:25 基準
                             </button>
                         </div>
 
-                        <!-- 投票率即時追蹤儀表卡 -->
+                        <!-- 投票率即時追蹤卡 -->
                         <div class="grid grid-cols-1 md:grid-cols-12 gap-3">
-                            <div class="md:col-span-6 bg-[#162032] border border-slate-800 rounded-xl p-3.5">
-                                <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">今日最新回報投票率（來源與時間）</div>
-                                <div class="mt-1 text-base font-mono font-bold text-sky-300">${escapeHTML(cStore.turnoutCustom ? `手動更新：${cStore.turnoutCustom}%` : county.turnoutDefault)}</div>
+                            <div class="md:col-span-6 bg-slate-900 border border-slate-800 rounded-xl p-3.5">
+                                <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">今日最新回報投票率與快訊</div>
+                                <div class="mt-1 text-base font-mono tabular-nums font-bold text-sky-300">${escapeHTML(cStore.turnoutCustom ? `已同步更新：${cStore.turnoutCustom}%` : county.turnoutDefault)}</div>
                                 <div class="mt-1 text-[11px] text-slate-400 leading-snug">${escapeHTML(county.turnoutDetail)}</div>
                             </div>
-                            <div class="md:col-span-3 bg-[#162032] border border-slate-800 rounded-xl p-3.5 flex flex-col justify-between">
+                            <div class="md:col-span-3 bg-slate-900 border border-slate-800 rounded-xl p-3.5 flex flex-col justify-between">
                                 <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">2022 歷史投票率</div>
-                                <div class="mt-1.5 text-xl font-mono font-bold text-slate-200">${escapeHTML(county.turnout2022)}</div>
+                                <div class="mt-1.5 text-xl font-mono tabular-nums font-bold text-slate-200">${escapeHTML(county.turnout2022)}</div>
                             </div>
-                            <div class="md:col-span-3 bg-[#162032] border border-sky-500/30 rounded-xl p-3.5 flex flex-col justify-between">
+                            <div class="md:col-span-3 bg-slate-900 border border-sky-500/30 rounded-xl p-3.5 flex flex-col justify-between">
                                 <label for="customTurnoutInput" class="text-[11px] font-bold text-sky-400 uppercase tracking-wider">手動更新投票率</label>
                                 <div class="mt-1.5 flex items-center gap-1.5">
-                                    <input
-                                        id="customTurnoutInput"
-                                        type="number"
-                                        step="0.01"
-                                        min="0"
-                                        max="100"
-                                        value="${escapeHTML(cStore.turnoutCustom || '')}"
-                                        placeholder="如 65.4"
-                                        class="w-full bg-slate-900 border border-slate-700 focus:border-sky-400 rounded-lg px-2 py-1 text-sm font-mono font-bold text-white focus:outline-none"
-                                    >
+                                    <input id="customTurnoutInput" type="number" step="0.01" min="0" max="100"
+                                           value="${escapeHTML(cStore.turnoutCustom || '')}" placeholder="如 69.2"
+                                           class="w-full bg-slate-950 border border-slate-700 focus:border-sky-400 rounded-lg px-2 py-1 text-sm font-mono tabular-nums font-bold text-white focus:outline-none">
                                     <span class="text-xs font-mono text-slate-400">%</span>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- 四大模式頁籤列 -->
-                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5 p-1 rounded-xl bg-slate-900 border border-slate-800" role="tablist">
+                        <!-- 五大模式頁籤列 -->
+                        <div class="grid grid-cols-2 sm:grid-cols-5 gap-1.5 p-1 rounded-xl bg-slate-950 border border-slate-800" role="tablist">
                             ${tabs.map(t => {
                                 const isActive = state.activeTab === t.key;
                                 const activeCls = isActive
                                     ? 'bg-sky-500 text-slate-950 shadow-md'
                                     : 'text-slate-400 hover:text-white hover:bg-slate-800/70';
                                 return `
-                                    <button
-                                        type="button"
-                                        data-tab="${t.key}"
-                                        role="tab"
-                                        aria-selected="${isActive}"
-                                        class="px-2.5 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${activeCls}"
-                                    >
-                                        <span>${t.label}</span>
-                                        ${t.count > 0 ? `<span class="px-1.5 py-0.5 rounded text-[10px] font-mono ${isActive ? 'bg-slate-950/20 text-slate-950' : 'bg-emerald-500/20 text-emerald-300'}">${t.count.toLocaleString()}</span>` : ''}
+                                    <button type="button" data-tab="${t.key}" role="tab" aria-selected="${isActive}"
+                                            class="px-2 py-2 rounded-lg text-[11px] sm:text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1 ${activeCls}">
+                                        <span class="truncate">${t.label}</span>
+                                        ${t.count > 0 ? `<span class="px-1 py-0.5 rounded text-[10px] font-mono tabular-nums ${isActive ? 'bg-slate-950/20 text-slate-950' : 'bg-emerald-500/20 text-emerald-300'}">${t.count.toLocaleString()}</span>` : ''}
                                     </button>
                                 `;
                             }).join('')}
                         </div>
 
-                        <!-- 頁籤主要內容 -->
+                        <!-- 頁籤內容區 -->
                         <div id="tabBodyContainer">
                             ${tabBodyHTML}
                         </div>
 
-                        <!-- 戰情重點分析 -->
-                        <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-4 space-y-1.5">
+                        <!-- 戰情重點與選前基準 -->
+                        <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-4 space-y-1.5">
                             <div class="flex flex-wrap items-center justify-between gap-2">
-                                <h3 class="text-xs font-bold text-sky-400 uppercase tracking-wider">縣市選情與選前參考</h3>
+                                <h3 class="text-xs font-bold text-sky-400 uppercase tracking-wider">縣市戰情分析與選前基準</h3>
                                 <span class="text-[11px] font-mono text-slate-400">${escapeHTML(county.modelNote)}</span>
                             </div>
                             <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">${escapeHTML(county.analysis)}</p>
@@ -1089,78 +1442,78 @@
             }
 
             /**
-             * (A) 綜合交叉分析頁籤 HTML
+             * 頁籤 1：綜合交叉分析
              */
-            function renderCombinedTabHTML(county, ana, diagClass) {
+            function renderCombinedTabHTML(county, ana, flash) {
+                const diagStyles = {
+                    ok: 'bg-emerald-500/10 border-emerald-500/35 text-emerald-300',
+                    warn: 'bg-amber-500/10 border-amber-500/35 text-amber-300',
+                    danger: 'bg-orange-500/15 border-orange-500/50 text-orange-300',
+                    info: 'bg-sky-500/10 border-sky-500/30 text-sky-300'
+                };
+                const diagClass = diagStyles[ana.diagnostic.level] || diagStyles.info;
+
                 const leadSummary = ana.leader && ana.runnerUp
-                    ? `目前領先：<strong class="text-white">${escapeHTML(ana.leader.name)}</strong>（領先 ${escapeHTML(ana.runnerUp.name)} <strong class="font-mono text-amber-400">+${ana.leadMarginPct.toFixed(2)}%</strong>${ana.refVotesDiff !== null ? ` ／ ${ana.refSourceName}票差 <strong class="font-mono text-amber-400">+${ana.refVotesDiff.toLocaleString()}</strong> 票` : ''}）`
-                    : '等待開票數據登錄中';
+                    ? `領先：<strong class="text-white">${escapeHTML(ana.leader.name)}</strong>（領先 ${escapeHTML(ana.runnerUp.name)} <strong class="font-mono tabular-nums text-amber-400">+${ana.leadMarginPct.toFixed(2)}%</strong>${ana.refVotesDiff !== null ? ` ／ ${ana.refSourceName}票差 <strong class="font-mono tabular-nums text-amber-400">+${ana.refVotesDiff.toLocaleString()}</strong> 票` : ''}）`
+                    : '等待開票數據中';
 
                 return `
                     <div class="space-y-4">
-                        <!-- 數據一致性診斷卡 -->
                         <div class="rounded-xl border p-3.5 ${diagClass}">
                             <div class="text-xs sm:text-sm font-bold">${escapeHTML(ana.diagnostic.title)}</div>
                             <p class="text-xs mt-1 opacity-90 leading-relaxed">${escapeHTML(ana.diagnostic.detail)}</p>
                         </div>
 
-                        <!-- 綜合領先摘要列 -->
                         <div class="flex flex-wrap items-center justify-between gap-2 px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-xs text-slate-300">
                             <div>${leadSummary}</div>
-                            <div class="font-mono text-[11px] text-slate-400">
-                                權重：中選會 50%・TVBS 25%・民視 25%（依有數據源正規化）
-                            </div>
+                            <div class="font-mono text-[11px] text-slate-400">權重：中選會 50%・TVBS 25%・民視 25%</div>
                         </div>
 
-                        <!-- 候選人綜合百分率動態長條圖 + 四源並排對照 -->
                         <div class="space-y-3">
                             ${ana.ranked.map(c => {
                                 const pStyle = getPartyStyle(c.partyType);
+                                const deltaBadge = (d) => d > 0 ? `<span class="ml-1 text-[10px] text-emerald-400 font-bold">+${d.toLocaleString()}</span>` : '';
                                 return `
-                                    <div class="bg-[#162032] border border-slate-800 rounded-xl p-3.5 space-y-2.5">
+                                    <div class="bg-slate-900 border border-slate-800 rounded-xl p-3.5 space-y-2.5 ${flash && (c.tvbsDelta > 0 || c.ftvDelta > 0 || c.cecDelta > 0) ? 'flash-update' : ''}">
                                         <div class="flex flex-wrap items-center justify-between gap-2">
                                             <div class="flex items-center gap-2 min-w-0">
-                                                <span class="w-6 h-6 rounded-md bg-slate-900 border border-slate-700 text-slate-200 font-mono text-xs font-bold flex items-center justify-center shrink-0">${c.num}</span>
-                                                <span class="text-base font-bold text-white truncate" title="${escapeHTML(c.name)}">${escapeHTML(c.name)}</span>
+                                                <span class="w-6 h-6 rounded-md bg-slate-950 border border-slate-700 text-slate-200 font-mono text-xs font-bold flex items-center justify-center shrink-0">${c.num}</span>
+                                                <span class="text-base font-bold text-white truncate">${escapeHTML(c.name)}</span>
                                                 <span class="px-2 py-0.5 rounded border text-[11px] font-bold shrink-0 ${pStyle.badge}">${escapeHTML(c.party)}</span>
                                                 ${c.incumbent ? '<span class="px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[10px] font-bold shrink-0">現任</span>' : ''}
                                             </div>
                                             <div class="text-right">
-                                                <span class="text-[11px] text-slate-400 mr-1.5">${ana.hasAnyLive ? '綜合加權' : '選前參考'}</span>
-                                                <span class="text-xl sm:text-2xl font-mono font-bold ${c.combinedPct > 0 ? pStyle.text : 'text-slate-500'}">${c.combinedPct.toFixed(2)}%</span>
+                                                <span class="text-[11px] text-slate-400 mr-1.5">${ana.hasAnyLive ? '綜合加權' : '選前基準'}</span>
+                                                <span class="text-xl sm:text-2xl font-mono tabular-nums font-bold ${c.combinedPct > 0 ? pStyle.text : 'text-slate-500'}">${c.combinedPct.toFixed(2)}%</span>
                                             </div>
                                         </div>
 
-                                        <!-- 動畫百分率長條圖 -->
-                                        <div class="w-full h-3 rounded-full bg-slate-900 overflow-hidden border border-slate-800">
+                                        <div class="w-full h-3 rounded-full bg-slate-950 overflow-hidden border border-slate-800">
                                             <div class="h-full rounded-full transition-all duration-500 ${pStyle.bar}" style="width: ${Math.min(100, Math.max(0, c.combinedPct))}%"></div>
                                         </div>
 
-                                        <!-- 四方數據並排對照格 -->
-                                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 text-[11px] font-mono">
-                                            <div class="bg-slate-900/90 border border-slate-800 rounded-lg px-2.5 py-1.5">
+                                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 text-[11px] font-mono tabular-nums">
+                                            <div class="bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5">
                                                 <div class="text-slate-400">📺 TVBS 報票</div>
                                                 <div class="mt-0.5 font-bold ${ana.hasTvbs ? 'text-blue-300' : 'text-slate-500'}">
-                                                    ${ana.hasTvbs ? `${c.tvbsPct.toFixed(2)}% (${c.tvbsVotes.toLocaleString()})` : '待登錄'}
+                                                    ${ana.hasTvbs ? `${c.tvbsPct.toFixed(2)}% (${c.tvbsVotes.toLocaleString()})${deltaBadge(c.tvbsDelta)}` : '待開票'}
                                                 </div>
                                             </div>
-                                            <div class="bg-slate-900/90 border border-slate-800 rounded-lg px-2.5 py-1.5">
+                                            <div class="bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5">
                                                 <div class="text-slate-400">📺 民視 報票</div>
                                                 <div class="mt-0.5 font-bold ${ana.hasFtv ? 'text-emerald-300' : 'text-slate-500'}">
-                                                    ${ana.hasFtv ? `${c.ftvPct.toFixed(2)}% (${c.ftvVotes.toLocaleString()})` : '待登錄'}
+                                                    ${ana.hasFtv ? `${c.ftvPct.toFixed(2)}% (${c.ftvVotes.toLocaleString()})${deltaBadge(c.ftvDelta)}` : '待開票'}
                                                 </div>
                                             </div>
-                                            <div class="bg-slate-900/90 border border-slate-800 rounded-lg px-2.5 py-1.5">
+                                            <div class="bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5">
                                                 <div class="text-slate-400">🏛️ 中選會官方</div>
                                                 <div class="mt-0.5 font-bold ${ana.hasCec ? 'text-sky-300' : 'text-slate-500'}">
-                                                    ${ana.hasCec ? `${c.cecPct.toFixed(2)}% (${c.cecVotes.toLocaleString()})` : '待登錄'}
+                                                    ${ana.hasCec ? `${c.cecPct.toFixed(2)}% (${c.cecVotes.toLocaleString()})${deltaBadge(c.cecDelta)}` : '待開票'}
                                                 </div>
                                             </div>
-                                            <div class="bg-slate-900/90 border border-slate-800 rounded-lg px-2.5 py-1.5">
+                                            <div class="bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5">
                                                 <div class="text-slate-400">📊 選前模型</div>
-                                                <div class="mt-0.5 font-bold text-slate-300">
-                                                    ${c.modelPct.toFixed(1)}%
-                                                </div>
+                                                <div class="mt-0.5 font-bold text-slate-300">${c.modelPct.toFixed(1)}%</div>
                                             </div>
                                         </div>
                                     </div>
@@ -1172,23 +1525,23 @@
             }
 
             /**
-             * (B/C/D) 單一數據源即時登錄編輯頁籤 HTML
+             * 頁籤 2/3/4：單源即時報票登錄
              */
             function renderSourceEditorTabHTML(county, sourceKey, ana) {
                 const meta = {
-                    tvbs: { name: 'TVBS 即時報票', color: 'text-blue-300', border: 'border-blue-500/30', stats: ana.tvbs },
-                    ftv: { name: '民視 即時報票', color: 'text-emerald-300', border: 'border-emerald-500/30', stats: ana.ftv },
-                    cec: { name: '中選會官方登錄', color: 'text-sky-300', border: 'border-sky-500/30', stats: ana.cec }
+                    tvbs: { name: 'TVBS 即時報票', color: 'text-blue-300', border: 'border-blue-500/35', stats: ana.tvbs },
+                    ftv: { name: '民視 即時報票', color: 'text-emerald-300', border: 'border-emerald-500/35', stats: ana.ftv },
+                    cec: { name: '中選會官方登錄', color: 'text-sky-300', border: 'border-sky-500/35', stats: ana.cec }
                 }[sourceKey];
 
                 return `
                     <div class="space-y-3.5">
                         <div class="flex flex-wrap items-center justify-between gap-2 px-3.5 py-2.5 rounded-xl bg-slate-900 border ${meta.border} text-xs">
                             <div class="font-bold ${meta.color}">
-                                正在登錄「${meta.name}」— 輸入票數立即自動換算百分率並同步至交叉分析
+                                登錄「${meta.name}」— 輸入即自動存檔、換算百分率並同步跨分頁
                             </div>
-                            <div class="font-mono text-slate-300">
-                                累計總票數：<strong id="sourceTotalVotes" class="text-white text-sm">${meta.stats.totalVotes.toLocaleString()}</strong> 票
+                            <div class="font-mono tabular-nums text-slate-300">
+                                累計：<strong id="sourceTotalVotes" class="text-white text-sm">${meta.stats.totalVotes.toLocaleString()}</strong> 票
                             </div>
                         </div>
 
@@ -1197,34 +1550,27 @@
                                 const pStyle = getPartyStyle(c.partyType);
                                 const vObj = meta.stats.byNum[c.num];
                                 return `
-                                    <div class="source-cand-row bg-[#162032] border border-slate-800 rounded-xl p-3.5 space-y-2.5" data-cand-num="${c.num}">
+                                    <div class="source-cand-row bg-slate-900 border border-slate-800 rounded-xl p-3.5 space-y-2.5" data-cand-num="${c.num}">
                                         <div class="flex flex-wrap items-center justify-between gap-2">
                                             <div class="flex items-center gap-2 min-w-0">
-                                                <span class="w-6 h-6 rounded-md bg-slate-900 border border-slate-700 text-slate-200 font-mono text-xs font-bold flex items-center justify-center shrink-0">${c.num}</span>
-                                                <span class="text-base font-bold text-white truncate" title="${escapeHTML(c.name)}">${escapeHTML(c.name)}</span>
+                                                <span class="w-6 h-6 rounded-md bg-slate-950 border border-slate-700 text-slate-200 font-mono text-xs font-bold flex items-center justify-center shrink-0">${c.num}</span>
+                                                <span class="text-base font-bold text-white truncate">${escapeHTML(c.name)}</span>
                                                 <span class="px-2 py-0.5 rounded border text-[11px] font-bold shrink-0 ${pStyle.badge}">${escapeHTML(c.party)}</span>
                                                 ${c.incumbent ? '<span class="px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[10px] font-bold shrink-0">現任</span>' : ''}
                                             </div>
                                             <div class="flex items-center gap-3 ml-auto">
                                                 <div class="flex items-center gap-1.5">
-                                                    <input
-                                                        type="number"
-                                                        min="0"
-                                                        step="1"
-                                                        data-source="${sourceKey}"
-                                                        data-cand-num="${c.num}"
-                                                        value="${vObj.votes > 0 ? vObj.votes : ''}"
-                                                        placeholder="輸入票數"
-                                                        class="source-vote-input w-28 sm:w-32 bg-slate-900 border border-slate-700 focus:border-sky-400 rounded-lg px-2.5 py-1.5 text-right font-mono text-sm font-bold text-white focus:outline-none"
-                                                    >
+                                                    <input type="number" min="0" step="1" data-source="${sourceKey}" data-cand-num="${c.num}"
+                                                           value="${vObj.votes > 0 ? vObj.votes : ''}" placeholder="輸入票數"
+                                                           class="source-vote-input w-28 sm:w-32 bg-slate-950 border border-slate-700 focus:border-sky-400 rounded-lg px-2.5 py-1.5 text-right font-mono tabular-nums text-sm font-bold text-white focus:outline-none">
                                                     <span class="text-xs text-slate-400">票</span>
                                                 </div>
                                                 <div class="text-right min-w-[78px]">
-                                                    <span class="cand-pct-text text-xl font-mono font-bold ${vObj.pct > 0 ? pStyle.text : 'text-slate-500'}">${vObj.pct.toFixed(2)}%</span>
+                                                    <span class="cand-pct-text text-xl font-mono tabular-nums font-bold ${vObj.pct > 0 ? pStyle.text : 'text-slate-500'}">${vObj.pct.toFixed(2)}%</span>
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="w-full h-3 rounded-full bg-slate-900 overflow-hidden border border-slate-800">
+                                        <div class="w-full h-3 rounded-full bg-slate-950 overflow-hidden border border-slate-800">
                                             <div class="cand-pct-bar h-full rounded-full transition-all duration-300 ${pStyle.bar}" style="width: ${Math.min(100, Math.max(0, vObj.pct))}%"></div>
                                         </div>
                                     </div>
@@ -1236,10 +1582,63 @@
             }
 
             /**
-             * 綁定右側詳情面板內的互動事件（保持輸入焦點流暢）
+             * 頁籤 5：📡 免手動即時開票直播牆
+             */
+            function renderLiveWallTabHTML() {
+                const ch = liveWallChannels[state.liveWallSource] || liveWallChannels.tvbs;
+                return `
+                    <div class="space-y-3.5">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 bg-slate-900 border border-slate-800 rounded-xl p-3">
+                            <div class="flex flex-wrap items-center gap-1.5">
+                                <button type="button" data-wall="tvbs" class="wall-src-btn px-3 py-1.5 rounded-lg text-xs font-bold cursor-pointer transition-colors ${state.liveWallSource === 'tvbs' ? 'bg-blue-600 text-white' : 'bg-slate-950 text-slate-400 hover:text-white border border-slate-800'}">
+                                    📺 TVBS 直播
+                                </button>
+                                <button type="button" data-wall="ftv" class="wall-src-btn px-3 py-1.5 rounded-lg text-xs font-bold cursor-pointer transition-colors ${state.liveWallSource === 'ftv' ? 'bg-emerald-600 text-white' : 'bg-slate-950 text-slate-400 hover:text-white border border-slate-800'}">
+                                    📺 民視 直播
+                                </button>
+                                <button type="button" data-wall="cec" class="wall-src-btn px-3 py-1.5 rounded-lg text-xs font-bold cursor-pointer transition-colors ${state.liveWallSource === 'cec' ? 'bg-sky-600 text-white' : 'bg-slate-950 text-slate-400 hover:text-white border border-slate-800'}">
+                                    🏛️ 中選會官網
+                                </button>
+                            </div>
+
+                            <div class="flex flex-wrap items-center gap-2.5">
+                                <label class="inline-flex items-center gap-1.5 text-xs text-slate-300 cursor-pointer select-none">
+                                    <input id="autoReloadEmbedToggle" type="checkbox" ${state.autoReloadEmbed ? 'checked' : ''} class="rounded bg-slate-950 border-slate-700 text-emerald-500 focus:ring-0">
+                                    <span>隨倒數自動重整嵌入頁</span>
+                                </label>
+                                <button id="popoutWallBtn" type="button" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-sky-300 border border-slate-700 text-xs font-bold cursor-pointer">
+                                    ⧉ 子母窗開啟 ↗
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="rounded-xl overflow-hidden border border-slate-800 bg-black aspect-video relative">
+                            <iframe
+                                id="liveWallIframe"
+                                data-base-src="${escapeHTML(ch.embedUrl)}"
+                                src="${escapeHTML(ch.embedUrl)}"
+                                title="${escapeHTML(ch.name)}"
+                                class="w-full h-full border-0"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowfullscreen
+                            ></iframe>
+                        </div>
+
+                        <div class="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-400 bg-slate-900/70 border border-slate-800 rounded-xl px-3.5 py-2.5">
+                            <span>${escapeHTML(ch.desc)}</span>
+                            <a href="${escapeHTML(ch.directUrl)}" target="_blank" rel="noopener noreferrer" class="text-sky-400 hover:text-sky-300 font-bold shrink-0">
+                                直接前往官方頁面 ↗
+                            </a>
+                        </div>
+                    </div>
+                `;
+            }
+
+            /**
+             * 綁定右側面板事件
              */
             function bindDetailPanelEvents(county) {
-                // 頁籤切換
+                // 五大頁籤切換
                 detailPanelEl.querySelectorAll('button[data-tab]').forEach(btn => {
                     btn.addEventListener('click', () => {
                         state.activeTab = btn.getAttribute('data-tab');
@@ -1247,32 +1646,29 @@
                     });
                 });
 
-                // 手動投票率更新
+                // 投票率輸入
                 const turnoutInput = document.getElementById('customTurnoutInput');
                 if (turnoutInput) {
                     turnoutInput.addEventListener('input', e => {
-                        const cStore = ensureCountyStore(county.id);
-                        cStore.turnoutCustom = e.target.value;
-                        saveStore();
+                        ensureCountyStore(county.id).turnoutCustom = e.target.value;
+                        saveStore(false);
                     });
                     turnoutInput.addEventListener('change', () => {
-                        saveStore('投票率已儲存');
-                        renderDetailPanel();
+                        saveStore(true, '投票率已同步儲存');
+                        renderAll();
                     });
                 }
 
-                // 單源票數輸入（就地更新 DOM 不中斷游標焦點）
+                // 單源票數輸入（不中斷輸入焦點）
                 detailPanelEl.querySelectorAll('.source-vote-input').forEach(input => {
                     input.addEventListener('input', e => {
                         const sourceKey = e.target.getAttribute('data-source');
                         const candNum = Number(e.target.getAttribute('data-cand-num'));
                         const val = Math.max(0, parseInt(e.target.value, 10) || 0);
 
-                        const cStore = ensureCountyStore(county.id);
-                        cStore[sourceKey][candNum] = val;
-                        saveStore();
+                        ensureCountyStore(county.id)[sourceKey][candNum] = val;
+                        saveStore(false);
 
-                        // 局部更新本頁籤百分比、總票數，以及左側矩陣與頂部席次條
                         const stats = computeSourceStats(county, sourceKey);
                         const totalEl = document.getElementById('sourceTotalVotes');
                         if (totalEl) totalEl.textContent = stats.totalVotes.toLocaleString();
@@ -1286,21 +1682,44 @@
                             const barEl = row.querySelector('.cand-pct-bar');
                             if (pctEl) {
                                 pctEl.textContent = `${pct.toFixed(2)}%`;
-                                pctEl.className = `cand-pct-text text-xl font-mono font-bold ${pct > 0 ? pStyle.text : 'text-slate-500'}`;
+                                pctEl.className = `cand-pct-text text-xl font-mono tabular-nums font-bold ${pct > 0 ? pStyle.text : 'text-slate-500'}`;
                             }
                             if (barEl) barEl.style.width = `${Math.min(100, Math.max(0, pct))}%`;
                         });
 
                         renderSeatBar();
-                        renderTileMap();
+                        renderTileMap(false);
                     });
-
                     input.addEventListener('change', () => {
-                        saveStore('開票票數已同步儲存');
+                        saveStore(true, '票數已同步並廣播至其他分頁');
                     });
                 });
 
-                // 重置按鈕開啟自訂 Modal
+                // 直播牆切換
+                detailPanelEl.querySelectorAll('.wall-src-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        state.liveWallSource = btn.getAttribute('data-wall');
+                        renderDetailPanel();
+                    });
+                });
+
+                const autoReloadToggle = document.getElementById('autoReloadEmbedToggle');
+                if (autoReloadToggle) {
+                    autoReloadToggle.addEventListener('change', e => {
+                        state.autoReloadEmbed = e.target.checked;
+                        showToast(state.autoReloadEmbed ? '已開啟隨倒數自動重整嵌入頁' : '已關閉嵌入頁自動重整');
+                    });
+                }
+
+                const popoutWallBtn = document.getElementById('popoutWallBtn');
+                if (popoutWallBtn) {
+                    popoutWallBtn.addEventListener('click', () => {
+                        const ch = liveWallChannels[state.liveWallSource] || liveWallChannels.tvbs;
+                        window.open(ch.directUrl, 'electionLivePopout', 'width=960,height=640,resizable=yes,scrollbars=yes');
+                    });
+                }
+
+                // 重置按鈕
                 const openResetBtn = document.getElementById('openResetModalBtn');
                 if (openResetBtn) {
                     openResetBtn.addEventListener('click', () => {
@@ -1310,43 +1729,152 @@
                 }
             }
 
-            function renderAll() {
+            function renderAll(flash = false) {
                 renderSeatBar();
-                renderTileMap();
-                renderDetailPanel();
+                renderTileMap(flash);
+                renderDetailPanel(flash);
             }
 
-            // ==================== 全域事件綁定 ====================
+            // ==================== 匯出 JSON 快照 ====================
 
+            function exportJsonSnapshot() {
+                try {
+                    const payload = {
+                        exportedAt: new Date().toISOString(),
+                        taipeiTime: formatTaipeiTime(),
+                        customApiUrl: state.customApiUrl || null,
+                        data: state.liveStore
+                    };
+                    const jsonStr = JSON.stringify(payload, null, 2);
+                    const blob = new Blob([jsonStr], { type: 'application/json;charset=utf-8' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `election_2026_snapshot_${formatTaipeiTime().replace(/:/g, '')}.json`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                    showToast('已匯出 JSON 戰情快照');
+                } catch (e) {
+                    showToast('匯出失敗，請檢查瀏覽器權限');
+                }
+            }
+
+            // ==================== 全域事件監聽 ====================
+
+            // 縣市矩陣點擊
             tileMapContainerEl.addEventListener('click', e => {
                 const btn = e.target.closest('button[data-county-id]');
                 if (!btn) return;
                 state.selectedCountyId = btn.getAttribute('data-county-id');
-                renderTileMap();
-                renderDetailPanel();
+                renderTileMap(false);
+                renderDetailPanel(false);
                 if (window.innerWidth < 1024) {
                     detailPanelEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 }
             });
 
+            // 自動更新頻率切換
+            document.querySelectorAll('.interval-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const sec = Number(btn.getAttribute('data-interval'));
+                    state.pollIntervalSec = sec;
+                    state.secondsLeft = sec;
+                    try { localStorage.setItem(INTERVAL_KEY, String(sec)); } catch (e) {}
+                    updateIntervalButtonsUI();
+                    updateCountdownUI();
+                    updateSyncStatusUI(state.syncMode);
+                    showToast(sec > 0 ? `已切換為每 ${sec} 秒自動更新` : '已暫停自動輪詢');
+                });
+            });
+
+            // 立即強制同步
+            forceSyncBtn.addEventListener('click', () => runAutoSync('manual'));
+
+            // 匯出 JSON
+            exportJsonBtn.addEventListener('click', exportJsonSnapshot);
+
+            // 資料源 Modal 事件
+            function openApiModal() {
+                apiUrlInput.value = state.customApiUrl || '';
+                apiTestResultEl.classList.add('hidden');
+                apiModalEl.classList.remove('hidden');
+                apiModalEl.classList.add('flex');
+            }
+            function closeApiModal() {
+                apiModalEl.classList.add('hidden');
+                apiModalEl.classList.remove('flex');
+            }
+            openApiModalBtn.addEventListener('click', openApiModal);
+            closeApiModalBtn.addEventListener('click', closeApiModal);
+            cancelApiModalBtn.addEventListener('click', closeApiModal);
+
+            clearApiUrlBtn.addEventListener('click', () => {
+                state.customApiUrl = '';
+                apiUrlInput.value = '';
+                try { localStorage.removeItem(API_URL_KEY); } catch (e) {}
+                closeApiModal();
+                runAutoSync('manual');
+                showToast('已清除遠端資料源，改回本機快取模式');
+            });
+
+            saveAndSyncApiBtn.addEventListener('click', async () => {
+                const url = apiUrlInput.value.trim();
+                state.customApiUrl = url;
+                try {
+                    if (url) localStorage.setItem(API_URL_KEY, url);
+                    else localStorage.removeItem(API_URL_KEY);
+                } catch (e) {}
+                closeApiModal();
+                await runAutoSync('manual');
+            });
+
+            // 重置 Modal 事件
             cancelResetBtn.addEventListener('click', () => {
                 resetModalEl.classList.add('hidden');
                 resetModalEl.classList.remove('flex');
             });
-
             confirmResetBtn.addEventListener('click', () => {
                 state.liveStore = getDefaultLiveStore();
-                saveStore('已重置為 16:15 預設快訊');
+                state.prevSnapshot = JSON.parse(JSON.stringify(state.liveStore));
+                saveStore(true, '已重置回 16:25 初期開票基準');
                 resetModalEl.classList.add('hidden');
                 resetModalEl.classList.remove('flex');
-                renderAll();
+                renderAll(true);
             });
 
-            // ==================== 初始化 ====================
-            loadStore();
-            updateClock();
-            setInterval(updateClock, 1000);
-            renderAll();
+            // ==================== 啟動初始化（開頁即自動同步與每秒倒數引擎） ====================
+
+            function startApp() {
+                loadSettingsAndStore();
+                initBroadcastChannel();
+                updateIntervalButtonsUI();
+                liveClockEl.textContent = `UTC+8 ${formatTaipeiTime()}`;
+                renderAll(false);
+
+                // 1. 開頁立即自動執行首次同步，免手動點擊
+                runAutoSync('init');
+
+                // 2. 每秒驅動時鐘與自動輪詢倒數引擎
+                setInterval(() => {
+                    liveClockEl.textContent = `UTC+8 ${formatTaipeiTime()}`;
+                    if (state.pollIntervalSec > 0) {
+                        state.secondsLeft -= 1;
+                        if (state.secondsLeft <= 0) {
+                            runAutoSync('auto');
+                        } else {
+                            updateCountdownUI();
+                        }
+                    }
+                }, 1000);
+            }
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', startApp);
+            } else {
+                startApp();
+            }
         })();
     </script>
 </body>
